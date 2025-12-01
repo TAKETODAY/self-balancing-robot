@@ -1,8 +1,6 @@
 #include "wifi.h"
 
 #include <string.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
 #include "esp_mac.h"
 #include "esp_wifi.h"
 #include "esp_event.h"
@@ -47,11 +45,11 @@ void wifi_init() {
 
   wifi_config_t wifi_config = {
     .ap = {
-      .ssid = EXAMPLE_ESP_WIFI_SSID,
-      .ssid_len = strlen(EXAMPLE_ESP_WIFI_SSID),
-      .channel = EXAMPLE_ESP_WIFI_CHANNEL,
-      .password = EXAMPLE_ESP_WIFI_PASS,
-      .max_connection = EXAMPLE_MAX_STA_CONN,
+      .ssid = WIFI_SSID,
+      .ssid_len = strlen(WIFI_SSID),
+      .channel = WIFI_CHANNEL,
+      .password = WIFI_PASS,
+      .max_connection = MAX_STA_CONN,
 #ifdef CONFIG_ESP_WIFI_SOFTAP_SAE_SUPPORT
       .authmode = WIFI_AUTH_WPA3_PSK,
       .sae_pwe_h2e = WPA3_SAE_PWE_BOTH,
@@ -67,10 +65,11 @@ void wifi_init() {
         .protected_keep_alive = 1,
       },
 #endif
-      .gtk_rekey_interval = EXAMPLE_GTK_REKEY_INTERVAL,
+      .gtk_rekey_interval = GTK_REKEY_INTERVAL,
     },
   };
-  if (strlen(EXAMPLE_ESP_WIFI_PASS) == 0) {
+
+  if (strlen(WIFI_PASS) == 0) {
     wifi_config.ap.authmode = WIFI_AUTH_OPEN;
   }
 
@@ -78,6 +77,5 @@ void wifi_init() {
   ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &wifi_config));
   ESP_ERROR_CHECK(esp_wifi_start());
 
-  ESP_LOGD(TAG, "wifi_init finished. SSID:%s password:%s channel:%d",
-    EXAMPLE_ESP_WIFI_SSID, EXAMPLE_ESP_WIFI_PASS, EXAMPLE_ESP_WIFI_CHANNEL);
+  ESP_LOGD(TAG, "wifi_init finished. SSID:%s password:%s channel:%d", WIFI_SSID, WIFI_PASS, WIFI_CHANNEL);
 }
