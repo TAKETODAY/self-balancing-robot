@@ -1,0 +1,8 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="flash-and-run-app" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="self-balancing-robot" TARGET_NAME="self-balancing-robot.elf" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="self-balancing-robot" RUN_TARGET_NAME="self-balancing-robot.elf">
+    <method v="2">
+      <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      <option name="CMake.Explicit.Target" predefinedTargetName="app-flash" />
+    </method>
+  </configuration>
+</component>

@@ -2,13 +2,13 @@ menu "Example Configuration"
 
     config ESP_WIFI_SSID
         string "WiFi SSID"
-        default "ssid"
+        default "ROBOT"
         help
             SSID (network name) for the example to connect to.
 
     config ESP_WIFI_PASSWORD
         string "WiFi Password"
-        default "mypassword"
+        default "88888888"
         help
             WiFi password (WPA or WPA2) for the example to use.
     config ESP_WIFI_CHANNEL

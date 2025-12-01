@@ -16,4 +16,5 @@ dependencies:
     version: '^7.4.2'
   espressif/servo:
     version: '^0.1.0'
-
+#  espressif/arduino-esp32:
+#    version: '^3.3.3'
