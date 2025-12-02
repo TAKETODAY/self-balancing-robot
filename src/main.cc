@@ -1,11 +1,18 @@
-/*  WiFi softAP Example
+// Copyright 2025 the original author or authors.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see [https://www.gnu.org/licenses/]
 
-   This example code is in the Public Domain (or CC0 licensed, at your option.)
-
-   Unless required by applicable law or agreed to in writing, this
-   software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-   CONDITIONS OF ANY KIND, either express or implied.
-*/
 
 #include "esp_log.h"
 #include "nvs_flash.h"
@@ -13,6 +20,7 @@
 #include "sdkconfig.h"
 
 #include "battery.h"
+#include "esp/serial.hpp"
 #include "wifi.h"
 #include "esp_private/log_level.h"
 
@@ -43,6 +51,7 @@ void app_main(void) {
   ESP_ERROR_CHECK(ret);
 
   wifi_init();
-
+  // SerialPort serial;
+  // serial.begin(1000000);
   battery_init();
 }

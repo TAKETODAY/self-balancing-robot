@@ -15,25 +15,9 @@
 
 #pragma once
 
+#define LED_BATTERY_PIN gpio_num_t::GPIO_NUM_13
+#define BAT_PIN gpio_num_t::GPIO_NUM_35
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+void battery_init();
 
-#define WIFI_SSID      CONFIG_ESP_WIFI_SSID
-#define WIFI_PASS      CONFIG_ESP_WIFI_PASSWORD
-#define WIFI_CHANNEL   CONFIG_ESP_WIFI_CHANNEL
-#define MAX_STA_CONN       CONFIG_ESP_MAX_STA_CONN
-
-#if CONFIG_ESP_GTK_REKEYING_ENABLE
-#define GTK_REKEY_INTERVAL CONFIG_ESP_GTK_REKEY_INTERVAL
-#else
-#define GTK_REKEY_INTERVAL 0
-#endif
-
-
-void wifi_init();
-
-#ifdef __cplusplus
-}
-#endif
+float battery_voltage_read();

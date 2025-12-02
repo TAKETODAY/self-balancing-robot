@@ -1,11 +1,18 @@
 idf_component_register(SRCS
-    main.c
+    main.cpp
     wifi.c
 
-    battery.c
+    battery.cpp
 
-    PRIV_REQUIRES esp_wifi nvs_flash spi_flash cxx esp_adc esp_driver_gpio freertos
-    INCLUDE_DIRS "." "../include" # "../include/cores"
+    STSServoDriver.cpp
+
+    esp/io.cpp
+    esp/gpio.cpp
+    esp/misc.cpp
+    esp/serial.cpp
+
+    PRIV_REQUIRES nvs_flash spi_flash esp_adc esp_driver_gpio esp_timer esp_wifi freertos
+    INCLUDE_DIRS "." "../include"
 )
 
 # Tell the linker that we want to redefine the function named `esp_restart`.

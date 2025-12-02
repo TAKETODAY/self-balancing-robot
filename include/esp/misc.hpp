@@ -15,24 +15,46 @@
 
 #pragma once
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define WIFI_SSID      CONFIG_ESP_WIFI_SSID
-#define WIFI_PASS      CONFIG_ESP_WIFI_PASSWORD
-#define WIFI_CHANNEL   CONFIG_ESP_WIFI_CHANNEL
-#define MAX_STA_CONN       CONFIG_ESP_MAX_STA_CONN
+/**
+ * @brief Get time in ms since boot.
+ *
+ * @return number of microseconds since underlying timer has been started
+ */
+unsigned long micros();
 
-#if CONFIG_ESP_GTK_REKEYING_ENABLE
-#define GTK_REKEY_INTERVAL CONFIG_ESP_GTK_REKEY_INTERVAL
-#else
-#define GTK_REKEY_INTERVAL 0
-#endif
+/**
+ * @brief Get time in us since boot.
+ *
+ * @return number of milliseconds since underlying timer has been started
+ */
+unsigned long millis();
 
+/**
+ * @brief Delay us.
+ *
+ * @param us microsecond
+ */
+void delayMicroseconds(uint32_t us);
 
-void wifi_init();
+/**
+ * @brief Rtos ms delay function
+ *
+ * @param ms millisecond
+ */
+void delay(uint32_t ms);
+
+/**
+ * @brief Minimum function.
+ *
+ * @param a numbers that need to be compared
+ * @param b numbers that need to be compared
+ * @return minimum value
+ */
+float min(float a, float b);
 
 #ifdef __cplusplus
 }

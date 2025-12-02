@@ -7,7 +7,6 @@ cmake_minimum_required(VERSION 3.16)
 # without having them influence each other.
 set(SDKCONFIG "${CMAKE_BINARY_DIR}/sdkconfig")
 
-set(COMPONENTS cxx src) # 设置 组件
 set(EXTRA_COMPONENT_DIRS src) # 组件重命名
 
 

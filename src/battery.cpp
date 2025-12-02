@@ -1,11 +1,26 @@
-#include "battery.h"
+// Copyright 2025 the original author or authors.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see [https://www.gnu.org/licenses/]
+
+#include "battery.hpp"
+#include "esp/gpio.hpp"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
 #include <sys/unistd.h>
 
 #include "esp_log.h"
-#include "driver/gpio.h"
 #include "esp_adc/adc_cali.h"
 #include "esp_adc/adc_oneshot.h"
 #include "esp_adc/adc_cali_scheme.h"
@@ -78,12 +93,10 @@ void showBatteryLED(void* pvParameters) {
 
     // 电量显示
     if (battery > 7.8f) {
-      // 1
-      gpio_set_level(LED_BATTERY_PIN, 1);
+      digitalWrite(LED_BATTERY_PIN, HIGH);
     }
     else {
-      // 0
-      gpio_set_level(LED_BATTERY_PIN, 0);
+      digitalWrite(LED_BATTERY_PIN, LOW);
     }
     sleep(1);
   }
@@ -105,13 +118,8 @@ void battery_init() {
 
   do_calibration1_chan0 = _adc_calibration_init(ADC_UNIT_1, channel, ADC_ATTEN_DB_12, &adc_cali_handle);
 
-  const gpio_config_t my_io_config = {
-    .pin_bit_mask = 1 << LED_BATTERY_PIN,
-    .mode = GPIO_MODE_OUTPUT,
-  };
-
-  ESP_ERROR_CHECK(gpio_config(&my_io_config));
-  gpio_set_level(LED_BATTERY_PIN, 0);
+  pinMode(LED_BATTERY_PIN, OUTPUT);
+  digitalWrite(LED_BATTERY_PIN, LOW);
 
   xTaskCreate(showBatteryLED, "showBatteryLED", 2048, NULL, tskIDLE_PRIORITY, NULL);
 }

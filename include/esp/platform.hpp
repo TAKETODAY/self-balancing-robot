@@ -16,24 +16,22 @@
 #pragma once
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <math.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdarg.h>
+#include <stdbool.h>
 
-#define WIFI_SSID      CONFIG_ESP_WIFI_SSID
-#define WIFI_PASS      CONFIG_ESP_WIFI_PASSWORD
-#define WIFI_CHANNEL   CONFIG_ESP_WIFI_CHANNEL
-#define MAX_STA_CONN       CONFIG_ESP_MAX_STA_CONN
+#include "misc.hpp"
+#include "serial.hpp"
+#include "gpio.hpp"
 
-#if CONFIG_ESP_GTK_REKEYING_ENABLE
-#define GTK_REKEY_INTERVAL CONFIG_ESP_GTK_REKEY_INTERVAL
-#else
-#define GTK_REKEY_INTERVAL 0
-#endif
+#define NOP() asm volatile("nop")
+#define PI 3.14159265358979f
 
+typedef bool boolean;
+typedef uint8_t byte;
+typedef unsigned int word;
 
-void wifi_init();
-
-#ifdef __cplusplus
-}
-#endif
+class __FlashStringHelper;
+#define F(string_literal) (((string_literal)))
