@@ -34,10 +34,6 @@ STSServoDriver::STSServoDriver() : dirPin_(GPIO_NUM_NC) {
 
 
 bool STSServoDriver::init(gpio_num_t const& dirPin, SerialPort* serialPort, int const& baudRate) {
-#if defined(SERIAL_H) || defined(HardwareSerial_h)
-  if (serialPort == nullptr)
-    serialPort = &serial;
-#endif
   // Open port
   serialPort->begin(baudRate);
   serialPort->setTimeout(2);

@@ -27,8 +27,8 @@ static constexpr SerialPin serialPins[UART_NUM_MAX] = {
 };
 
 SerialPort::SerialPort(const uart_port_t _uart_num) :
-  _rxPin(serialPins[_uart_num].rx),
   _txPin(serialPins[_uart_num].tx),
+  _rxPin(serialPins[_uart_num].rx),
   _uart_num(_uart_num),
   _rxBufferSize(256),
   _txBufferSize(0) {
@@ -55,7 +55,7 @@ void SerialPort::setPortNumber(const uart_port_t port) {
 
 void SerialPort::begin(const int baud, const uart_word_length_t wordLength, const uart_parity_t parity, const uart_stop_bits_t stopBits) {
   if (!uart_is_driver_installed(_uart_num)) {
-    uart_config_t _uart_config;
+    uart_config_t _uart_config{};
     _uart_config.baud_rate = baud;
     _uart_config.data_bits = wordLength;
     _uart_config.parity = parity;

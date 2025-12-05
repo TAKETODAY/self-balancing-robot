@@ -24,7 +24,7 @@
 
 static auto TAG = "servos";
 
-SerialPort serial2(UART_NUM_2);
+static SerialPort serial2(UART_NUM_2);
 
 STSServoDriver servos;
 
@@ -39,7 +39,7 @@ static void servosLoop(void* pvParameters);
 void servosInit() {
   ESP_LOGI(TAG, "servos initializing");
 
-  if (!servos.init(&serial2)) {
+  if (!servos.init(&serial2, 1000000)) {
     ESP_LOGE(TAG, "servos init failed");
   }
   else {

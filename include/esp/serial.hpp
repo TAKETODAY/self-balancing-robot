@@ -219,7 +219,7 @@ public:
   }
 
 private:
-  int8_t _rxPin, _txPin;
+  int8_t _txPin, _rxPin;
   uart_port_t _uart_num;
   size_t _rxBufferSize;
   size_t _txBufferSize;
