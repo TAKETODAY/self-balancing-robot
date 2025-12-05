@@ -27,7 +27,7 @@
 
 static const adc_channel_t channel = ADC_CHANNEL_7;
 
-const static char* TAG = "battery";
+static auto TAG = "battery";
 
 static bool _adc_calibration_init(adc_unit_t unit, adc_channel_t channel, adc_atten_t atten, adc_cali_handle_t* out_handle) {
 
@@ -92,7 +92,7 @@ void showBatteryLED(void* pvParameters) {
     ESP_LOGI("Battery", "%.2fV", battery);
 
     // 电量显示
-    if (battery > 7.8f) {
+    if (battery > 7.0f) {
       digitalWrite(LED_BATTERY_PIN, HIGH);
     }
     else {

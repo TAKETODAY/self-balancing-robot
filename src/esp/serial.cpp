@@ -15,13 +15,24 @@
 
 #include "esp/serial.hpp"
 
-SerialPort::SerialPort() {
-  _rxPin = -1;
-  _txPin = -1;
-  _ctsPin = -1;
-  _rtsPin = -1;
-  _rxBufferSize = 256;
-  _txBufferSize = 0;
+typedef struct {
+  int8_t tx;
+  int8_t rx;
+} SerialPin;
+
+static constexpr SerialPin serialPins[UART_NUM_MAX] = {
+  { UART_NUM_0_TXD_DIRECT_GPIO_NUM, UART_NUM_0_RXD_DIRECT_GPIO_NUM },
+  { UART_NUM_1_TXD_DIRECT_GPIO_NUM, UART_NUM_1_RXD_DIRECT_GPIO_NUM },
+  { UART_NUM_2_TXD_DIRECT_GPIO_NUM, UART_NUM_2_RXD_DIRECT_GPIO_NUM },
+};
+
+SerialPort::SerialPort(const uart_port_t _uart_num) :
+  _rxPin(serialPins[_uart_num].rx),
+  _txPin(serialPins[_uart_num].tx),
+  _uart_num(_uart_num),
+  _rxBufferSize(256),
+  _txBufferSize(0) {
+
 }
 
 SerialPort::~SerialPort() {
@@ -38,10 +49,13 @@ uart_port_t SerialPort::getPortNumber() const {
   return _uart_num;
 }
 
-void SerialPort::begin(const int baud, const uart_port_t uart_num, const int tx_io, const int rx_io,
-  const uart_word_length_t wordLength, const uart_parity_t parity, const uart_stop_bits_t stopBits) {
-  _uart_num = uart_num;
+void SerialPort::setPortNumber(const uart_port_t port) {
+  _uart_num = port;
+}
+
+void SerialPort::begin(const int baud, const uart_word_length_t wordLength, const uart_parity_t parity, const uart_stop_bits_t stopBits) {
   if (!uart_is_driver_installed(_uart_num)) {
+    uart_config_t _uart_config;
     _uart_config.baud_rate = baud;
     _uart_config.data_bits = wordLength;
     _uart_config.parity = parity;
@@ -51,7 +65,7 @@ void SerialPort::begin(const int baud, const uart_port_t uart_num, const int tx_
 
     uart_driver_install(_uart_num, _rxBufferSize * 2, 0, 0, NULL, 0);
     uart_param_config(_uart_num, &_uart_config);
-    uart_set_pin(_uart_num, tx_io, rx_io, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
+    uart_set_pin(_uart_num, _txPin, _rxPin, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
   }
 }
 

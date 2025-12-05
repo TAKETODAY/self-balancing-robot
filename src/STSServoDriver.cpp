@@ -33,15 +33,15 @@ STSServoDriver::STSServoDriver() : dirPin_(GPIO_NUM_NC) {
 }
 
 
-bool STSServoDriver::init(gpio_num_t const& dirPin, SerialPort* serialPort, long const& baudRate) {
+bool STSServoDriver::init(gpio_num_t const& dirPin, SerialPort* serialPort, int const& baudRate) {
 #if defined(SERIAL_H) || defined(HardwareSerial_h)
   if (serialPort == nullptr)
     serialPort = &serial;
 #endif
   // Open port
+  serialPort->begin(baudRate);
+  serialPort->setTimeout(2);
   port_ = serialPort;
-  port_->begin(baudRate);
-  port_->setTimeout(2);
   dirPin_ = dirPin;
   if (this->dirPin_ < gpio_num_t::GPIO_NUM_MAX) {
     pinMode(dirPin_, OUTPUT);
@@ -57,7 +57,7 @@ bool STSServoDriver::init(gpio_num_t const& dirPin, SerialPort* serialPort, long
   return false;
 }
 
-bool STSServoDriver::init(SerialPort* serialPort, long const& baudRate) {
+bool STSServoDriver::init(SerialPort* serialPort, int const& baudRate) {
   return this->init(gpio_num_t::GPIO_NUM_MAX, serialPort, baudRate);
 }
 

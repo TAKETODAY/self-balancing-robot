@@ -37,7 +37,7 @@ public:
   /**
    * @brief Construct a new Serial object
    */
-  SerialPort();
+  SerialPort(uart_port_t _uart_num);
 
   /**
    * @brief Destroy the SerialPort object
@@ -48,15 +48,11 @@ public:
    * @brief SerialPort begin function, support separate setting of serial port and IO.
    *
    * @param baud uart baud rate.
-   * @param uart_num uart port number, the max port number is (UART_NUM_MAX -1).
-   * @param tx_io uart TX pin GPIO number.
-   * @param rx_io uart RX pin GPIO number.
    * @param wordLength  uart word length constants
    * @param parity uart parity constants
    * @param stopBits uart stop bits number
    */
-  void begin(int baud, uart_port_t uart_num = static_cast<uart_port_t>(CONFIG_ESP_CONSOLE_UART_NUM),
-    int tx_io = TX0, int rx_io = RX0, uart_word_length_t wordLength = UART_DATA_8_BITS,
+  void begin(int baud, uart_word_length_t wordLength = UART_DATA_8_BITS,
     uart_parity_t parity = UART_PARITY_DISABLE, uart_stop_bits_t stopBits = UART_STOP_BITS_1);
 
   /**
@@ -90,6 +86,8 @@ public:
    * @return uart port
    */
   uart_port_t getPortNumber() const;
+
+  void setPortNumber(uart_port_t port);
 
   /**
    * @brief Send data to the UART port from a given character.
@@ -132,8 +130,8 @@ public:
    *     - (-1) Parameter error
    *     - OTHERS (>=0) The number of bytes pushed to the TX FIFO
    */
-  inline size_t write(const char* s) {
-    return write((uint8_t*) s, strlen(s));
+  inline size_t write(const char* buffer) {
+    return write((uint8_t*) buffer, strlen(buffer));
   }
 
   /**
@@ -221,10 +219,9 @@ public:
   }
 
 private:
-  int8_t _rxPin, _txPin, _ctsPin, _rtsPin;
+  int8_t _rxPin, _txPin;
   uart_port_t _uart_num;
   size_t _rxBufferSize;
   size_t _txBufferSize;
-  uart_config_t _uart_config{};
 
 };
