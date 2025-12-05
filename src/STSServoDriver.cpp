@@ -192,11 +192,11 @@ int STSServoDriver::sendMessage(byte const& servoId, byte const& commandID, byte
     checksum += parameters[i];
   }
   message[5 + paramLength] = ~checksum;
-  if (this->dirPin_ < 255) {
+  if (this->dirPin_ < GPIO_NUM_MAX) {
     digitalWrite(dirPin_, HIGH);
   }
   int ret = port_->write(message, 6 + paramLength);
-  if (this->dirPin_ < 255) {
+  if (this->dirPin_ < GPIO_NUM_MAX) {
     digitalWrite(dirPin_, LOW);
   }
   // Give time for the message to be processed.
@@ -300,7 +300,7 @@ int STSServoDriver::readRegisters(byte const& servoId,
 }
 
 int STSServoDriver::receiveMessage(byte const& servoId, byte const& readLength, byte* outputBuffer) {
-  if (this->dirPin_ < 255) {
+  if (this->dirPin_ < GPIO_NUM_MAX) {
     digitalWrite(dirPin_, LOW);
   }
 

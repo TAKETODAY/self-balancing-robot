@@ -20,6 +20,7 @@
 #include "sdkconfig.h"
 
 #include "battery.hpp"
+#include "STSServoDriver.hpp"
 #include "esp/serial.hpp"
 #include "wifi.h"
 #include "esp_private/log_level.h"
@@ -51,8 +52,14 @@ extern "C" void app_main(void) {
   ESP_ERROR_CHECK(ret);
 
   wifi_init();
-  SerialPort serial;
-  serial.begin(1000000, uart_port_t::UART_NUM_1);
+
+  // SerialPort serial;
+  // serial.begin(1000000, uart_port_t::UART_NUM_2);
+  //
+  // STSServoDriver servo_driver;
+  // servo_driver.init(&serial);
+  //
+  // servo_driver.setTargetPosition(1, 2300);
 
   battery_init();
 }

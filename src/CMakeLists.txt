@@ -1,3 +1,21 @@
+
+set(FOC_FILES
+    "foc/common/pid.cpp"
+    "foc/common/time_utils.cpp"
+    "foc/common/lowpass_filter.cpp"
+    "foc/common/base_classes/CurrentSense.cpp"
+    "foc/common/base_classes/Sensor.cpp"
+    "foc/common/base_classes/FOCMotor.cpp"
+    "foc/communication/Commander.cpp"
+    "foc/communication/SimpleFOCDebug.cpp"
+    "foc/current_sense/GenericCurrentSense.cpp"
+    "foc/current_sense/LowsideCurrentSense.cpp"
+    "foc/sensors/GenericSensor.cpp"
+    "foc/sensors/Encoder.cpp"
+    "foc/sensors/HallSensor.cpp"
+    "foc/BLDCMotor.cpp")
+
+
 idf_component_register(SRCS
     main.cpp
     wifi.c
@@ -10,6 +28,8 @@ idf_component_register(SRCS
     esp/gpio.cpp
     esp/misc.cpp
     esp/serial.cpp
+
+#    ${FOC_FILES}
 
     PRIV_REQUIRES nvs_flash spi_flash esp_adc esp_driver_gpio esp_timer esp_wifi freertos
     INCLUDE_DIRS "." "../include"

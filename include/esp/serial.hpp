@@ -40,11 +40,6 @@ public:
   SerialPort();
 
   /**
-   * @brief Construct a new Serial object
-   */
-  explicit SerialPort(uart_port_t uart_num);
-
-  /**
    * @brief Destroy the SerialPort object
    */
   ~SerialPort() override;

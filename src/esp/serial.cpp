@@ -24,11 +24,6 @@ SerialPort::SerialPort() {
   _txBufferSize = 0;
 }
 
-SerialPort::SerialPort(const uart_port_t uart_num)
-  : _rxPin(-1), _txPin(-1), _ctsPin(-1), _rtsPin(-1), _uart_num(uart_num), _rxBufferSize(256), _txBufferSize(0) {
-
-}
-
 SerialPort::~SerialPort() {
   if (uart_is_driver_installed(_uart_num)) {
     uart_driver_delete(_uart_num);
