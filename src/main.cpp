@@ -20,11 +20,11 @@
 #include "sdkconfig.h"
 
 #include "battery.hpp"
+#include "mpu6050.hpp"
 #include "servos.hpp"
 
 #include "esp/serial.hpp"
 #include "wifi.h"
-#include "esp_private/log_level.h"
 
 /**
  * Declare the symbol pointing to the former implementation of esp_restart function
@@ -42,7 +42,6 @@
 
 
 extern "C" void app_main(void) {
-  esp_log_set_default_level(ESP_LOG_DEBUG);
 
   //Initialize NVS
   esp_err_t ret = nvs_flash_init();
@@ -53,7 +52,8 @@ extern "C" void app_main(void) {
   ESP_ERROR_CHECK(ret);
 
   wifi_init();
-  servosInit();
+  servos_init();
+  mpu6050_init();
 
   battery_init();
 }
