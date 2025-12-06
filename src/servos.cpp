@@ -93,6 +93,6 @@ static void servosLoop(void* pvParameters) {
     //   last2 = pos;
     // }
     // servos.setTargetPosition(2, pos);
-    delay(2);
+    delay(50);
   }
 }

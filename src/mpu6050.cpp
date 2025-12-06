@@ -65,13 +65,13 @@ static void mpu6050Loop(void* pvParameters) {
 
   for (;;) {
     mpu6050_get_acce(mpu6050, &acce);
-    ESP_LOGD(TAG, "acce_x:%.2f, acce_y:%.2f, acce_z:%.2f\n", acce.acce_x, acce.acce_y, acce.acce_z);
+    ESP_LOGD(TAG, "acce_x:%.2f, acce_y:%.2f, acce_z:%.2f", acce.acce_x, acce.acce_y, acce.acce_z);
 
     mpu6050_get_gyro(mpu6050, &gyro);
-    ESP_LOGD(TAG, "gyro_x:%.2f, gyro_y:%.2f, gyro_z:%.2f\n", gyro.gyro_x, gyro.gyro_y, gyro.gyro_z);
+    ESP_LOGD(TAG, "gyro_x:%.2f, gyro_y:%.2f, gyro_z:%.2f", gyro.gyro_x, gyro.gyro_y, gyro.gyro_z);
 
     mpu6050_get_temp(mpu6050, &temp);
-    ESP_LOGD(TAG, "t:%.2f \n", temp.temp);
+    ESP_LOGD(TAG, "t: %.2f ", temp.temp);
 
     delay(1000);
   }
