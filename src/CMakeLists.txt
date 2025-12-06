@@ -21,7 +21,7 @@ idf_component_register(SRCS
     wifi.c
     servos.cpp
     battery.cpp
-
+    mpu6050.cpp
     STSServoDriver.cpp
 
     esp/io.cpp

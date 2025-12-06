@@ -89,7 +89,7 @@ adc_cali_handle_t adc_cali_handle = NULL;
 void showBatteryLED(void* pvParameters) {
   for (;;) {
     const double battery = battery_voltage_read();
-    ESP_LOGI("Battery", "%.2fV", battery);
+    ESP_LOGV("Battery", "%.2fV", battery);
 
     // 电量显示
     if (battery > 7.0f) {

@@ -31,12 +31,21 @@ STSServoDriver servos;
 
 byte ids[] = { 1, 2 };
 int positions[2];
-int speeds[] = { 2400, 2400 };
+int speeds[] = { 800, 800 };
+
+#define SERVO0_MIN  2050 // 舵机1最低位置
+#define SERVO1_MIN  2050 // 舵机2最低位置
+#define SERVO0_MAX (2047 + 12 + 8.4 * (35 + 10)) // 2438 舵机1最高 2600
+#define SERVO1_MAX (2047 - 12 - 8.4 * (35 + 10)) // 1658 舵机2最高 1490
+#define SERVO0_ACC 100 // 舵机1加速度，不能太快，否则影响其他动作平衡
+#define SERVO1_ACC 100 // 舵机2加速度
+#define SERVO0_SPEED 400 // 舵机1速度，不能太快，否则影响其他动作平衡
+#define SERVO1_SPEED 400 // 舵机2速度
 
 
 static void servosLoop(void* pvParameters);
 
-void servosInit() {
+void servos_init() {
   ESP_LOGI(TAG, "servos initializing");
 
   if (!servos.init(&serial2, 1000000)) {
@@ -45,33 +54,45 @@ void servosInit() {
   else {
     ESP_LOGI(TAG, "servos initialized");
 
-    // servos.writeRegister(1, STSRegisters::TORQUE_SWITCH, 0);
-    // servos.writeRegister(2, STSRegisters::TORQUE_SWITCH, 0);
+    servos.setMode(2, STSMode::POSITION);
 
-    servos.setMode(0xFE, STSMode::POSITION);
+    // servos.setTargetAcceleration(1, 100);
+    // servos.setTargetAcceleration(2, 100);
 
     // servos.setTargetPosition(1, 2300);
 
-    positions[0] = 2300;
-    positions[1] = 2300;
-    servos.setTargetPositions(2, ids, positions, speeds);
+    // positions[0] = 2300;
+    // positions[1] = 2300;
+    // servos.setTargetPositions(2, ids, positions, speeds);
 
-    // xTaskCreate(servosLoop, "servosLoop", 2048, NULL, tskIDLE_PRIORITY, NULL);
+    xTaskCreate(servosLoop, "servosLoop", 2048, NULL, tskIDLE_PRIORITY, NULL);
   }
 
   ESP_LOGI(TAG, "uart0 installed %d", uart_is_driver_installed(uart_port_t::UART_NUM_0));
   ESP_LOGI(TAG, "uart1 installed %d", uart_is_driver_installed(uart_port_t::UART_NUM_1));
   ESP_LOGI(TAG, "uart2 installed %d", uart_is_driver_installed(uart_port_t::UART_NUM_2));
-
-
 }
 
 static void servosLoop(void* pvParameters) {
-  ESP_LOGI(TAG, "servos initialized");
+  ESP_LOGI(TAG, "servos looping");
 
+  int offset = SERVO0_MIN;
+  int last = 0;
+  int last2 = 0;
   for (;;) {
-    int pos = servos.getCurrentPosition(1);
-    servos.setTargetPosition(2, pos);
-    sleep(50);
+    int pos = servos.getCurrentPosition(1) - offset;
+
+    if (last != pos) {
+      servos.setTargetPosition(2, offset - pos);
+      // ESP_LOGI(TAG, "Servo1 Position: %d", pos);
+      last = pos;
+    }
+    // pos = offset - servos.getCurrentPosition(2);
+    // if (last2 != pos) {
+    //   ESP_LOGI(TAG, "Servo2 Position: %d", pos);
+    //   last2 = pos;
+    // }
+    // servos.setTargetPosition(2, pos);
+    delay(2);
   }
 }
