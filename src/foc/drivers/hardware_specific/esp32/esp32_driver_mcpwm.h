@@ -1,22 +1,36 @@
+// Copyright 2025 the original author or authors.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see [https://www.gnu.org/licenses/]
+
 #ifndef ESP32_DRIVER_MCPWM_H
 #define ESP32_DRIVER_MCPWM_H
 
 #include "../../hardware_api.h"
 
-#if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32) && defined(SOC_MCPWM_SUPPORTED) && !defined(SIMPLEFOC_ESP32_USELEDC)
-
 #include "driver/mcpwm_prelude.h"
 #include "soc/mcpwm_reg.h"
 #include "soc/mcpwm_struct.h"
-#include "esp_idf_version.h"  
+#include "esp_idf_version.h"
+#include "esp_log.h"
 
 // version check - this mcpwm driver is specific for ESP-IDF 5.x and arduino-esp32 3.x
-#if ESP_IDF_VERSION  < ESP_IDF_VERSION_VAL(5, 0, 0) 
+#if ESP_IDF_VERSION  < ESP_IDF_VERSION_VAL(5, 0, 0)
 #error SimpleFOC: ESP-IDF version 4 or lower detected. Please update to ESP-IDF 5.x and Arduino-esp32 3.0 (or higher)
 #endif
 
 #ifndef SIMPLEFOC_ESP32_HW_DEADTIME
-  #define SIMPLEFOC_ESP32_HW_DEADTIME true // TODO: Change to false when sw-deadtime & phase_state is approved ready for general use.
+#define SIMPLEFOC_ESP32_HW_DEADTIME true // TODO: Change to false when sw-deadtime & phase_state is approved ready for general use.
 #endif
 
 //!< ESP32 MCPWM driver parameters
@@ -29,20 +43,20 @@ typedef struct ESP32MCPWMDriverParams {
   mcpwm_gen_handle_t generator[6]; //!< generators of the mcpwm
   uint32_t mcpwm_period; //!< period of the pwm signal
   float dead_zone; //!< dead zone of the pwm signal
-} ESP32MCPWMDriverParams; 
+} ESP32MCPWMDriverParams;
 
 
-#define SIMPLEFOC_ESP32_DEBUG(tag, str)\
-    SimpleFOCDebug::println( "ESP32-"+String(tag)+ ": "+ String(str));
+#define SIMPLEFOC_ESP32_DEBUG(tag, str, ...)\
+    ESP_LOGD("simplefoc", "ESP32-: " tag str, __VA_ARGS__);
 
-#define SIMPLEFOC_ESP32_DRV_DEBUG(str)\
-   SIMPLEFOC_ESP32_DEBUG("DRV", str);\
+#define SIMPLEFOC_ESP32_DRV_DEBUG(str, ...)\
+   SIMPLEFOC_ESP32_DEBUG("DRV", str, __VA_ARGS__);
 
 // macro for checking the error of the mcpwm functions
 // if the function returns an error the function will return SIMPLEFOC_DRIVER_INIT_FAILED
-#define CHECK_ERR(func_call, message) \
+#define CHECK_ERR(func_call, message, ...) \
   if ((func_call) != ESP_OK) { \
-    SIMPLEFOC_ESP32_DRV_DEBUG("ERROR - " + String(message)); \
+    SIMPLEFOC_ESP32_DRV_DEBUG("ERROR - " message, __VA_ARGS__); \
     return SIMPLEFOC_DRIVER_INIT_FAILED; \
   }
 
@@ -154,5 +168,4 @@ void _setDutyCycle(mcpwm_cmpr_handle_t cmpr, uint32_t mcpwm_period, float duty_c
  */
 void _forcePhaseState(mcpwm_gen_handle_t generator_high, mcpwm_gen_handle_t generator_low, PhaseState phase_state);
 
-#endif
 #endif

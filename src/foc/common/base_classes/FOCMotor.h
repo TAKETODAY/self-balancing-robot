@@ -1,7 +1,22 @@
+// Copyright 2025 the original author or authors.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see [https://www.gnu.org/licenses/]
+
 #ifndef FOCMOTOR_H
 #define FOCMOTOR_H
 
-#include "Arduino.h"
+#include "esp/io.hpp"
 #include "Sensor.h"
 #include "CurrentSense.h"
 
@@ -225,7 +240,7 @@ class FOCMotor
      * 
      * @param serial Monitoring Serial class reference
      */
-    void useMonitoring(Print &serial);
+    void useMonitoring(Writer &serial);
 
     /**
      * Utility function intended to be used with serial plotter to monitor motor variables
@@ -240,7 +255,7 @@ class FOCMotor
     // initial monitoring will display target, voltage, velocity and angle
     uint8_t monitor_variables = _MON_TARGET | _MON_VOLT_Q | _MON_VEL | _MON_ANGLE; //!< Bit array holding the map of variables the user wants to monitor
    
-    /** 
+    /**
       * Sensor link:
       * - Encoder 
       * - MagneticSensor*
@@ -253,7 +268,7 @@ class FOCMotor
     CurrentSense* current_sense; 
 
     // monitoring functions
-    Print* monitor_port; //!< Serial terminal variable if provided
+    Writer* monitor_port; //!< Serial terminal variable if provided
   private:
     // monitor counting variable
     unsigned int monitor_cnt = 0 ; //!< counting variable

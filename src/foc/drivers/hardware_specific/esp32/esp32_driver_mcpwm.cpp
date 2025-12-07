@@ -1,3 +1,17 @@
+// Copyright 2025 the original author or authors.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see [https://www.gnu.org/licenses/]
 
 /*
 * MCPWM in espressif v5.x has
@@ -98,24 +112,27 @@
 
 #include "../../hardware_api.h"
 
-#if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32) && defined(SOC_MCPWM_SUPPORTED) && !defined(SIMPLEFOC_ESP32_USELEDC)
+#if /*defined(ESP_H) && defined(ARDUINO_ARCH_ESP32) && */defined(SOC_MCPWM_SUPPORTED) && !defined(SIMPLEFOC_ESP32_USELEDC)
 
 #include "esp32_driver_mcpwm.h"
 
+#include "driver/mcpwm_gen.h"
+#include "driver/mcpwm_timer.h"
+#include "driver/mcpwm_types.h"
+
 // MCPWM driver hardware timer pointers
-mcpwm_timer_handle_t timers[2][3] = {NULL};
+mcpwm_timer_handle_t timers[2][3] = { nullptr };
 // MCPWM timer periods configured (directly related to the pwm frequency) 
 uint32_t pwm_periods[2][3];
 // how many pins from the groups 6 pins is used
-uint8_t group_pins_used[2] = {0};
+uint8_t group_pins_used[2] = { 0 };
 // last operator in the group
 mcpwm_oper_handle_t last_operator[2];
 
 
-
 // checking if group has pins available
-bool _hasAvailablePins(int group, int no_pins){
-  if(group_pins_used[group] + no_pins > 6){
+bool _hasAvailablePins(int group, int no_pins) {
+  if (group_pins_used[group] + no_pins > 6) {
     return false;
   }
   return true;
@@ -123,22 +140,23 @@ bool _hasAvailablePins(int group, int no_pins){
 
 // returns the index of the last timer in the group
 // -1 if no timer instantiated yet
-uint8_t _findLastTimer(int group){
+uint8_t _findLastTimer(int group) {
   int i = 0;
-  for(; i<3; i++){
-    if(timers[group][i] == NULL){
-       return i-1;
+  for (; i < 3; i++) {
+    if (timers[group][i] == NULL) {
+      return i - 1;
     }
   }
   // return the last index
   return i;
 }
+
 // returns the index of the next timer to instantiate 
 // -1 if no timers available
-uint8_t _findNextTimer(int group){
+uint8_t _findNextTimer(int group) {
   int i = 0;
-  for(; i<3; i++){
-    if(timers[group][i] == NULL){
+  for (; i < 3; i++) {
+    if (timers[group][i] == NULL) {
       return i;
     }
   }
@@ -179,12 +197,12 @@ uint8_t _findNextTimer(int group){
  *  - 2 if solution requires using both groups
  *  - 0 if no solution possible
 */
-int _findBestGroup(int no_pins, long pwm_freq, int* group, int* timer){
+int _findBestGroup(int no_pins, long pwm_freq, int* group, int* timer) {
   // an empty group is always the best option
-  for(int i=0; i<SOC_MCPWM_GROUPS; i++){
-    if(!group_pins_used[i]){
+  for (int i = 0; i < SOC_MCPWM_GROUPS; i++) {
+    if (!group_pins_used[i]) {
       *group = i;
-      *timer=0; // use the first timer in an empty group
+      *timer = 0; // use the first timer in an empty group
       return 1;
     }
   }
@@ -192,21 +210,21 @@ int _findBestGroup(int no_pins, long pwm_freq, int* group, int* timer){
   // if 3 or 1pwm 
   // check if there is available space in one of the groups
   // otherwise fail
-  if(no_pins == 3 || no_pins==1){
+  if (no_pins == 3 || no_pins == 1) {
     // second best option is if there is a group with 
     // pair number of pwms available as we can then 
     // set the pwm frequency 
-    for(int i=0; i<SOC_MCPWM_GROUPS; i++){
-      if(_hasAvailablePins(i, no_pins+1)) {
-        *group=i;
+    for (int i = 0; i < SOC_MCPWM_GROUPS; i++) {
+      if (_hasAvailablePins(i, no_pins + 1)) {
+        *group = i;
         *timer = _findNextTimer(i);
         return 1;
       }
     }
     // third best option is any group that has enough pins
-    for(int i=0; i<SOC_MCPWM_GROUPS; i++){
-      if(_hasAvailablePins(i, no_pins)) {
-        *group=i;
+    for (int i = 0; i < SOC_MCPWM_GROUPS; i++) {
+      if (_hasAvailablePins(i, no_pins)) {
+        *group = i;
         *timer = _findLastTimer(i);
         return 1;
       }
@@ -216,18 +234,18 @@ int _findBestGroup(int no_pins, long pwm_freq, int* group, int* timer){
   // if 2 or 4 pwm
   // check if there is available space in one of the groups
   // if not check if they can be separated in two groups
-  if(no_pins == 2 || no_pins==4){
+  if (no_pins == 2 || no_pins == 4) {
     // second best option is any group that has enough pins
-    for(int i=0; i<2; i++){
-      if(_hasAvailablePins(i, no_pins)) {
-        *group=i;
+    for (int i = 0; i < 2; i++) {
+      if (_hasAvailablePins(i, no_pins)) {
+        *group = i;
         *timer = _findNextTimer(i);
         return 1;
       }
     }
     // third best option is half pwms per group
-    int half_no_pins = (int)no_pins/2;
-    if(_hasAvailablePins(0,half_no_pins) && _hasAvailablePins(1 ,half_no_pins)){
+    int half_no_pins = (int) no_pins / 2;
+    if (_hasAvailablePins(0, half_no_pins) && _hasAvailablePins(1, half_no_pins)) {
       return 2;
     }
   }
@@ -239,117 +257,121 @@ int _findBestGroup(int no_pins, long pwm_freq, int* group, int* timer){
 
 // configuring center aligned pwm
 // More info here: https://docs.espressif.com/projects/esp-idf/en/v5.1.4/esp32/api-reference/peripherals/mcpwm.html#symmetric-dual-edge-active-low
-int _configureCenterAlign(mcpwm_gen_handle_t gena, mcpwm_cmpr_handle_t cmpa, bool inverted = false){
-    if(inverted)
-      return mcpwm_generator_set_actions_on_compare_event(gena,
-                      MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, cmpa, MCPWM_GEN_ACTION_HIGH),
-                      MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_DOWN, cmpa, MCPWM_GEN_ACTION_LOW),
-                      MCPWM_GEN_COMPARE_EVENT_ACTION_END());
-   else
-      return mcpwm_generator_set_actions_on_compare_event(gena,
-                      MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, cmpa, MCPWM_GEN_ACTION_LOW),
-                      MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_DOWN, cmpa, MCPWM_GEN_ACTION_HIGH),
-                      MCPWM_GEN_COMPARE_EVENT_ACTION_END());
+int _configureCenterAlign(mcpwm_gen_handle_t gena, mcpwm_cmpr_handle_t cmpa, bool inverted = false) {
+  if (inverted)
+    return mcpwm_generator_set_actions_on_compare_event(gena,
+      MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, cmpa, MCPWM_GEN_ACTION_HIGH),
+      MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_DOWN, cmpa, MCPWM_GEN_ACTION_LOW),
+      MCPWM_GEN_COMPARE_EVENT_ACTION_END());
+  else
+    return mcpwm_generator_set_actions_on_compare_event(gena,
+      MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, cmpa, MCPWM_GEN_ACTION_LOW),
+      MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_DOWN, cmpa, MCPWM_GEN_ACTION_HIGH),
+      MCPWM_GEN_COMPARE_EVENT_ACTION_END());
 }
-
 
 
 // Helper function calculating the pwm period from the pwm frequency
 // - pwm_frequency - pwm frequency in hertz
 // returns pwm period in ticks (uint32_t)
 uint32_t _calcPWMPeriod(long pwm_frequency) {
-    return  (uint32_t)(1 * _PWM_TIMEBASE_RESOLUTION_HZ / pwm_frequency);
+  return (uint32_t) (1 * _PWM_TIMEBASE_RESOLUTION_HZ / pwm_frequency);
 }
+
 /*
     Helper function calculating the pwm frequency from the pwm period
     - pwm_period - pwm period in ticks
     returns pwm frequency in hertz (long)
 */
 long _calcPWMFreq(long pwm_period) {
-    return  (uint32_t)(1 * _PWM_TIMEBASE_RESOLUTION_HZ / pwm_period / 2);
+  return (uint32_t) (1 * _PWM_TIMEBASE_RESOLUTION_HZ / pwm_period / 2);
 }
 
-void* _configure6PWMPinsMCPWM(long pwm_frequency, int mcpwm_group, int timer_no, float dead_zone, int* pins){
-  ESP32MCPWMDriverParams*  params = new ESP32MCPWMDriverParams{
+void* _configure6PWMPinsMCPWM(long pwm_frequency, int mcpwm_group, int timer_no, float dead_zone, int* pins) {
+  ESP32MCPWMDriverParams* params = new ESP32MCPWMDriverParams{
     .pwm_frequency = pwm_frequency,
     .group_id = mcpwm_group
   };
-  
+
   mcpwm_timer_config_t pwm_config;
   pwm_config.group_id = mcpwm_group;
   pwm_config.clk_src = MCPWM_TIMER_CLK_SRC_DEFAULT;
   pwm_config.resolution_hz = _PWM_TIMEBASE_RESOLUTION_HZ;
-  pwm_config.count_mode = MCPWM_TIMER_COUNT_MODE_UP_DOWN;    
-  pwm_config.intr_priority = 0;              
+  pwm_config.count_mode = MCPWM_TIMER_COUNT_MODE_UP_DOWN;
+  pwm_config.intr_priority = 0;
   pwm_config.period_ticks = _calcPWMPeriod(pwm_frequency);
   pwm_config.flags.allow_pd = 0;
 
-  CHECK_ERR(mcpwm_new_timer(&pwm_config, &timers[mcpwm_group][timer_no]), "Could not initialize the timer in group: " + String(mcpwm_group));
+  CHECK_ERR(mcpwm_new_timer(&pwm_config, &timers[mcpwm_group][timer_no]), "Could not initialize the timer in group: %d", mcpwm_group);
+
   pwm_periods[mcpwm_group][timer_no] = pwm_config.period_ticks / 2;
   params->timers[0] = timers[mcpwm_group][timer_no];
   params->mcpwm_period = pwm_periods[mcpwm_group][timer_no];
 
   uint8_t no_operators = 3; // use 3 comparators one per pair of pwms
-  SIMPLEFOC_ESP32_DRV_DEBUG("Configuring " + String(no_operators) + " operators."); 
+  SIMPLEFOC_ESP32_DRV_DEBUG("Configuring %d operators.", no_operators);
   mcpwm_operator_config_t operator_config = { .group_id = mcpwm_group };
   operator_config.intr_priority = 0;
   operator_config.flags.update_gen_action_on_tep = true;
   operator_config.flags.update_gen_action_on_tez = true;
   for (int i = 0; i < no_operators; i++) {
-    CHECK_ERR(mcpwm_new_operator(&operator_config, &params->oper[i]),"Could not create operator "+String(i));
-    CHECK_ERR(mcpwm_operator_connect_timer(params->oper[i], params->timers[0]),"Could not connect timer to operator: " + String(i));
+    CHECK_ERR(mcpwm_new_operator(&operator_config, &params->oper[i]), "Could not create operator %d", i);
+    CHECK_ERR(mcpwm_operator_connect_timer(params->oper[i], params->timers[0]), "Could not connect timer to operator: %d", i);
   }
 
 #if SIMPLEFOC_ESP32_HW_DEADTIME == true // hardware dead-time (hardware 6pwm)
-  
+
   SIMPLEFOC_ESP32_DRV_DEBUG("Configuring 6PWM with hardware dead-time");
-  
-  SIMPLEFOC_ESP32_DRV_DEBUG("Configuring " + String(no_operators) + " comparators.");
+
+  SIMPLEFOC_ESP32_DRV_DEBUG("Configuring %d comparators.", no_operators);
   // Create and configure comparators
-  mcpwm_comparator_config_t comparator_config = {0};
+  mcpwm_comparator_config_t comparator_config = { 0 };
   comparator_config.flags.update_cmp_on_tez = true;
   for (int i = 0; i < no_operators; i++) {
-    CHECK_ERR(mcpwm_new_comparator(params->oper[i], &comparator_config, &params->comparator[i]),"Could not create comparator: " + String(i));
-    CHECK_ERR(mcpwm_comparator_set_compare_value(params->comparator[i], (0)), "Could not set duty on comparator: " + String(i));
+    CHECK_ERR(mcpwm_new_comparator(params->oper[i], &comparator_config, &params->comparator[i]), "Could not create comparator: %d", i);
+    CHECK_ERR(mcpwm_comparator_set_compare_value(params->comparator[i], (0)), "Could not set duty on comparator: %d", (i));
   }
-  
+
 #else // software dead-time (software 6pwm)
-// software dead-time (software 6pwm)
+  // software dead-time (software 6pwm)
   SIMPLEFOC_ESP32_DRV_DEBUG("Configuring 6PWM with software dead-time");
 
   int no_pins = 6;
   SIMPLEFOC_ESP32_DRV_DEBUG("Configuring " + String(no_pins) + " comparators.");
   // Create and configure comparators
-  mcpwm_comparator_config_t comparator_config = {0};
+  mcpwm_comparator_config_t comparator_config = { 0 };
   comparator_config.flags.update_cmp_on_tez = true;
   for (int i = 0; i < no_pins; i++) {
-    int oper_index = (int)floor(i / 2);
-    CHECK_ERR(mcpwm_new_comparator(params->oper[oper_index], &comparator_config, &params->comparator[i]),"Could not create comparator: " + String(i));
+    int oper_index = (int) floor(i / 2);
+    CHECK_ERR(mcpwm_new_comparator(params->oper[oper_index], &comparator_config, &params->comparator[i]), "Could not create comparator: " + String(i));
     CHECK_ERR(mcpwm_comparator_set_compare_value(params->comparator[i], (0)), "Could not set duty on comparator: " + String(i));
   }
-#endif 
+#endif
 
   int no_generators = 6; // one per pwm
-  SIMPLEFOC_ESP32_DRV_DEBUG("Configuring " + String(no_generators) + " generators.");
+  SIMPLEFOC_ESP32_DRV_DEBUG("Configuring %d generators.", no_generators);
   // Create and configure generators
   mcpwm_generator_config_t generator_config = {};
   for (int i = 0; i < no_generators; i++) {
     generator_config.gen_gpio_num = pins[i];
-    int oper_index = (int)floor(i / 2);
-    CHECK_ERR(mcpwm_new_generator(params->oper[oper_index], &generator_config, &params->generator[i]),"Could not create generator " + String(i) +String(" on pin: ")+String(pins[i]));
+    int oper_index = (int) floor(i / 2);
+    CHECK_ERR(mcpwm_new_generator(params->oper[oper_index], &generator_config, &params->generator[i]),
+      "Could not create generator %d on pin: %d", i, pins[i]);
   }
 
   SIMPLEFOC_ESP32_DRV_DEBUG("Configuring Center-Aligned 6 pwm.");
 
 #if SIMPLEFOC_ESP32_HW_DEADTIME == true // hardware dead-time (hardware 6pwm)
   for (int i = 0; i < no_operators; i++) {
-    CHECK_ERR(_configureCenterAlign(params->generator[2*i],params->comparator[i]), "Failed to configure high-side center align pwm: " + String(2*i));  
-    CHECK_ERR(_configureCenterAlign(params->generator[2*i+1],params->comparator[i]), "Failed to configure low-side center align pwm: " + String(2*i+1));  
-  
+    CHECK_ERR(_configureCenterAlign(params->generator[2*i],params->comparator[i]),
+      "Failed to configure high-side center align pwm: %d", 2 * i);
+    CHECK_ERR(_configureCenterAlign(params->generator[2*i+1],params->comparator[i]),
+      "Failed to configure low-side center align pwm: %d", (2*i+1));
+
   }
   // only available for 6pwm
   SIMPLEFOC_ESP32_DRV_DEBUG("Configuring dead-time.");
-  uint32_t dead_time = (int)pwm_periods[mcpwm_group][timer_no] * dead_zone;
+  uint32_t dead_time = (int) pwm_periods[mcpwm_group][timer_no] * dead_zone;
   mcpwm_dead_time_config_t dt_config_high;
   dt_config_high.posedge_delay_ticks = dead_time;
   dt_config_high.negedge_delay_ticks = 0;
@@ -357,19 +379,22 @@ void* _configure6PWMPinsMCPWM(long pwm_frequency, int mcpwm_group, int timer_no,
   mcpwm_dead_time_config_t dt_config_low;
   dt_config_low.posedge_delay_ticks = 0;
   dt_config_low.negedge_delay_ticks = dead_time;
-  dt_config_low.flags.invert_output = SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH; 
+  dt_config_low.flags.invert_output = SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH;
   for (int i = 0; i < no_operators; i++) {
-      CHECK_ERR(mcpwm_generator_set_dead_time(params->generator[2*i], params->generator[2*i], &dt_config_high),"Could not set dead time for generator: " + String(i));
-      CHECK_ERR(mcpwm_generator_set_dead_time(params->generator[2*i+1], params->generator[2*i+1], &dt_config_low),"Could not set dead time for generator: " + String(i+1));
+    CHECK_ERR(mcpwm_generator_set_dead_time(params->generator[2*i], params->generator[2*i], &dt_config_high),
+      "Could not set dead time for generator: %d", (i));
+    CHECK_ERR(mcpwm_generator_set_dead_time(params->generator[2*i+1], params->generator[2*i+1], &dt_config_low),
+      "Could not set dead time for generator: %d", (i+1));
   }
 #else // software dead-time (software 6pwm)
   for (int i = 0; i < 3; i++) {
-    CHECK_ERR(_configureCenterAlign(params->generator[2*i],params->comparator[2*i], !SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH), "Failed to configure high-side center align pwm: " + String(2*i));  
-    CHECK_ERR(_configureCenterAlign(params->generator[2*i+1],params->comparator[2*i+1], SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH) , "Failed to configure low-side center align pwm: " + String(2*i+1)); 
+    CHECK_ERR(_configureCenterAlign(params->generator[2 * i], params->comparator[2 * i], !SIMPLEFOC_PWM_HIGHSIDE_ACTIVE_HIGH), "Failed to configure high-side center align pwm: " + String(2 * i));
+    CHECK_ERR(_configureCenterAlign(params->generator[2 * i + 1], params->comparator[2 * i + 1], SIMPLEFOC_PWM_LOWSIDE_ACTIVE_HIGH),
+      "Failed to configure low-side center align pwm: " + String(2 * i + 1));
   }
 #endif
 
-  SIMPLEFOC_ESP32_DRV_DEBUG("Enabling timer: "+String(timer_no));
+  SIMPLEFOC_ESP32_DRV_DEBUG("Enabling timer: %d", timer_no);
   // Enable and start timer
   CHECK_ERR(mcpwm_timer_enable(params->timers[0]), "Failed to enable timer!");
   CHECK_ERR(mcpwm_timer_start_stop(params->timers[0], MCPWM_TIMER_START_NO_STOP), "Failed to start the timer!");
@@ -394,93 +419,99 @@ void* _configure6PWMPinsMCPWM(long pwm_frequency, int mcpwm_group, int timer_no,
 
   returns the driver parameters
 */
-void* _configurePinsMCPWM(long pwm_frequency, int mcpwm_group, int timer_no, int no_pins, int* pins){
+void* _configurePinsMCPWM(long pwm_frequency, int mcpwm_group, int timer_no, int no_pins, int* pins) {
 
-  ESP32MCPWMDriverParams*  params = new ESP32MCPWMDriverParams{
+  ESP32MCPWMDriverParams* params = new ESP32MCPWMDriverParams{
     .pwm_frequency = pwm_frequency,
     .group_id = mcpwm_group
   };
-  
+
   bool shared_timer = false;
   // check if timer is configured
-  if (timers[mcpwm_group][timer_no] == NULL){
+  if (timers[mcpwm_group][timer_no] == NULL) {
     mcpwm_timer_config_t pwm_config;
     pwm_config.group_id = mcpwm_group;
     pwm_config.clk_src = MCPWM_TIMER_CLK_SRC_DEFAULT;
     pwm_config.resolution_hz = _PWM_TIMEBASE_RESOLUTION_HZ;
-    pwm_config.count_mode = MCPWM_TIMER_COUNT_MODE_UP_DOWN;    
-    pwm_config.intr_priority = 0;              
+    pwm_config.count_mode = MCPWM_TIMER_COUNT_MODE_UP_DOWN;
+    pwm_config.intr_priority = 0;
     pwm_config.period_ticks = _calcPWMPeriod(pwm_frequency);
     pwm_config.flags.allow_pd = 0;
     // initialise the timer
-    CHECK_ERR(mcpwm_new_timer(&pwm_config, &timers[mcpwm_group][timer_no]), "Could not initialize the timer in group: " + String(mcpwm_group));
+    CHECK_ERR(mcpwm_new_timer(&pwm_config, &timers[mcpwm_group][timer_no]), "Could not initialize the timer in group: %d", (mcpwm_group));
     // save variables for later
     pwm_periods[mcpwm_group][timer_no] = pwm_config.period_ticks / 2;
-    params->timers[0] = timers[mcpwm_group][timer_no];    
+    params->timers[0] = timers[mcpwm_group][timer_no];
     // if the numer of used channels it not pair skip one channel
     // the skipped channel cannot be used with the new timer
     // TODO avoid loosing channels like this 
-    if(group_pins_used[mcpwm_group] %2) group_pins_used[mcpwm_group]++;
-  }else{
+    if (group_pins_used[mcpwm_group] % 2) group_pins_used[mcpwm_group]++;
+  }
+  else {
     // we will use an already instantiated timer
     params->timers[0] = timers[mcpwm_group][timer_no];
-    SIMPLEFOC_ESP32_DRV_DEBUG("Using previously configured timer: " + String(timer_no));
+    SIMPLEFOC_ESP32_DRV_DEBUG("Using previously configured timer: %d", timer_no);
     // but we cannot change its configuration without affecting the other drivers
     // so let's first verify that the configuration is the same
-    if(_calcPWMPeriod(pwm_frequency)/2 != pwm_periods[mcpwm_group][timer_no]){
-      SIMPLEFOC_ESP32_DRV_DEBUG("ERR: Timer: "+String(timer_no)+" is confgured for freq: "+String(_calcPWMFreq(pwm_periods[mcpwm_group][timer_no]))+", not for freq:" +String(pwm_frequency));
+    if (_calcPWMPeriod(pwm_frequency) / 2 != pwm_periods[mcpwm_group][timer_no]) {
+      SIMPLEFOC_ESP32_DRV_DEBUG("ERR: Timer: %d is confgured for freq: %l, not for freq:%l",
+        timer_no, _calcPWMFreq(pwm_periods[mcpwm_group][timer_no]), pwm_frequency);
       return SIMPLEFOC_DRIVER_INIT_FAILED;
     }
     CHECK_ERR(mcpwm_timer_start_stop( params->timers[0], MCPWM_TIMER_STOP_EMPTY), "Failed to stop the timer!");
-    
+
     shared_timer = true;
   }
 
   uint8_t no_operators = ceil(no_pins / 2.0);
-  SIMPLEFOC_ESP32_DRV_DEBUG("Configuring " + String(no_operators) + " operators.");
+  SIMPLEFOC_ESP32_DRV_DEBUG("Configuring %d operators.", no_operators);
   mcpwm_operator_config_t operator_config = { .group_id = mcpwm_group };
   operator_config.intr_priority = 0;
   operator_config.flags.update_gen_action_on_tep = true;
   operator_config.flags.update_gen_action_on_tez = true;
   for (int i = 0; i < no_operators; i++) {
-    if (shared_timer && i == 0) { // first operator already configured
-        params->oper[0] = last_operator[mcpwm_group];
-        continue;
+    if (shared_timer && i == 0) {
+      // first operator already configured
+      params->oper[0] = last_operator[mcpwm_group];
+      continue;
     }
-    CHECK_ERR(mcpwm_new_operator(&operator_config, &params->oper[i]),"Could not create operator "+String(i));
-    CHECK_ERR(mcpwm_operator_connect_timer(params->oper[i], params->timers[0]),"Could not connect timer to operator: " + String(i));
-  } 
+    CHECK_ERR(mcpwm_new_operator(&operator_config, &params->oper[i]), "Could not create operator %d", (i));
+    CHECK_ERR(mcpwm_operator_connect_timer(params->oper[i], params->timers[0]), "Could not connect timer to operator: %d", (i));
+  }
   // save the last operator in this group
   last_operator[mcpwm_group] = params->oper[no_operators - 1];
 
-  SIMPLEFOC_ESP32_DRV_DEBUG("Configuring " + String(no_pins) + " comparators.");
+  SIMPLEFOC_ESP32_DRV_DEBUG("Configuring %d comparators.", no_pins);
   // Create and configure comparators
-  mcpwm_comparator_config_t comparator_config = {0};
+  mcpwm_comparator_config_t comparator_config = { 0 };
   comparator_config.flags.update_cmp_on_tez = true;
   for (int i = 0; i < no_pins; i++) {
-    int oper_index = shared_timer ? (int)floor((i + 1) / 2) : (int)floor(i / 2);
-    CHECK_ERR(mcpwm_new_comparator(params->oper[oper_index], &comparator_config, &params->comparator[i]),"Could not create comparator: " + String(i));
-    CHECK_ERR(mcpwm_comparator_set_compare_value(params->comparator[i], (0)), "Could not set duty on comparator: " + String(i));
+    int oper_index = shared_timer ? (int) floor((i + 1) / 2) : (int) floor(i / 2);
+    CHECK_ERR(mcpwm_new_comparator(params->oper[oper_index], &comparator_config, &params->comparator[i]), "Could not create comparator: %d", (i));
+    CHECK_ERR(mcpwm_comparator_set_compare_value(params->comparator[i], (0)), "Could not set duty on comparator: %d", (i));
   }
 
-  SIMPLEFOC_ESP32_DRV_DEBUG("Configuring " + String(no_pins) + " generators.");
+  SIMPLEFOC_ESP32_DRV_DEBUG("Configuring %d generators.", no_pins);
   // Create and configure generators;
   mcpwm_generator_config_t generator_config = {};
   for (int i = 0; i < no_pins; i++) {
     generator_config.gen_gpio_num = pins[i];
-    int oper_index = shared_timer ? (int)floor((i + 1) / 2) : (int)floor(i / 2);
-    CHECK_ERR(mcpwm_new_generator(params->oper[oper_index], &generator_config, &params->generator[i]), "Could not create generator " + String(i) +String(" on pin: ")+String(pins[i]));
+    int oper_index = shared_timer ? (int) floor((i + 1) / 2) : (int) floor(i / 2);
+    CHECK_ERR(mcpwm_new_generator(params->oper[oper_index], &generator_config, &params->generator[i]),
+      "Could not create generator %d on pin: %d", i, pins[i]);
   }
-  
+
 
   SIMPLEFOC_ESP32_DRV_DEBUG("Configuring center-aligned pwm.");
   for (int i = 0; i < no_pins; i++) {
-    CHECK_ERR(_configureCenterAlign(params->generator[i],params->comparator[i], !SIMPLEFOC_PWM_ACTIVE_HIGH), "Failed to configure center align pwm: " + String(i));
+    CHECK_ERR(_configureCenterAlign(params->generator[i],params->comparator[i], !SIMPLEFOC_PWM_ACTIVE_HIGH),
+      "Failed to configure center align pwm: %d", (i));
   }
 
-  SIMPLEFOC_ESP32_DRV_DEBUG("Enabling timer: "+String(timer_no));
+  SIMPLEFOC_ESP32_DRV_DEBUG("Enabling timer: %d", (timer_no));
   // Enable and start timer if not shared
-  if (!shared_timer) CHECK_ERR(mcpwm_timer_enable(params->timers[0]), "Failed to enable timer!");
+  if (!shared_timer)
+    CHECK_ERR(mcpwm_timer_enable(params->timers[0]), "Failed to enable timer!");
   // start the timer
   CHECK_ERR(mcpwm_timer_start_stop(params->timers[0], MCPWM_TIMER_START_NO_STOP), "Failed to start the timer!");
 
@@ -493,13 +524,13 @@ void* _configurePinsMCPWM(long pwm_frequency, int mcpwm_group, int timer_no, int
 }
 
 // function setting the duty cycle to the MCPWM pin
-void _setDutyCycle(mcpwm_cmpr_handle_t cmpr, uint32_t mcpwm_period, float duty_cycle){
+void _setDutyCycle(mcpwm_cmpr_handle_t cmpr, uint32_t mcpwm_period, float duty_cycle) {
   float duty = _constrain(duty_cycle, 0.0, 1.0);
-  mcpwm_comparator_set_compare_value(cmpr, (uint32_t)(mcpwm_period*duty));
+  mcpwm_comparator_set_compare_value(cmpr, (uint32_t) (mcpwm_period * duty));
 }
 
 // function setting the duty cycle to the MCPWM pin
-void _forcePhaseState(mcpwm_gen_handle_t generator_high, mcpwm_gen_handle_t generator_low, PhaseState phase_state){
+void _forcePhaseState(mcpwm_gen_handle_t generator_high, mcpwm_gen_handle_t generator_low, PhaseState phase_state) {
   // phase state is forced in hardware pwm mode
   // esp-idf docs:  https://docs.espressif.com/projects/esp-idf/en/v5.1.4/esp32/api-reference/peripherals/mcpwm.html#generator-force-actions 
   // github issue: https://github.com/espressif/esp-idf/issues/12237

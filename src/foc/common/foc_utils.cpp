@@ -1,3 +1,18 @@
+// Copyright 2025 the original author or authors.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see [https://www.gnu.org/licenses/]
+
 #include "foc_utils.h"
 
 
@@ -56,7 +71,7 @@ __attribute__((weak)) float _atan2(float y, float x) {
     float abs_y = fabsf(y);
     float abs_x = fabsf(x);
     // inject FLT_MIN in denominator to avoid division by zero
-    float a = min(abs_x, abs_y) / (max(abs_x, abs_y));
+    float a = min(abs_x, abs_y) / max(abs_x, abs_y);
     // s := a * a
     float s = a * a;
     // r := ((-0.0464964749 * s + 0.15931422) * s - 0.327622764) * s * a + a

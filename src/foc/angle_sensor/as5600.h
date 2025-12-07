@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "common/base_classes/Sensor.h"
+#include "foc/common/base_classes/Sensor.h"
 #include "driver/gpio.h"
 #include "i2c_bus.h"
 

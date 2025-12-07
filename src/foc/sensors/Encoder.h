@@ -1,7 +1,22 @@
+// Copyright 2025 the original author or authors.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see [https://www.gnu.org/licenses/]
+
 #ifndef ENCODER_LIB_H
 #define ENCODER_LIB_H
 
-#include "Arduino.h"
+#include "esp/platform.hpp"
 #include "../common/foc_utils.h"
 #include "../common/time_utils.h"
 #include "../common/base_classes/Sensor.h"
@@ -11,80 +26,80 @@
  *  Quadrature mode configuration structure
  */
 enum Quadrature : uint8_t {
-  ON    = 0x00, //!<  Enable quadrature mode CPR = 4xPPR
-  OFF   = 0x01  //!<  Disable quadrature mode / CPR = PPR
+  ON = 0x00, //!<  Enable quadrature mode CPR = 4xPPR
+  OFF = 0x01 //!<  Disable quadrature mode / CPR = PPR
 };
 
-class Encoder: public Sensor{
- public:
-    /**
-    Encoder class constructor
-    @param encA  encoder B pin
-    @param encB  encoder B pin
-    @param ppr  impulses per rotation  (cpr=ppr*4)
-    @param index index pin number (optional input)
-    */
-    Encoder(int encA, int encB , float ppr, int index = 0);
+class Encoder : public Sensor {
+public:
+  /**
+  Encoder class constructor
+  @param encA  encoder B pin
+  @param encB  encoder B pin
+  @param ppr  impulses per rotation  (cpr=ppr*4)
+  @param index index pin number (optional input)
+  */
+  Encoder(int encA, int encB, float ppr, int index = 0);
 
-    /** encoder initialise pins */
-    void init() override;
-    /**
-     *  function enabling hardware interrupts for the encoder channels with provided callback functions
-     *  if callback is not provided then the interrupt is not enabled
-     * 
-     * @param doA pointer to the A channel interrupt handler function
-     * @param doB pointer to the B channel interrupt handler function
-     * @param doIndex pointer to the Index channel interrupt handler function
-     * 
-     */
-    void enableInterrupts(void (*doA)() = nullptr, void(*doB)() = nullptr, void(*doIndex)() = nullptr);
-    
-    //  Encoder interrupt callback functions
-    /** A channel callback function */
-    void handleA();
-    /** B channel callback function */
-    void handleB();
-    /** Index channel callback function */
-    void handleIndex();
-    
-    
-    // pins A and B
-    int pinA; //!< encoder hardware pin A
-    int pinB; //!< encoder hardware pin B
-    int index_pin; //!< index pin
+  /** encoder initialise pins */
+  void init() override;
+  /**
+   *  function enabling hardware interrupts for the encoder channels with provided callback functions
+   *  if callback is not provided then the interrupt is not enabled
+   *
+   * @param doA pointer to the A channel interrupt handler function
+   * @param doB pointer to the B channel interrupt handler function
+   * @param doIndex pointer to the Index channel interrupt handler function
+   *
+   */
+  void enableInterrupts(void (*doA)() = nullptr, void (*doB)() = nullptr, void (*doIndex)() = nullptr);
 
-    // Encoder configuration
-    Pullup pullup; //!< Configuration parameter internal or external pullups
-    Quadrature quadrature;//!< Configuration parameter enable or disable quadrature mode
-    float cpr;//!< encoder cpr number
+  //  Encoder interrupt callback functions
+  /** A channel callback function */
+  void handleA();
+  /** B channel callback function */
+  void handleB();
+  /** Index channel callback function */
+  void handleIndex();
 
-    // Abstract functions of the Sensor class implementation
-    /** get current angle (rad) */
-    float getSensorAngle() override;
-    /**  get current angular velocity (rad/s) */
-    float getVelocity() override;
-    virtual void update() override;
 
-    /**
-     * returns 0 if it does need search for absolute zero
-     * 0 - encoder without index 
-     * 1 - encoder with index
-     */
-    int needsSearch() override;
+  // pins A and B
+  int pinA; //!< encoder hardware pin A
+  int pinB; //!< encoder hardware pin B
+  int index_pin; //!< index pin
 
-  private:
-    int hasIndex(); //!< function returning 1 if encoder has index pin and 0 if not.
+  // Encoder configuration
+  Pullup pullup; //!< Configuration parameter internal or external pullups
+  Quadrature quadrature; //!< Configuration parameter enable or disable quadrature mode
+  float cpr; //!< encoder cpr number
 
-    volatile long pulse_counter;//!< current pulse counter
-    volatile long pulse_timestamp;//!< last impulse timestamp in us
-    volatile int A_active; //!< current active states of A channel
-    volatile int B_active; //!< current active states of B channel
-    volatile int I_active; //!< current active states of Index channel
-    volatile bool index_found = false; //!< flag stating that the index has been found
+  // Abstract functions of the Sensor class implementation
+  /** get current angle (rad) */
+  float getSensorAngle() override;
+  /**  get current angular velocity (rad/s) */
+  float getVelocity() override;
+  virtual void update() override;
 
-    // velocity calculation variables
-    float prev_Th, pulse_per_second;
-    volatile long prev_pulse_counter, prev_timestamp_us;
+  /**
+   * returns 0 if it does need search for absolute zero
+   * 0 - encoder without index
+   * 1 - encoder with index
+   */
+  int needsSearch() override;
+
+private:
+  int hasIndex(); //!< function returning 1 if encoder has index pin and 0 if not.
+
+  volatile long pulse_counter; //!< current pulse counter
+  volatile long pulse_timestamp; //!< last impulse timestamp in us
+  volatile int A_active; //!< current active states of A channel
+  volatile int B_active; //!< current active states of B channel
+  volatile int I_active; //!< current active states of Index channel
+  volatile bool index_found = false; //!< flag stating that the index has been found
+
+  // velocity calculation variables
+  float prev_Th, pulse_per_second;
+  volatile long prev_pulse_counter, prev_timestamp_us;
 };
 
 

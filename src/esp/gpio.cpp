@@ -14,10 +14,16 @@
 // along with this program. If not, see [https://www.gnu.org/licenses/]
 
 #include "esp/gpio.hpp"
+#include "soc/soc_caps.h"
+
+typedef struct {
+  gpio_config_t conf; /*!< gpio pin configuration */
+  gpio_num_t number; /*!< gpio pin number */
+} IoRecord;
 
 static IoRecord ioRecord[GPIO_NUM_MAX];
 
-void pinMode(const int pin, const PinMode mode) {
+void pinMode(const int pin, const uint8_t mode) {
   if (pin == GPIO_NUM_MAX || pin == GPIO_NUM_NC) {
     return;
   }
@@ -92,3 +98,62 @@ void attachInterrupt(const int pin, const gpio_isr_t handler, const int mode) {
   gpio_install_isr_service(0);
   gpio_isr_handler_add(ioRecord[pin].number, handler, reinterpret_cast<void*>(ioRecord[pin].number));
 }
+
+//
+
+// It fixes lack of pin definition for S3 and for any future SoC
+// this function works for ESP32, ESP32-S2 and ESP32-S3 - including the C3, it will return -1 for any pin
+#if SOC_TOUCH_SENSOR_NUM >  0
+#include "soc/touch_sensor_periph.h"
+
+int8_t digitalPinToTouchChannel(uint8_t pin) {
+  int8_t ret = -1;
+  if (pin < SOC_GPIO_PIN_COUNT) {
+    for (uint8_t i = 0; i < SOC_TOUCH_SENSOR_NUM; i++) {
+      if (touch_sensor_channel_io_map[i] == pin) {
+        ret = i;
+        break;
+      }
+    }
+  }
+  return ret;
+}
+#else
+// No Touch Sensor available
+int8_t digitalPinToTouchChannel(uint8_t pin) {
+  return -1;
+}
+#endif
+
+#ifdef SOC_ADC_SUPPORTED
+#include "soc/adc_periph.h"
+
+int8_t digitalPinToAnalogChannel(uint8_t pin) {
+  uint8_t channel = 0;
+  if (pin < SOC_GPIO_PIN_COUNT) {
+    for (uint8_t i = 0; i < SOC_ADC_PERIPH_NUM; i++) {
+      for (uint8_t j = 0; j < SOC_ADC_MAX_CHANNEL_NUM; j++) {
+        if (adc_channel_io_map[i][j] == pin) {
+          return channel;
+        }
+        channel++;
+      }
+    }
+  }
+  return -1;
+}
+
+int8_t analogChannelToDigitalPin(uint8_t channel) {
+  if (channel >= (SOC_ADC_PERIPH_NUM * SOC_ADC_MAX_CHANNEL_NUM)) {
+    return -1;
+  }
+  uint8_t adc_unit = (channel / SOC_ADC_MAX_CHANNEL_NUM);
+  uint8_t adc_chan = (channel % SOC_ADC_MAX_CHANNEL_NUM);
+  return adc_channel_io_map[adc_unit][adc_chan];
+}
+#else
+// No Analog channels availible
+int8_t analogChannelToDigitalPin(uint8_t channel) {
+  return -1;
+}
+#endif

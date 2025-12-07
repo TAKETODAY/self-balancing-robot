@@ -1,6 +1,21 @@
+// Copyright 2025 the original author or authors.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see [https://www.gnu.org/licenses/]
+
 #include "esp32_driver_mcpwm.h"
 
-#if defined(ESP_H) && defined(ARDUINO_ARCH_ESP32) && defined(SOC_MCPWM_SUPPORTED) && !defined(SIMPLEFOC_ESP32_USELEDC)
+#if /*defined(ESP_H) && defined(ARDUINO_ARCH_ESP32) && */defined(SOC_MCPWM_SUPPORTED) && !defined(SIMPLEFOC_ESP32_USELEDC)
   
 #pragma message("")
 #pragma message("SimpleFOC: compiling for ESP32 MCPWM driver")
@@ -28,7 +43,7 @@ void* _configure1PWM(long pwm_frequency, const int pinA) {
    SIMPLEFOC_ESP32_DRV_DEBUG("Not enough pins available for 1PWM!");
     return SIMPLEFOC_DRIVER_INIT_FAILED;
   }
-  SIMPLEFOC_ESP32_DRV_DEBUG("Configuring 1PWM in group: "+String(group)+" on timer: "+String(timer));
+  SIMPLEFOC_ESP32_DRV_DEBUG("Configuring 1PWM in group: %d on timer: %d", group, timer);
   // configure the timer
   int pins[1] = { esp32_gpio_nr(pinA) };
   return _configurePinsMCPWM(pwm_frequency, group, timer, 1, pins);
@@ -50,7 +65,7 @@ void* _configure2PWM(long pwm_frequency, const int pinA, const int pinB) {
   }
   if(ret == 1){
     // configure the 2pwm on only one group
-    SIMPLEFOC_ESP32_DRV_DEBUG("Configuring 2PWM in group: "+String(group)+" on timer: "+String(timer));
+    SIMPLEFOC_ESP32_DRV_DEBUG("Configuring 2PWM in group: %d on timer: %d", group, timer);
     // configure the timer
     int pins[2] = { esp32_gpio_nr(pinA),  esp32_gpio_nr(pinB) };
     return _configurePinsMCPWM(pwm_frequency, group, timer, 2, pins);
@@ -63,7 +78,7 @@ void* _configure2PWM(long pwm_frequency, const int pinA, const int pinB) {
     int pins[2][1] = {{pinA},  {pinB}};
     for(int i =0; i<2; i++){
       int timer = _findLastTimer(i); //find last created timer in group i
-      SIMPLEFOC_ESP32_DRV_DEBUG("Configuring 1PWM in group: "+String(i)+" on timer: "+String(timer));
+      SIMPLEFOC_ESP32_DRV_DEBUG("Configuring 1PWM in group: %d on timer: %d", group, timer);
       void* p = _configurePinsMCPWM(pwm_frequency, i, timer, 1, pins[i]);
       if(p == SIMPLEFOC_DRIVER_INIT_FAILED){
          SIMPLEFOC_ESP32_DRV_DEBUG("Error configuring  1PWM");
@@ -100,7 +115,7 @@ void* _configure3PWM(long pwm_frequency, const int pinA, const int pinB, const i
     SIMPLEFOC_ESP32_DRV_DEBUG("Not enough pins available for 3PWM!");
     return SIMPLEFOC_DRIVER_INIT_FAILED;
   }
-  SIMPLEFOC_ESP32_DRV_DEBUG("Configuring 3PWM in group: "+String(group)+" on timer: "+String(timer));
+  SIMPLEFOC_ESP32_DRV_DEBUG("Configuring 3PWM in group: %d on timer: %d", group, timer);
   // configure the timer
   int pins[3] = { esp32_gpio_nr(pinA),  esp32_gpio_nr(pinB),  esp32_gpio_nr(pinC) };
   return _configurePinsMCPWM(pwm_frequency, group, timer, 3, pins);
@@ -122,7 +137,7 @@ void* _configure4PWM(long pwm_frequency,const int pinA, const int pinB, const in
     return SIMPLEFOC_DRIVER_INIT_FAILED;
   }
   if(ret == 1){
-    SIMPLEFOC_ESP32_DRV_DEBUG("Configuring 4PWM in group: "+String(group)+" on timer: "+String(timer));
+    SIMPLEFOC_ESP32_DRV_DEBUG("Configuring 4PWM in group: %d on timer: %d", group, timer);
     // configure the timer
     int pins[4] = {pinA,  pinB, pinC, pinD};
     return _configurePinsMCPWM(pwm_frequency, group, timer, 4, pins);
@@ -135,7 +150,7 @@ void* _configure4PWM(long pwm_frequency,const int pinA, const int pinB, const in
     int pins[2][2] = {{ esp32_gpio_nr(pinA),  esp32_gpio_nr(pinB) },{ esp32_gpio_nr(pinC), esp32_gpio_nr(pinD) }};
     for(int i =0; i<2; i++){
       int timer = _findNextTimer(i); //find next available timer in group i
-      SIMPLEFOC_ESP32_DRV_DEBUG("Configuring 2PWM in group: "+String(i)+" on timer: "+String(timer));
+      SIMPLEFOC_ESP32_DRV_DEBUG("Configuring 2PWM in group: %d on timer: %d", group, timer);
       void* p = _configurePinsMCPWM(pwm_frequency, i, timer, 2, pins[i]);
       if(p == SIMPLEFOC_DRIVER_INIT_FAILED){
         SIMPLEFOC_ESP32_DRV_DEBUG("Error configuring  2PWM");
@@ -170,7 +185,7 @@ void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, cons
     SIMPLEFOC_ESP32_DRV_DEBUG("Not enough pins available for 6PWM!");
     return SIMPLEFOC_DRIVER_INIT_FAILED;
   }
-  SIMPLEFOC_ESP32_DRV_DEBUG("Configuring 6PWM in group: "+String(group)+" on timer: "+String(timer));
+  SIMPLEFOC_ESP32_DRV_DEBUG("Configuring 6PWM in group: %d on timer: %d", group, timer);
   // configure the timer
   int pins[6] = { esp32_gpio_nr(pinA_h),  esp32_gpio_nr(pinA_l),  esp32_gpio_nr(pinB_h),  esp32_gpio_nr(pinB_l),  esp32_gpio_nr(pinC_h),  esp32_gpio_nr(pinC_l) };
   return _configure6PWMPinsMCPWM(pwm_frequency, group, timer, dead_zone, pins);

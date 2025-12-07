@@ -1,8 +1,23 @@
+// Copyright 2025 the original author or authors.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see [https://www.gnu.org/licenses/]
+
 #ifndef MAGNETICSENSORI2C_LIB_H
 #define MAGNETICSENSORI2C_LIB_H
 
-#include "Arduino.h"
-#include <Wire.h>
+#include "esp/platform.hpp"
+#include "i2c.hpp"
 #include "../common/base_classes/Sensor.h"
 #include "../common/foc_utils.h"
 #include "../common/time_utils.h"
@@ -31,11 +46,11 @@ class MagneticSensorI2C: public Sensor{
     /**
      * MagneticSensorI2C class constructor
      * @param chip_address  I2C chip address
-     * @param bits number of bits of the sensor resolution 
+     * @param bit_resolution number of bits of the sensor resolution
      * @param angle_register_msb  angle read register msb
-     * @param _bits_used_msb number of used bits in msb
+     * @param _msb_bits_used number of used bits in msb
      */
-    MagneticSensorI2C(uint8_t _chip_address, int _bit_resolution, uint8_t _angle_register_msb, int _msb_bits_used, bool lsb_right_aligned = true);
+    MagneticSensorI2C(uint8_t chip_address, int bit_resolution, uint8_t angle_register_msb, int _msb_bits_used, bool lsb_right_aligned = true);
 
     /**
      * MagneticSensorI2C class constructor
@@ -46,7 +61,7 @@ class MagneticSensorI2C: public Sensor{
     static MagneticSensorI2C AS5600();
         
     /** sensor initialise pins */
-    void init(TwoWire* _wire = &Wire);
+    void init(espp::I2c* _wire );
 
     // implementation of abstract functions of the Sensor class
     /** get current angle (rad) */
@@ -73,7 +88,7 @@ class MagneticSensorI2C: public Sensor{
     int getRawCount();
     
     /* the two wire instance for this sensor */
-    TwoWire* wire;
+    espp::I2c* wire;
 };
 
 

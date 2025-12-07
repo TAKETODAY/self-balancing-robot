@@ -56,6 +56,8 @@ void delay(uint32_t ms);
  */
 float min(float a, float b);
 
+float max(float a, float b);
+
 #ifdef __cplusplus
 }
 #endif

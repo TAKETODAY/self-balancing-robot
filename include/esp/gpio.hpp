@@ -21,28 +21,56 @@
 extern "C" {
 #endif
 
-typedef struct {
-  gpio_config_t conf; /*!< gpio pin configuration */
-  gpio_num_t number; /*!< gpio pin number */
-} IoRecord;
+//
+// typedef enum {
+//   RISING = 0, /*!< Pin interrupt trigger mode: rising */
+//   FALLING, /*!< Pin interrupt trigger mode: falling */
+//   CHANGE, /*!< Pin interrupt trigger mode: rising or falling */
+// } PinInterruptType;
 
-typedef enum {
-  INPUT = 0, /*!< Pin mode: input mode */
-  OUTPUT, /*!< Pin mode: output mode */
-  INPUT_PULLUP, /*!< Pin mode: input mode, enable pullup */
-  INPUT_PULLDOWN, /*!< Pin mode: input mode, enable pulldown */
-} PinMode;
 
-typedef enum {
-  LOW = 0, /*!< Pin level: low level*/
-  HIGH, /*!< Pin level: high level*/
-} PinLevel;
+#if (CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3)
+#define NUM_OUPUT_PINS  46
+#define PIN_DAC1        17
+#define PIN_DAC2        18
+#else
+#define NUM_OUPUT_PINS  34
+#define PIN_DAC1        25
+#define PIN_DAC2        26
+#endif
 
-typedef enum {
-  RISING = 0, /*!< Pin interrupt trigger mode: rising */
-  FALLING, /*!< Pin interrupt trigger mode: falling */
-  CHANGE, /*!< Pin interrupt trigger mode: rising or falling */
-} PinInterruptType;
+#define LOW               0x0
+#define HIGH              0x1
+
+//GPIO FUNCTIONS
+#define INPUT             0x01
+// Changed OUTPUT from 0x02 to behave the same as Arduino pinMode(pin,OUTPUT)
+// where you can read the state of pin even when it is set as OUTPUT
+#define OUTPUT            0x03
+#define PULLUP            0x04
+#define INPUT_PULLUP      0x05
+#define PULLDOWN          0x08
+#define INPUT_PULLDOWN    0x09
+#define OPEN_DRAIN        0x10
+#define OUTPUT_OPEN_DRAIN 0x13
+#define ANALOG            0xC0
+
+//Interrupt Modes
+#define DISABLED  0x00
+#define RISING    0x01
+#define FALLING   0x02
+#define CHANGE    0x03
+#define ONLOW     0x04
+#define ONHIGH    0x05
+#define ONLOW_WE  0x0C
+#define ONHIGH_WE 0x0D
+
+
+#define digitalPinIsValid(pin)          GPIO_IS_VALID_GPIO(pin)
+#define digitalPinCanOutput(pin)        GPIO_IS_VALID_OUTPUT_GPIO(pin)
+
+#define digitalPinToRtcPin(pin)         ((RTC_GPIO_IS_VALID_GPIO(pin))?rtc_io_number_get(pin):-1)
+#define digitalPinToDacChannel(pin)     (((pin) == DAC_CHANNEL_1_GPIO_NUM)?0:((pin) == DAC_CHANNEL_2_GPIO_NUM)?1:-1)
 
 /**
  * @brief Set GPIO Mode. Arduino style function.
@@ -50,7 +78,7 @@ typedef enum {
  * @param pin gpio pin number
  * @param mode gpio pin mode
  */
-void pinMode(int pin, PinMode mode);
+void pinMode(int pin, uint8_t mode);
 
 /**
  * @brief Write GPIO Value. Arduino style function.
@@ -89,6 +117,14 @@ uint8_t digitalPinToInterrupt(int pin);
  * @param mode interrupt triggering mode
  */
 void attachInterrupt(int pin, gpio_isr_t handler, int mode);
+
+// void attachInterruptArg(uint8_t pin, void (*)(void*), void* arg, int mode);
+// void detachInterrupt(uint8_t pin);
+
+int8_t digitalPinToTouchChannel(uint8_t pin);
+int8_t digitalPinToAnalogChannel(uint8_t pin);
+int8_t analogChannelToDigitalPin(uint8_t channel);
+
 
 #ifdef __cplusplus
 }

@@ -1,4 +1,3 @@
-
 // Copyright 2025 the original author or authors.
 //
 // This program is free software: you can redistribute it and/or modify
@@ -49,32 +48,32 @@
 
 // #define SIMPLEFOC_DISABLE_DEBUG
 
-#ifndef SIMPLEFOC_DISABLE_DEBUG 
+#ifndef SIMPLEFOC_DISABLE_DEBUG
 
 class SimpleFOCDebug {
 public:
-    static void enable(Writer* debugPrint = &Serial);
+  static void enable(Writer* debugPrint);
 
-    static void println(const __FlashStringHelper* msg);
-    static void println(const StringSumHelper msg);
-    static void println(const char* msg);
-    static void println(const __FlashStringHelper* msg, float val);
-    static void println(const char* msg, float val);
-    static void println(const __FlashStringHelper* msg, int val);
-    static void println(const char* msg, int val);
-    static void println(const char* msg, char val);
-    static void println();
-    static void println(int val);
-    static void println(float val);
+  static void println(const __FlashStringHelper* msg);
+  static void println(std::string);
+  static void println(const char* msg);
+  static void println(const __FlashStringHelper* msg, float val);
+  static void println(const char* msg, float val);
+  static void println(const __FlashStringHelper* msg, int val);
+  static void println(const char* msg, int val);
+  static void println(const char* msg, char val);
+  static void println();
+  static void println(int val);
+  static void println(float val);
 
-    static void print(const char* msg);
-    static void print(const __FlashStringHelper* msg);
-    static void print(const StringSumHelper msg);
-    static void print(int val);
-    static void print(float val);
+  static void print(const char* msg);
+  static void print(const __FlashStringHelper* msg);
+  static void print(std::string msg);
+  static void print(int val);
+  static void print(float val);
 
 protected:
-    static Print* _debugPrint;
+  static Writer* _debugPrint;
 };
 
 
@@ -84,11 +83,8 @@ protected:
 #else //ifndef SIMPLEFOC_DISABLE_DEBUG
 
 
-
 #define SIMPLEFOC_DEBUG(msg, ...)
-
 
 
 #endif //ifndef SIMPLEFOC_DISABLE_DEBUG
 #endif
-

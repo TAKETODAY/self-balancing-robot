@@ -9,17 +9,16 @@ set(FOC_FILES
     foc/common/base_classes/FOCMotor.cpp
     foc/communication/Commander.cpp
     foc/communication/SimpleFOCDebug.cpp
-    foc/current_sense/GenericCurrentSense.cpp
-    foc/current_sense/LowsideCurrentSense.cpp
+#    foc/current_sense/GenericCurrentSense.cpp
+#    foc/current_sense/LowsideCurrentSense.cpp
     foc/current_sense/hardware_specific/esp32/esp32_mcu.cpp
+    foc/current_sense/hardware_specific/esp32/esp32_mcpwm_mcu.cpp
     foc/current_sense/hardware_specific/esp32/esp32_adc_driver.cpp
-    foc/sensors/GenericSensor.cpp
-    foc/sensors/Encoder.cpp
-    foc/sensors/HallSensor.cpp
-    foc/sensors/HallSensor.cpp
+#    foc/sensors/GenericSensor.cpp
+#    foc/sensors/Encoder.cpp
+#    foc/sensors/HallSensor.cpp
     foc/sensors/MagneticSensorI2C.cpp
     foc/drivers/BLDCDriver3PWM.cpp
-    foc/drivers/hardware_specific/generic_mcu.cpp
     foc/drivers/hardware_specific/esp32/esp32_mcpwm_mcu.cpp
     foc/drivers/hardware_specific/esp32/esp32_driver_mcpwm.cpp
     foc/angle_sensor/as5600.cpp
@@ -39,6 +38,7 @@ idf_component_register(SRCS
     robot.cpp
 
     esp/io.cpp
+    esp/adc.cpp
     esp/gpio.cpp
     esp/misc.cpp
     esp/serial.cpp
