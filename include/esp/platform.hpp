@@ -35,3 +35,15 @@ typedef unsigned int word;
 
 class __FlashStringHelper;
 #define F(string_literal) (((string_literal)))
+
+/**
+ * @brief Judge whether it is a number or not.
+ *
+ * @param c character to be checked, casted to an int, or eof.
+ * @return
+ *     - true Digit
+ *     - false Otherwise
+ */
+inline boolean isDigit(int c) {
+  return (isdigit(c) == 0 ? false : true);
+}

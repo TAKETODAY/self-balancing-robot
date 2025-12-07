@@ -17,7 +17,7 @@
 
 static IoRecord ioRecord[GPIO_NUM_MAX];
 
-void pinMode(const gpio_num_t pin, const PinMode mode) {
+void pinMode(const int pin, const PinMode mode) {
   if (pin == GPIO_NUM_MAX || pin == GPIO_NUM_NC) {
     return;
   }
@@ -54,22 +54,22 @@ void pinMode(const gpio_num_t pin, const PinMode mode) {
   gpio_config(&ioRecord[pin].conf);
 }
 
-void digitalWrite(const gpio_num_t pin, const PinLevel val) {
+void digitalWrite(const int pin, const uint8_t val) {
   if (pin == GPIO_NUM_MAX || pin == GPIO_NUM_NC) {
     return;
   }
   gpio_set_level(ioRecord[pin].number, val);
 }
 
-int digitalRead(gpio_num_t pin) {
+int digitalRead(int pin) {
   return gpio_get_level(ioRecord[pin].number);
 }
 
-uint8_t digitalPinToInterrupt(const gpio_num_t pin) {
+uint8_t digitalPinToInterrupt(const int pin) {
   return pin;
 }
 
-void attachInterrupt(const gpio_num_t pin, const gpio_isr_t handler, const int mode) {
+void attachInterrupt(const int pin, const gpio_isr_t handler, const int mode) {
   if (pin == GPIO_NUM_MAX || pin == GPIO_NUM_NC) {
     return;
   }

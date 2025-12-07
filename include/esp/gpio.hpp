@@ -50,7 +50,7 @@ typedef enum {
  * @param pin gpio pin number
  * @param mode gpio pin mode
  */
-void pinMode(gpio_num_t pin, PinMode mode);
+void pinMode(int pin, PinMode mode);
 
 /**
  * @brief Write GPIO Value. Arduino style function.
@@ -58,7 +58,7 @@ void pinMode(gpio_num_t pin, PinMode mode);
  * @param pin gpio pin number
  * @param val gpio pin level
  */
-void digitalWrite(gpio_num_t pin, PinLevel val);
+void digitalWrite(int pin, uint8_t val);
 
 /**
  * @brief Read GPIO Value. Arduino style function.
@@ -68,7 +68,7 @@ void digitalWrite(gpio_num_t pin, PinLevel val);
  *     - 0 Low level
  *     - 1 High level
  */
-int digitalRead(gpio_num_t pin);
+int digitalRead(int pin);
 
 /**
  * @brief Set GPIO Interrupt. Arduino style function.
@@ -79,7 +79,7 @@ int digitalRead(gpio_num_t pin);
  *      This function only returns the pin number that needs to be interrupted by binding.
  *
  */
-uint8_t digitalPinToInterrupt(gpio_num_t pin);
+uint8_t digitalPinToInterrupt(int pin);
 
 /**
  * @brief Bind function to GPIO Interrupt. Arduino style function.
@@ -88,7 +88,7 @@ uint8_t digitalPinToInterrupt(gpio_num_t pin);
  * @param handler interrupt function
  * @param mode interrupt triggering mode
  */
-void attachInterrupt(gpio_num_t pin, gpio_isr_t handler, int mode);
+void attachInterrupt(int pin, gpio_isr_t handler, int mode);
 
 #ifdef __cplusplus
 }

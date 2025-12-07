@@ -15,11 +15,12 @@
 
 #pragma once
 
-// #include <WiFi.h>
 #include <ArduinoJson.h>
 
-typedef struct
-{
+#include "foc/BLDCMotor.h"
+#include "foc/drivers/BLDCDriver3PWM.h"
+
+typedef struct {
   int height = 38;
   int roll;
   int linear;
@@ -36,8 +37,7 @@ typedef struct
 extern Wrobot wrobot;
 
 // 机器人运动状态枚举
-typedef enum
-{
+typedef enum {
   FORWARD = 0,
   BACK,
   RIGHT,
@@ -47,22 +47,22 @@ typedef enum
 } QR_State_t;
 
 // 机器人模式枚举类型
-typedef enum
-{
+typedef enum {
   BASIC = 0,
 } Robot_Mode_t;
 
-class RobotProtocol
-{
+void robot_init();
+
+class RobotProtocol {
 public:
   RobotProtocol(uint8_t len);
   ~RobotProtocol();
-  void spinOnce(void);
-  void parseBasic(StaticJsonDocument<300> &doc);
+  void spinOnce();
+  void parseBasic(StaticJsonDocument<300>& doc);
 
 private:
-  uint8_t *_now_buf;
-  uint8_t *_old_buf;
+  uint8_t* _now_buf;
+  uint8_t* _old_buf;
   uint8_t _len;
   void UART_WriteBuf(void);
   int checkBufRefresh(void);

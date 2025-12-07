@@ -6,9 +6,11 @@ dependencies:
     version: '^1.2.0'
   bblanchon/arduinojson:
     version: '^7.4.2'
-#  espressif/iqmath: ^1.11.0
+  espressif/iqmath: ^1.11.0
   i2c_bus:
     public: true
     version: 1.*
 #  espressif/arduino-esp32:
 #    version: '^3.3.3'
+  espp/i2c:
+    version: '^1.0.31'

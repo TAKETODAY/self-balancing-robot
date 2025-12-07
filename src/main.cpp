@@ -14,17 +14,12 @@
 // along with this program. If not, see [https://www.gnu.org/licenses/]
 
 
-#include "esp_log.h"
-#include "nvs_flash.h"
+// #include "esp_log.h"
+// #include "nvs_flash.h"
 
 #include "sdkconfig.h"
 
-#include "battery.hpp"
-#include "mpu6050.hpp"
-#include "servos.hpp"
-
-#include "esp/serial.hpp"
-#include "wifi.h"
+#include "robot.hpp"
 
 /**
  * Declare the symbol pointing to the former implementation of esp_restart function
@@ -42,18 +37,13 @@
 
 
 extern "C" void app_main(void) {
-
   //Initialize NVS
-  esp_err_t ret = nvs_flash_init();
-  if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-    ESP_ERROR_CHECK(nvs_flash_erase());
-    ret = nvs_flash_init();
-  }
-  ESP_ERROR_CHECK(ret);
+  // esp_err_t ret = nvs_flash_init();
+  // if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+  //   ESP_ERROR_CHECK(nvs_flash_erase());
+  //   ret = nvs_flash_init();
+  // }
+  // ESP_ERROR_CHECK(ret);
 
-  wifi_init();
-  servos_init();
-  mpu6050_init();
-
-  battery_init();
+  robot_init();
 }

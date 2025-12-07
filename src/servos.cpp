@@ -59,7 +59,7 @@ void servos_init() {
     // servos.setTargetAcceleration(1, 100);
     // servos.setTargetAcceleration(2, 100);
 
-    // servos.setTargetPosition(1, 2300);
+    servos.setTargetPosition(1, 2300);
 
     // positions[0] = 2300;
     // positions[1] = 2300;

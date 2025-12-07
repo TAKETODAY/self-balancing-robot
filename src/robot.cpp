@@ -13,9 +13,108 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see [https://www.gnu.org/licenses/]
 
-#include "robot.h"
+#include "robot.hpp"
+
+#include "foc/sensors/MagneticSensorI2C.h"
+#include "battery.hpp"
+#include "esp_log.h"
+#include "mpu6050.hpp"
+#include "servos.hpp"
+
+#include "esp/serial.hpp"
+#include "wifi.h"
 
 Wrobot wrobot;
+
+static auto TAG = "robot";
+
+static SerialPort serial(UART_NUM_0);
+
+BLDCMotor motor1(7);
+BLDCMotor motor2(7);
+
+BLDCDriver3PWM driver1(32, 33, 25, 22);
+BLDCDriver3PWM driver2(26, 27, 14, 12);
+
+MagneticSensorI2C sensor1(AS5600_I2C);
+MagneticSensorI2C sensor2(AS5600_I2C);
+
+espp::I2c i2c({
+  .port = I2C_NUM_0,
+  .sda_io_num = GPIO_NUM_19,
+  .scl_io_num = GPIO_NUM_18,
+  .sda_pullup_en = GPIO_PULLUP_ENABLE,
+  .scl_pullup_en = GPIO_PULLUP_ENABLE,
+  .clk_speed = 400000UL
+});
+
+espp::I2c i2c1({
+  .port = I2C_NUM_1,
+  .sda_io_num = GPIO_NUM_23,
+  .scl_io_num = GPIO_NUM_5,
+  .sda_pullup_en = GPIO_PULLUP_ENABLE,
+  .scl_pullup_en = GPIO_PULLUP_ENABLE,
+  .clk_speed = 400000UL
+});
+
+void robot_init() {
+  serial.begin(115200);
+  servos_init();
+
+  for (uint8_t address = 1; address < 128; address++) {
+    if (i2c1.probe_device(address)) {
+      ESP_LOGI(TAG, "Found devices at address: %d", address);
+    }
+  }
+
+  sensor1.init(&i2c);
+  sensor2.init(&i2c1);
+
+  motor1.linkSensor(&sensor1);
+  motor2.linkSensor(&sensor2);
+
+  // 速度环PID参数
+  motor1.PID_velocity.P = 0.05;
+  motor1.PID_velocity.I = 1;
+  motor1.PID_velocity.D = 0;
+
+  motor2.PID_velocity.P = 0.05;
+  motor2.PID_velocity.I = 1;
+  motor2.PID_velocity.D = 0;
+
+  // 驱动器设置
+  motor1.voltage_sensor_align = 6;
+  motor2.voltage_sensor_align = 6;
+  driver1.voltage_power_supply = 8;
+  driver2.voltage_power_supply = 8;
+  driver1.init();
+  driver2.init();
+
+  // 连接motor对象与驱动器对象
+  motor1.linkDriver(&driver1);
+  motor2.linkDriver(&driver2);
+
+  motor1.torque_controller = TorqueControlType::voltage; // 扭矩控制器类型为 "电压模式"
+  motor2.torque_controller = TorqueControlType::voltage;
+  motor1.controller = MotionControlType::torque; // 运动控制器类型为 "扭矩模式"
+  motor2.controller = MotionControlType::torque;
+
+  // monitor 相关设置
+  motor1.useMonitoring(serial);
+  motor2.useMonitoring(serial);
+
+  // 电机初始化
+  motor1.init();
+  motor1.initFOC();
+  motor2.init();
+  motor2.initFOC();
+
+  wifi_init();
+
+  mpu6050_init();
+  battery_init();
+
+}
 
 RobotProtocol::RobotProtocol(uint8_t len) {
   _len = len;
@@ -35,7 +134,7 @@ RobotProtocol::~RobotProtocol() {
   delete[] _old_buf;
 }
 
-void RobotProtocol::spinOnce(void) {
+void RobotProtocol::spinOnce() {
   int flag = checkBufRefresh();
   if (flag) {
     // UART_WriteBuf(); //这个会将web端的控制信息转成串口协议发出
@@ -55,7 +154,7 @@ void RobotProtocol::spinOnce(void) {
 
 void RobotProtocol::UART_WriteBuf(void) {
   for (int i = 0; i < _len; i++) {
-    Serial.write(_now_buf[i]);
+    // Serial.write(_now_buf[i]);
   }
 }
 
@@ -81,7 +180,7 @@ void RobotProtocol::parseBasic(StaticJsonDocument<300>& doc) {
 
   _now_buf[2] = BASIC;
 
-  String dir = doc["dir"];
+  std::string dir = doc["dir"];
   if (dir == "stop") {
     _now_buf[3] = STOP;
     wrobot.dir = STOP;
