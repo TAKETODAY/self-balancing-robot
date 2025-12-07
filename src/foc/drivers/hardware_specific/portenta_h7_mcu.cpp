@@ -1,4 +1,3 @@
-
 #include "../hardware_api.h"
 
 #if defined(TARGET_PORTENTA_H7) && false
@@ -28,20 +27,18 @@
 // #define _ERROR_6PWM -1
 
 
-
 typedef struct PortentaDriverParams {
   pwmout_t pins[4];
   long pwm_frequency;
-//  float dead_zone;
+  //  float dead_zone;
 } PortentaDriverParams;
 
 
-
 /* Convert STM32 Cube HAL channel to LL channel */
-uint32_t _TIM_ChannelConvert_HAL2LL(uint32_t channel, pwmout_t *obj)
-{
+uint32_t _TIM_ChannelConvert_HAL2LL(uint32_t channel, pwmout_t* obj) {
+
 #if !defined(PWMOUT_INVERTED_NOT_SUPPORTED)
-    if (obj->inverted) {
+if (obj->inverted) {
         switch (channel) {
             case TIM_CHANNEL_1  :
                 return LL_TIM_CHANNEL_CH1N;
@@ -50,15 +47,15 @@ uint32_t _TIM_ChannelConvert_HAL2LL(uint32_t channel, pwmout_t *obj)
             case TIM_CHANNEL_3  :
                 return LL_TIM_CHANNEL_CH3N;
 #if defined(LL_TIM_CHANNEL_CH4N)
-            case TIM_CHANNEL_4  :
+case TIM_CHANNEL_4 : 
                 return LL_TIM_CHANNEL_CH4N;
 #endif
-            default : /* Optional */
+default :  /* Optional */
                 return 0;
         }
     } else
 #endif
-    {
+{
         switch (channel) {
             case TIM_CHANNEL_1  :
                 return LL_TIM_CHANNEL_CH1;
@@ -80,57 +77,58 @@ uint32_t _TIM_ChannelConvert_HAL2LL(uint32_t channel, pwmout_t *obj)
 //   return _pwm_init(obj, digitalPinToPinName(pin), frequency);
 // }
 
-int _pwm_init(pwmout_t *obj, uint32_t pin, long frequency){
-    int peripheral = (int)pinmap_peripheral(digitalPinToPinName(pin), PinMap_PWM);
-    int function = (int)pinmap_find_function(digitalPinToPinName(pin), PinMap_PWM);
+int _pwm_init(pwmout_t* obj, uint32_t pin, long frequency) {
+  int peripheral = (int) pinmap_peripheral(digitalPinToPinName(pin), PinMap_PWM);
+  int function = (int) pinmap_find_function(digitalPinToPinName(pin), PinMap_PWM);
 
-    const PinMap static_pinmap = {digitalPinToPinName(pin), peripheral, function};
+  const PinMap static_pinmap = { digitalPinToPinName(pin), peripheral, function };
 
-    pwmout_init_direct(obj, &static_pinmap);
+  pwmout_init_direct(obj, &static_pinmap);
 
-    TIM_HandleTypeDef TimHandle;
-    TimHandle.Instance = (TIM_TypeDef *)(obj->pwm);
-    RCC_ClkInitTypeDef RCC_ClkInitStruct;
-    uint32_t PclkFreq = 0;
-    uint32_t APBxCLKDivider = RCC_HCLK_DIV1;
-    uint8_t i = 0;
+  TIM_HandleTypeDef TimHandle;
+  TimHandle.Instance = (TIM_TypeDef*) (obj->pwm);
+  RCC_ClkInitTypeDef RCC_ClkInitStruct;
+  uint32_t PclkFreq = 0;
+  uint32_t APBxCLKDivider = RCC_HCLK_DIV1;
+  uint8_t i = 0;
 
 
-    __HAL_TIM_DISABLE(&TimHandle);
+  __HAL_TIM_DISABLE(&TimHandle);
 
-    // Get clock configuration
-    // Note: PclkFreq contains here the Latency (not used after)
-    HAL_RCC_GetClockConfig(&RCC_ClkInitStruct, &PclkFreq);
+  // Get clock configuration
+  // Note: PclkFreq contains here the Latency (not used after)
+  HAL_RCC_GetClockConfig(&RCC_ClkInitStruct, &PclkFreq);
 
-    /*  Parse the pwm / apb mapping table to find the right entry */
-    while (pwm_apb_map_table[i].pwm != obj->pwm) i++;
-    // sanity check
-    if (pwm_apb_map_table[i].pwm == 0) return -1;
-    
+  /*  Parse the pwm / apb mapping table to find the right entry */
+  while (pwm_apb_map_table[i].pwm != obj->pwm) i++;
+  // sanity check
+  if (pwm_apb_map_table[i].pwm == 0) return -1;
 
-    if (pwm_apb_map_table[i].pwmoutApb == PWMOUT_ON_APB1) {
-        PclkFreq = HAL_RCC_GetPCLK1Freq();
-        APBxCLKDivider = RCC_ClkInitStruct.APB1CLKDivider;
-    } else {
+
+  if (pwm_apb_map_table[i].pwmoutApb == PWMOUT_ON_APB1) {
+    PclkFreq = HAL_RCC_GetPCLK1Freq();
+    APBxCLKDivider = RCC_ClkInitStruct.APB1CLKDivider;
+  }
+  else { 
 #if !defined(PWMOUT_APB2_NOT_SUPPORTED)
-        PclkFreq = HAL_RCC_GetPCLK2Freq();
-        APBxCLKDivider = RCC_ClkInitStruct.APB2CLKDivider;
+PclkFreq= HAL_RCC_GetPCLK2Freq();
+APBxCLKDivider= RCC_ClkInitStruct.APB2CLKDivider;
 #endif
-    }
+}
 
-    long period_us = 500000.0/((float)frequency);
-    /* By default use, 1us as SW pre-scaler */
-    obj->prescaler = 1;
-    // TIMxCLK = PCLKx when the APB prescaler = 1 else TIMxCLK = 2 * PCLKx
-    if (APBxCLKDivider == RCC_HCLK_DIV1) {
+long period_us = 500000.0 / ((float) frequency);
+/* By default use, 1us as SW pre-scaler */
+obj->prescaler=1;
+// TIMxCLK = PCLKx when the APB prescaler = 1 else TIMxCLK = 2 * PCLKx
+    if (APBxCLKDivider== RCC_HCLK_DIV1) {
         TimHandle.Init.Prescaler = (((PclkFreq) / 1000000)) - 1; // 1 us tick
     } else {
         TimHandle.Init.Prescaler = (((PclkFreq * 2) / 1000000)) - 1; // 1 us tick
     }
-    TimHandle.Init.Period = (period_us - 1);
+TimHandle.Init.Period= (period_us- 1);
 
-    /*  In case period or pre-scalers are out of range, loop-in to get valid values */
-    while ((TimHandle.Init.Period > 0xFFFF) || (TimHandle.Init.Prescaler > 0xFFFF)) {
+/*  In case period or pre-scalers are out of range, loop-in to get valid values */
+    while ((TimHandle.Init.Period> 0xFFFF) || (TimHandle.Init.Prescaler> 0xFFFF)) {
         obj->prescaler = obj->prescaler * 2;
         if (APBxCLKDivider == RCC_HCLK_DIV1) {
             TimHandle.Init.Prescaler = (((PclkFreq) / 1000000) * obj->prescaler) - 1;
@@ -145,28 +143,28 @@ int _pwm_init(pwmout_t *obj, uint32_t pin, long frequency){
         }
     }
 
-    TimHandle.Init.ClockDivision = 0;
-    TimHandle.Init.CounterMode = TIM_COUNTERMODE_CENTERALIGNED3; // center aligned
+TimHandle.Init.ClockDivision=0;
+TimHandle.Init.CounterMode= TIM_COUNTERMODE_CENTERALIGNED3; // center aligned
 
-    if (HAL_TIM_PWM_Init(&TimHandle) != HAL_OK) {
+    if (HAL_TIM_PWM_Init(&TimHandle)!= HAL_OK) {
         return -1;
     }
     
-    TIM_OC_InitTypeDef sConfig;
-    // Configure channels
-    sConfig.OCMode       = TIM_OCMODE_PWM1;
-    sConfig.Pulse        = obj->pulse / obj->prescaler;
-    sConfig.OCPolarity   = TIM_OCPOLARITY_HIGH;
-    sConfig.OCFastMode   = TIM_OCFAST_DISABLE;
+TIM_OC_InitTypeDef sConfig;
+// Configure channels
+sConfig.OCMode= TIM_OCMODE_PWM1;
+sConfig.Pulse= obj->pulse/ obj->prescaler;
+sConfig.OCPolarity= TIM_OCPOLARITY_HIGH;
+sConfig.OCFastMode= TIM_OCFAST_DISABLE;
 #if defined(TIM_OCIDLESTATE_RESET)
-    sConfig.OCIdleState  = TIM_OCIDLESTATE_RESET;
+sConfig.OCIdleState= TIM_OCIDLESTATE_RESET;
 #endif
 #if defined(TIM_OCNIDLESTATE_RESET)
-    sConfig.OCNPolarity  = TIM_OCNPOLARITY_HIGH;
-    sConfig.OCNIdleState = TIM_OCNIDLESTATE_RESET;
+sConfig.OCNPolarity= TIM_OCNPOLARITY_HIGH;
+sConfig.OCNIdleState= TIM_OCNIDLESTATE_RESET;
 #endif
 
-    int channel = 0;
+int channel = 0;
     switch (obj->channel) {
         case 1:
             channel = TIM_CHANNEL_1;
@@ -191,14 +189,14 @@ int _pwm_init(pwmout_t *obj, uint32_t pin, long frequency){
         }
     } 
 
-    // Save for future use
-    obj->period = period_us;
+// Save for future use
+obj->period= period_us;
 #if !defined(PWMOUT_INVERTED_NOT_SUPPORTED)
-    if (obj->inverted) {
+if (obj->inverted) {
         HAL_TIMEx_PWMN_Start(&TimHandle, channel);
     } else
 #endif
-    {
+{
         HAL_TIM_PWM_Start(&TimHandle, channel);
     }
     
@@ -206,40 +204,41 @@ int _pwm_init(pwmout_t *obj, uint32_t pin, long frequency){
 }
 
 // setting pwm to hardware pin - instead analogWrite()
-void _pwm_write(pwmout_t *obj, float value){
+void _pwm_write(pwmout_t* obj, float value) {
   TIM_HandleTypeDef TimHandle;
   int channel = 0;
 
-  TimHandle.Instance = (TIM_TypeDef *)(obj->pwm);
-  
-  if (value < (float)0.0) {
-      value = 0.0;
-  } else if (value > (float)1.0) {
-      value = 1.0;
+  TimHandle.Instance = (TIM_TypeDef*) (obj->pwm);
+
+  if (value < (float) 0.0) {
+    value = 0.0;
+  }
+  else if (value > (float) 1.0) {
+    value = 1.0;
   }
 
-  obj->pulse = (uint32_t)((float)obj->period * value + 0.5);
+  obj->pulse = (uint32_t)((float) obj->period * value + 0.5);
 
   switch (obj->channel) {
-      case 1:
-          channel = TIM_CHANNEL_1;
-          break;
-      case 2:
-          channel = TIM_CHANNEL_2;
-          break;
-      case 3:
-          channel = TIM_CHANNEL_3;
-          break;
-      case 4:
-          channel = TIM_CHANNEL_4;
-          break;
-      default:
-          return;
+    case 1:
+      channel = TIM_CHANNEL_1;
+      break;
+    case 2:
+      channel = TIM_CHANNEL_2;
+      break;
+    case 3:
+      channel = TIM_CHANNEL_3;
+      break;
+    case 4:
+      channel = TIM_CHANNEL_4;
+      break;
+    default:
+      return;
   }
-  
+
   // If channel already enabled, only update compare value to avoid glitch
   __HAL_TIM_SET_COMPARE(&TimHandle, channel, obj->pulse / obj->prescaler);
-} 
+}
 
 // init low side pin
 // HardwareTimer* _initPinPWMLow(uint32_t PWM_freq, int ulPin)
@@ -274,45 +273,45 @@ void _pwm_write(pwmout_t *obj, float value){
 
 
 // align the timers to end the init
-void _alignPWMTimers(pwmout_t *t1, pwmout_t *t2){
-    TIM_HandleTypeDef TimHandle1, TimHandle2;
-    TimHandle1.Instance = (TIM_TypeDef *)(t1->pwm);
-    TimHandle2.Instance = (TIM_TypeDef *)(t2->pwm);
-    __HAL_TIM_DISABLE(&TimHandle1);
-    __HAL_TIM_DISABLE(&TimHandle2);
-    __HAL_TIM_ENABLE(&TimHandle1); 
-    __HAL_TIM_ENABLE(&TimHandle2); 
+void _alignPWMTimers(pwmout_t* t1, pwmout_t* t2) {
+  TIM_HandleTypeDef TimHandle1, TimHandle2;
+  TimHandle1.Instance = (TIM_TypeDef*) (t1->pwm);
+  TimHandle2.Instance = (TIM_TypeDef*) (t2->pwm);
+  __HAL_TIM_DISABLE(&TimHandle1);
+  __HAL_TIM_DISABLE(&TimHandle2);
+  __HAL_TIM_ENABLE(&TimHandle1);
+  __HAL_TIM_ENABLE(&TimHandle2);
 }
 
 // align the timers to end the init
-void _alignPWMTimers(pwmout_t *t1, pwmout_t *t2, pwmout_t *t3){
-    TIM_HandleTypeDef TimHandle1, TimHandle2, TimHandle3;
-    TimHandle1.Instance = (TIM_TypeDef *)(t1->pwm);
-    TimHandle2.Instance = (TIM_TypeDef *)(t2->pwm);
-    TimHandle3.Instance = (TIM_TypeDef *)(t3->pwm);
-    __HAL_TIM_DISABLE(&TimHandle1);
-    __HAL_TIM_DISABLE(&TimHandle2);
-    __HAL_TIM_DISABLE(&TimHandle3);
-    __HAL_TIM_ENABLE(&TimHandle1); 
-    __HAL_TIM_ENABLE(&TimHandle2); 
-    __HAL_TIM_ENABLE(&TimHandle3); 
+void _alignPWMTimers(pwmout_t* t1, pwmout_t* t2, pwmout_t* t3) {
+  TIM_HandleTypeDef TimHandle1, TimHandle2, TimHandle3;
+  TimHandle1.Instance = (TIM_TypeDef*) (t1->pwm);
+  TimHandle2.Instance = (TIM_TypeDef*) (t2->pwm);
+  TimHandle3.Instance = (TIM_TypeDef*) (t3->pwm);
+  __HAL_TIM_DISABLE(&TimHandle1);
+  __HAL_TIM_DISABLE(&TimHandle2);
+  __HAL_TIM_DISABLE(&TimHandle3);
+  __HAL_TIM_ENABLE(&TimHandle1);
+  __HAL_TIM_ENABLE(&TimHandle2);
+  __HAL_TIM_ENABLE(&TimHandle3);
 }
 
 // align the timers to end the init
-void _alignPWMTimers(pwmout_t *t1, pwmout_t *t2, pwmout_t *t3, pwmout_t *t4){
-    TIM_HandleTypeDef TimHandle1, TimHandle2, TimHandle3, TimHandle4;
-    TimHandle1.Instance = (TIM_TypeDef *)(t1->pwm);
-    TimHandle2.Instance = (TIM_TypeDef *)(t2->pwm);
-    TimHandle3.Instance = (TIM_TypeDef *)(t3->pwm);
-    TimHandle4.Instance = (TIM_TypeDef *)(t4->pwm);
-    __HAL_TIM_DISABLE(&TimHandle1);
-    __HAL_TIM_DISABLE(&TimHandle2);
-    __HAL_TIM_DISABLE(&TimHandle3);
-    __HAL_TIM_DISABLE(&TimHandle4);
-    __HAL_TIM_ENABLE(&TimHandle1); 
-    __HAL_TIM_ENABLE(&TimHandle2); 
-    __HAL_TIM_ENABLE(&TimHandle3);  
-    __HAL_TIM_ENABLE(&TimHandle4); 
+void _alignPWMTimers(pwmout_t* t1, pwmout_t* t2, pwmout_t* t3, pwmout_t* t4) {
+  TIM_HandleTypeDef TimHandle1, TimHandle2, TimHandle3, TimHandle4;
+  TimHandle1.Instance = (TIM_TypeDef*) (t1->pwm);
+  TimHandle2.Instance = (TIM_TypeDef*) (t2->pwm);
+  TimHandle3.Instance = (TIM_TypeDef*) (t3->pwm);
+  TimHandle4.Instance = (TIM_TypeDef*) (t4->pwm);
+  __HAL_TIM_DISABLE(&TimHandle1);
+  __HAL_TIM_DISABLE(&TimHandle2);
+  __HAL_TIM_DISABLE(&TimHandle3);
+  __HAL_TIM_DISABLE(&TimHandle4);
+  __HAL_TIM_ENABLE(&TimHandle1);
+  __HAL_TIM_ENABLE(&TimHandle2);
+  __HAL_TIM_ENABLE(&TimHandle3);
+  __HAL_TIM_ENABLE(&TimHandle4);
 }
 
 // // configure hardware 6pwm interface only one timer with inverted channels
@@ -382,20 +381,19 @@ void _alignPWMTimers(pwmout_t *t1, pwmout_t *t2, pwmout_t *t3, pwmout_t *t4){
 // }
 
 
-
 // function setting the high pwm frequency to the supplied pins
 // - Stepper motor - 2PWM setting
 // - hardware speciffic
-void* _configure2PWM(long pwm_frequency,const int pinA, const int pinB) {
-  if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
+void* _configure2PWM(long pwm_frequency, const int pinA, const int pinB) {
+  if (!pwm_frequency || !_isset(pwm_frequency)) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
   else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 50kHz max
-  
+
   PortentaDriverParams* params = new PortentaDriverParams();
   params->pwm_frequency = pwm_frequency;
 
   core_util_critical_section_enter();
-  _pwm_init(&(params->pins[0]), pinA, (long)pwm_frequency);
-  _pwm_init(&(params->pins[1]), pinB, (long)pwm_frequency);
+  _pwm_init(&(params->pins[0]), pinA, (long) pwm_frequency);
+  _pwm_init(&(params->pins[1]), pinB, (long) pwm_frequency);
   // allign the timers
   _alignPWMTimers(&(params->pins[0]), &(params->pins[1]));
   core_util_critical_section_exit();
@@ -406,17 +404,17 @@ void* _configure2PWM(long pwm_frequency,const int pinA, const int pinB) {
 // function setting the high pwm frequency to the supplied pins
 // - BLDC motor - 3PWM setting
 // - hardware speciffic
-void* _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const int pinC) {
-  if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
+void* _configure3PWM(long pwm_frequency, const int pinA, const int pinB, const int pinC) {
+  if (!pwm_frequency || !_isset(pwm_frequency)) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
   else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 50kHz max
 
   PortentaDriverParams* params = new PortentaDriverParams();
   params->pwm_frequency = pwm_frequency;
 
   core_util_critical_section_enter();
-  _pwm_init(&(params->pins[0]), pinA, (long)pwm_frequency);
-  _pwm_init(&(params->pins[1]), pinB, (long)pwm_frequency);
-  _pwm_init(&(params->pins[2]), pinC, (long)pwm_frequency);
+  _pwm_init(&(params->pins[0]), pinA, (long) pwm_frequency);
+  _pwm_init(&(params->pins[1]), pinB, (long) pwm_frequency);
+  _pwm_init(&(params->pins[2]), pinC, (long) pwm_frequency);
   // allign the timers
   _alignPWMTimers(&(params->pins[0]), &(params->pins[1]), &(params->pins[2]));
   core_util_critical_section_exit();
@@ -425,22 +423,21 @@ void* _configure3PWM(long pwm_frequency,const int pinA, const int pinB, const in
 }
 
 
-
 // function setting the high pwm frequency to the supplied pins
 // - Stepper motor - 4PWM setting
 // - hardware speciffic
-void* _configure4PWM(long pwm_frequency,const int pinA, const int pinB, const int pinC, const int pinD) {
-  if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
+void* _configure4PWM(long pwm_frequency, const int pinA, const int pinB, const int pinC, const int pinD) {
+  if (!pwm_frequency || !_isset(pwm_frequency)) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
   else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to 50kHz max
 
   PortentaDriverParams* params = new PortentaDriverParams();
   params->pwm_frequency = pwm_frequency;
 
   core_util_critical_section_enter();
-  _pwm_init(&(params->pins[0]), pinA, (long)pwm_frequency);
-  _pwm_init(&(params->pins[1]), pinB, (long)pwm_frequency);
-  _pwm_init(&(params->pins[2]), pinC, (long)pwm_frequency);
-  _pwm_init(&(params->pins[3]), pinD, (long)pwm_frequency);
+  _pwm_init(&(params->pins[0]), pinA, (long) pwm_frequency);
+  _pwm_init(&(params->pins[1]), pinB, (long) pwm_frequency);
+  _pwm_init(&(params->pins[2]), pinC, (long) pwm_frequency);
+  _pwm_init(&(params->pins[3]), pinD, (long) pwm_frequency);
   // allign the timers
   _alignPWMTimers(&(params->pins[0]), &(params->pins[1]), &(params->pins[2]), &(params->pins[3]));
   core_util_critical_section_exit();
@@ -449,39 +446,38 @@ void* _configure4PWM(long pwm_frequency,const int pinA, const int pinB, const in
 }
 
 
-
 // function setting the pwm duty cycle to the hardware
 // - Stepper motor - 2PWM setting
 //- hardware speciffic
-void _writeDutyCycle2PWM(float dc_a,  float dc_b, void* params){
-    core_util_critical_section_enter();
-    _pwm_write(&(((PortentaDriverParams*)params)->pins[0]), (float)dc_a);
-    _pwm_write(&(((PortentaDriverParams*)params)->pins[1]), (float)dc_b);
-    core_util_critical_section_exit();
+void _writeDutyCycle2PWM(float dc_a, float dc_b, void* params) {
+  core_util_critical_section_enter();
+  _pwm_write(&(((PortentaDriverParams*) params)->pins[0]), (float) dc_a);
+  _pwm_write(&(((PortentaDriverParams*) params)->pins[1]), (float) dc_b);
+  core_util_critical_section_exit();
 }
 
 // function setting the pwm duty cycle to the hardware
 // - BLDC motor - 3PWM setting
 //- hardware speciffic
-void _writeDutyCycle3PWM(float dc_a,  float dc_b, float dc_c, void* params){
-    core_util_critical_section_enter();
-    _pwm_write(&(((PortentaDriverParams*)params)->pins[0]), (float)dc_a);
-    _pwm_write(&(((PortentaDriverParams*)params)->pins[1]), (float)dc_b);
-    _pwm_write(&(((PortentaDriverParams*)params)->pins[2]), (float)dc_c);
-    core_util_critical_section_exit();
+void _writeDutyCycle3PWM(float dc_a, float dc_b, float dc_c, void* params) {
+  core_util_critical_section_enter();
+  _pwm_write(&(((PortentaDriverParams*) params)->pins[0]), (float) dc_a);
+  _pwm_write(&(((PortentaDriverParams*) params)->pins[1]), (float) dc_b);
+  _pwm_write(&(((PortentaDriverParams*) params)->pins[2]), (float) dc_c);
+  core_util_critical_section_exit();
 }
 
 
 // function setting the pwm duty cycle to the hardware
 // - Stepper motor - 4PWM setting
 //- hardware speciffic
-void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, void* params){
-    core_util_critical_section_enter();
-    _pwm_write(&(((PortentaDriverParams*)params)->pins[0]), (float)dc_1a);
-    _pwm_write(&(((PortentaDriverParams*)params)->pins[1]), (float)dc_1b);
-    _pwm_write(&(((PortentaDriverParams*)params)->pins[2]), (float)dc_2a);
-    _pwm_write(&(((PortentaDriverParams*)params)->pins[3]), (float)dc_2b);
-    core_util_critical_section_exit();
+void _writeDutyCycle4PWM(float dc_1a, float dc_1b, float dc_2a, float dc_2b, void* params) {
+  core_util_critical_section_enter();
+  _pwm_write(&(((PortentaDriverParams*) params)->pins[0]), (float) dc_1a);
+  _pwm_write(&(((PortentaDriverParams*) params)->pins[1]), (float) dc_1b);
+  _pwm_write(&(((PortentaDriverParams*) params)->pins[2]), (float) dc_2a);
+  _pwm_write(&(((PortentaDriverParams*) params)->pins[3]), (float) dc_2b);
+  core_util_critical_section_exit();
 }
 
 
@@ -491,31 +487,31 @@ void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, vo
 // - BLDC driver - 6PWM setting
 // - hardware specific
 //void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const int pinA_l,  const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l){
-  // if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
-  // else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to |%0kHz max
-  // // center-aligned frequency is uses two periods
-  // pwm_frequency *=2;
+// if( !pwm_frequency || !_isset(pwm_frequency) ) pwm_frequency = _PWM_FREQUENCY; // default frequency 25khz
+// else pwm_frequency = _constrain(pwm_frequency, 0, _PWM_FREQUENCY_MAX); // constrain to |%0kHz max
+// // center-aligned frequency is uses two periods
+// pwm_frequency *=2;
 
-  // // find configuration
-  // int config = _interfaceType(pinA_h, pinA_l,  pinB_h, pinB_l, pinC_h, pinC_l);
-  // // configure accordingly
-  // switch(config){
-  //   case _ERROR_6PWM:
-  //     return -1; // fail
-  //     break;
-  //   case _HARDWARE_6PWM:
-  //     _initHardware6PWMInterface(pwm_frequency, dead_zone, pinA_h, pinA_l, pinB_h, pinB_l, pinC_h, pinC_l);
-  //     break;
-  //   case _SOFTWARE_6PWM:
-  //     HardwareTimer* HT1 = _initPinPWMHigh(pwm_frequency, pinA_h);
-  //     _initPinPWMLow(pwm_frequency, pinA_l);
-  //     HardwareTimer* HT2 = _initPinPWMHigh(pwm_frequency,pinB_h);
-  //     _initPinPWMLow(pwm_frequency, pinB_l);
-  //     HardwareTimer* HT3 = _initPinPWMHigh(pwm_frequency,pinC_h);
-  //     _initPinPWMLow(pwm_frequency, pinC_l);
-  //     _alignPWMTimers(HT1, HT2, HT3);
-  //     break;
-  // }
+// // find configuration
+// int config = _interfaceType(pinA_h, pinA_l,  pinB_h, pinB_l, pinC_h, pinC_l);
+// // configure accordingly
+// switch(config){
+//   case _ERROR_6PWM:
+//     return -1; // fail
+//     break;
+//   case _HARDWARE_6PWM:
+//     _initHardware6PWMInterface(pwm_frequency, dead_zone, pinA_h, pinA_l, pinB_h, pinB_l, pinC_h, pinC_l);
+//     break;
+//   case _SOFTWARE_6PWM:
+//     HardwareTimer* HT1 = _initPinPWMHigh(pwm_frequency, pinA_h);
+//     _initPinPWMLow(pwm_frequency, pinA_l);
+//     HardwareTimer* HT2 = _initPinPWMHigh(pwm_frequency,pinB_h);
+//     _initPinPWMLow(pwm_frequency, pinB_l);
+//     HardwareTimer* HT3 = _initPinPWMHigh(pwm_frequency,pinC_h);
+//     _initPinPWMLow(pwm_frequency, pinC_l);
+//     _alignPWMTimers(HT1, HT2, HT3);
+//     break;
+// }
 //   return -1; // success
 // }
 
@@ -523,23 +519,23 @@ void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, vo
 // - BLDC driver - 6PWM setting
 // - hardware specific
 //void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, void* params){
-  // // find configuration
-  // int config = _interfaceType(pinA_h, pinA_l,  pinB_h, pinB_l, pinC_h, pinC_l);
-  // // set pwm accordingly
-  // switch(config){
-  //   case _HARDWARE_6PWM:
-  //     _setPwm(pinA_h, _PWM_RANGE*dc_a, _PWM_RESOLUTION);
-  //     _setPwm(pinB_h, _PWM_RANGE*dc_b, _PWM_RESOLUTION);
-  //     _setPwm(pinC_h, _PWM_RANGE*dc_c, _PWM_RESOLUTION);
-  //     break;
-  //   case _SOFTWARE_6PWM:
-  //     _setPwm(pinA_l, _constrain(dc_a + dead_zone/2, 0, 1)*_PWM_RANGE, _PWM_RESOLUTION);
-  //     _setPwm(pinA_h, _constrain(dc_a - dead_zone/2, 0, 1)*_PWM_RANGE, _PWM_RESOLUTION);
-  //     _setPwm(pinB_l, _constrain(dc_b + dead_zone/2, 0, 1)*_PWM_RANGE, _PWM_RESOLUTION);
-  //     _setPwm(pinB_h, _constrain(dc_b - dead_zone/2, 0, 1)*_PWM_RANGE, _PWM_RESOLUTION);
-  //     _setPwm(pinC_l, _constrain(dc_c + dead_zone/2, 0, 1)*_PWM_RANGE, _PWM_RESOLUTION);
-  //     _setPwm(pinC_h, _constrain(dc_c - dead_zone/2, 0, 1)*_PWM_RANGE, _PWM_RESOLUTION);
-  //     break;
-  // }
+// // find configuration
+// int config = _interfaceType(pinA_h, pinA_l,  pinB_h, pinB_l, pinC_h, pinC_l);
+// // set pwm accordingly
+// switch(config){
+//   case _HARDWARE_6PWM:
+//     _setPwm(pinA_h, _PWM_RANGE*dc_a, _PWM_RESOLUTION);
+//     _setPwm(pinB_h, _PWM_RANGE*dc_b, _PWM_RESOLUTION);
+//     _setPwm(pinC_h, _PWM_RANGE*dc_c, _PWM_RESOLUTION);
+//     break;
+//   case _SOFTWARE_6PWM:
+//     _setPwm(pinA_l, _constrain(dc_a + dead_zone/2, 0, 1)*_PWM_RANGE, _PWM_RESOLUTION);
+//     _setPwm(pinA_h, _constrain(dc_a - dead_zone/2, 0, 1)*_PWM_RANGE, _PWM_RESOLUTION);
+//     _setPwm(pinB_l, _constrain(dc_b + dead_zone/2, 0, 1)*_PWM_RANGE, _PWM_RESOLUTION);
+//     _setPwm(pinB_h, _constrain(dc_b - dead_zone/2, 0, 1)*_PWM_RANGE, _PWM_RESOLUTION);
+//     _setPwm(pinC_l, _constrain(dc_c + dead_zone/2, 0, 1)*_PWM_RANGE, _PWM_RESOLUTION);
+//     _setPwm(pinC_h, _constrain(dc_c - dead_zone/2, 0, 1)*_PWM_RANGE, _PWM_RESOLUTION);
+//     break;
+// }
 //}
 #endif

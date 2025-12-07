@@ -55,29 +55,28 @@
 #define MIN_ANGLE_DETECT_MOVEMENT (_2PI/101.0f)
 
 // dq current structure
-struct DQCurrent_s
-{
-    float d;
-    float q;
+struct DQCurrent_s {
+  float d;
+  float q;
 };
+
 // phase current structure
-struct PhaseCurrent_s
-{
-    float a;
-    float b;
-    float c;
+struct PhaseCurrent_s {
+  float a;
+  float b;
+  float c;
 };
+
 // dq voltage structs
-struct DQVoltage_s
-{
-    float d;
-    float q;
+struct DQVoltage_s {
+  float d;
+  float q;
 };
+
 // alpha beta current structure
-struct ABCurrent_s
-{
-    float alpha;
-    float beta;
+struct ABCurrent_s {
+  float alpha;
+  float beta;
 };
 
 

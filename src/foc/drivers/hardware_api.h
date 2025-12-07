@@ -109,7 +109,7 @@ void* _configure4PWM(long pwm_frequency, const int pin1A, const int pin1B, const
  * 
  * @return -1 if failed, or pointer to internal driver parameters struct if successful
  */
-void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const int pinA_l,  const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l);
+void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, const int pinA_l, const int pinB_h, const int pinB_l, const int pinC_h, const int pinC_l);
 
 /** 
  * Function setting the duty cycle to the pwm pin (ex. analogWrite())
@@ -119,7 +119,7 @@ void* _configure6PWM(long pwm_frequency, float dead_zone, const int pinA_h, cons
  * @param dc_a  duty cycle phase A [0, 1]
  * @param dc_b  duty cycle phase B [0, 1]
  * @param params  the driver parameters
- */ 
+ */
 void _writeDutyCycle1PWM(float dc_a, void* params);
 
 /** 
@@ -130,8 +130,8 @@ void _writeDutyCycle1PWM(float dc_a, void* params);
  * @param dc_a  duty cycle phase A [0, 1]
  * @param dc_b  duty cycle phase B [0, 1]
  * @param params  the driver parameters
- */ 
-void _writeDutyCycle2PWM(float dc_a,  float dc_b, void* params);
+ */
+void _writeDutyCycle2PWM(float dc_a, float dc_b, void* params);
 
 /** 
  * Function setting the duty cycle to the pwm pin (ex. analogWrite())
@@ -142,8 +142,8 @@ void _writeDutyCycle2PWM(float dc_a,  float dc_b, void* params);
  * @param dc_b  duty cycle phase B [0, 1]
  * @param dc_c  duty cycle phase C [0, 1]
  * @param params  the driver parameters
- */ 
-void _writeDutyCycle3PWM(float dc_a,  float dc_b, float dc_c, void* params);
+ */
+void _writeDutyCycle3PWM(float dc_a, float dc_b, float dc_c, void* params);
 
 /** 
  * Function setting the duty cycle to the pwm pin (ex. analogWrite())
@@ -155,8 +155,8 @@ void _writeDutyCycle3PWM(float dc_a,  float dc_b, float dc_c, void* params);
  * @param dc_2a  duty cycle phase 2A [0, 1]
  * @param dc_2b  duty cycle phase 2B [0, 1]
  * @param params  the driver parameters
- */ 
-void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, void* params);
+ */
+void _writeDutyCycle4PWM(float dc_1a, float dc_1b, float dc_2a, float dc_2b, void* params);
 
 
 /** 
@@ -170,8 +170,8 @@ void _writeDutyCycle4PWM(float dc_1a,  float dc_1b, float dc_2a, float dc_2b, vo
  * @param phase_state  pointer to PhaseState[3] array
  * @param params  the driver parameters
  * 
- */ 
-void _writeDutyCycle6PWM(float dc_a,  float dc_b, float dc_c, PhaseState *phase_state, void* params);
+ */
+void _writeDutyCycle6PWM(float dc_a, float dc_b, float dc_c, PhaseState* phase_state, void* params);
 
 
 #endif

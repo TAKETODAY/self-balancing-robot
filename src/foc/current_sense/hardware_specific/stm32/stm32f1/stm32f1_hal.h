@@ -3,7 +3,7 @@
 
 #include "Arduino.h"
 
-#if defined(STM32F1xx) 
+#if defined(STM32F1xx)
 #include "stm32f1xx_hal.h"
 #include "../stm32_mcu.h"
 

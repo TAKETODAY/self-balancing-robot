@@ -10,10 +10,9 @@
 #define SIMPLEFOC_SAMD_DEBUG_SERIAL Serial
 #endif
 
-#include "../../hardware_api.h" 
+#include "../../hardware_api.h"
 
 #endif
-
 
 
 #endif

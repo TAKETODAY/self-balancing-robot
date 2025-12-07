@@ -30,7 +30,11 @@ public:
   /**
     GenericCurrentSense class constructor
   */
-  GenericCurrentSense(PhaseCurrent_s (*readCallback)() = nullptr, void (*initCallback)() = nullptr);
+  GenericCurrentSense (PhaseCurrent_s(*readCallback)() =
+  nullptr
+  ,
+  void (*initCallback)() = nullptr
+  );
 
   // CurrentSense interface implementing functions
   int init() override;

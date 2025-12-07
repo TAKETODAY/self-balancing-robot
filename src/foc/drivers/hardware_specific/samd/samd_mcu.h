@@ -1,4 +1,3 @@
-
 #ifndef SAMD_MCU_H
 #define SAMD_MCU_H
 
@@ -34,7 +33,7 @@
 #define SIMPLEFOC_SAMD_MAX_PWM_RESOLUTION 30000
 // lets not go too low - 400 with clock speed of 120MHz on SAMD51 means 150kHz maximum PWM frequency...
 //						 400 with 48MHz clock on SAMD21 means 60kHz maximum PWM frequency...
-#define SIMPLEFOC_SAMD_MIN_PWM_RESOLUTION 400 
+#define SIMPLEFOC_SAMD_MIN_PWM_RESOLUTION 400
 // this is the most we can support on the TC units
 #define SIMPLEFOC_SAMD_PWM_TC_RESOLUTION 250
 
@@ -43,48 +42,43 @@
 #endif
 
 
-
 struct tccConfiguration {
-	uint8_t pin;
-	EPioType peripheral; // 1=true, 0=false
-	uint8_t wo;
-	union tccChanInfo {
-		struct {
-			int8_t chan;
-			int8_t tccn;
-		};
-		uint16_t chaninfo;
-	} tcc;
-	uint16_t pwm_res;
+  uint8_t pin;
+  EPioType peripheral; // 1=true, 0=false
+  uint8_t wo;
+
+  union tccChanInfo {
+    struct {
+      int8_t chan;
+      int8_t tccn;
+    };
+
+    uint16_t chaninfo;
+  } tcc;
+
+  uint16_t pwm_res;
 };
 
 
-
-
-
-
 struct wo_association {
-	EPortType port;
-	uint32_t pin;
-	ETCChannel tccE;
-	uint8_t woE;
-	ETCChannel tccF;
-	uint8_t woF;
+  EPortType port;
+  uint32_t pin;
+  ETCChannel tccE;
+  uint8_t woE;
+  ETCChannel tccF;
+  uint8_t woF;
 #if defined(_SAMD51_)||defined(_SAME51_)
-	ETCChannel tccG;
-	uint8_t woG;
+ETCChannel tccG;
+uint8_t woG;
 #endif
 };
 
 
-
 typedef struct SAMDHardwareDriverParams {
-	tccConfiguration* tccPinConfigurations[6];
-	uint32_t pwm_frequency;
-	float dead_zone;
+  tccConfiguration* tccPinConfigurations[6];
+  uint32_t pwm_frequency;
+  float dead_zone;
 } SAMDHardwareDriverParams;
-
-
 
 
 #if defined(_SAMD21_)
@@ -92,7 +86,6 @@ typedef struct SAMDHardwareDriverParams {
 #elif defined(_SAMD51_)||defined(_SAME51_)
 #define NUM_PIO_TIMER_PERIPHERALS 3
 #endif
-
 
 
 /**
@@ -103,22 +96,20 @@ extern uint8_t TCC_CHANNEL_COUNT[];
 extern tccConfiguration tccPinConfigurations[SIMPLEFOC_SAMD_MAX_TCC_PINCONFIGURATIONS];
 extern uint8_t numTccPinConfigurations;
 extern bool SAMDClockConfigured;
-extern bool tccConfigured[TCC_INST_NUM+TC_INST_NUM];
-
+extern bool tccConfigured[TCC_INST_NUM + TC_INST_NUM];
 
 
 struct wo_association& getWOAssociation(EPortType port, uint32_t pin);
 void writeSAMDDutyCycle(tccConfiguration* info, float dc);
 void configureSAMDClock();
-void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate=false, float hw6pwm=-1);
-__inline__ void syncTCC(Tcc* TCCx) __attribute__((always_inline, unused));
+void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate = false, float hw6pwm = -1);
+__inline__ void syncTCC(Tcc * TCCx) __attribute__((always_inline, unused));
 EPioType getPeripheralOfPermutation(int permutation, int pin_position);
 
 #ifdef SIMPLEFOC_SAMD_DEBUG
-void printTCCConfiguration(tccConfiguration& info);
+void printTCCConfiguration(tccConfiguration & info);
 void printAllPinInfos();
 #endif
-
 
 
 #endif

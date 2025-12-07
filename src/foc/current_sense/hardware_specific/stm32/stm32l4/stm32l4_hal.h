@@ -3,7 +3,7 @@
 
 #include "Arduino.h"
 
-#if defined(STM32L4xx) 
+#if defined(STM32L4xx)
 
 #include "stm32l4xx_hal.h"
 #include "../stm32_mcu.h"

@@ -1,6 +1,3 @@
-
-
-
 #include "./samd_mcu.h"
 
 
@@ -50,7 +47,6 @@
 #endif
 
 
-
 #define NUM_WO_ASSOCIATIONS 48
 
 /*
@@ -64,82 +60,76 @@
  */
 struct wo_association WO_associations[] = {
 
-		{ PORTA,  0, TCC2_CH0, 		0, NOT_ON_TIMER, 	0},
-		{ PORTA,  1, TCC2_CH1, 		1, NOT_ON_TIMER, 	0},
-		{ PORTA,  2, NOT_ON_TIMER, 	0, TCC3_CH0, 		0},
-		{ PORTA,  3, NOT_ON_TIMER,	0, TCC3_CH1, 		1},
-		// PB04, PB05, PB06, PB07 - no timers
-		{ PORTB,  8, TC4_CH0, 		0, TCC3_CH6, 		6},
-		{ PORTB,  9, TC4_CH1, 		1, TCC3_CH7, 		7},
-		{ PORTA,  4, TCC0_CH0, 		0, TCC3_CH2, 		2},
-		{ PORTA,  5, TCC0_CH1, 		1, TCC3_CH3, 		3},
-		{ PORTA,  6, TCC1_CH0, 		0, TCC3_CH4, 		4},
-		{ PORTA,  7, TCC1_CH1, 		1, TCC3_CH5, 		5},
-		{ PORTA,  8, TCC0_CH0, 		0, TCC1_CH2, 		2},
-		{ PORTA,  9, TCC0_CH1, 		1, TCC1_CH3, 		3},
-		{ PORTA, 10, TCC1_CH0, 		0, TCC0_CH2, 		2},
-		{ PORTA, 11, TCC1_CH1, 		1, TCC0_CH3, 		3},
-		{ PORTB, 10, TC5_CH0, 		0, TCC0_CH4, 		4},
-		{ PORTB, 11, TC5_CH1, 		1, TCC0_CH5, 		5},
-		{ PORTB, 12, TC4_CH0, 		0, TCC0_CH6, 		6},
-		{ PORTB, 13, TC4_CH1, 		1, TCC0_CH7, 		7},
-		{ PORTB, 14, TC5_CH0, 		0, NOT_ON_TIMER,	0},
-		{ PORTB, 15, TC5_CH1, 		1, NOT_ON_TIMER, 	0},
-		{ PORTA, 12, TCC2_CH0, 		0, TCC0_CH6, 		6},
-		{ PORTA, 13, TCC2_CH1, 		1, TCC0_CH7, 		7},
-		{ PORTA, 14, TC3_CH0, 		0, TCC0_CH4, 		4},
-		{ PORTA, 15, TC3_CH1, 		1, TCC0_CH5, 		5},
-		{ PORTA, 16, TCC2_CH0, 		0, TCC0_CH6, 		6},
-		{ PORTA, 17, TCC2_CH1, 		1, TCC0_CH7, 		7},
-		{ PORTA, 18, TC3_CH0, 		0, TCC0_CH2, 		2},
-		{ PORTA, 19, TC3_CH1, 		1, TCC0_CH3, 		3},
-		{ PORTB, 16, TC6_CH0, 		0, TCC0_CH4, 		4},
-		{ PORTB, 17, TC6_CH1, 		1, TCC0_CH5, 		5},
-		{ PORTA, 20, TC7_CH0, 		0, TCC0_CH6, 		6},
-		{ PORTA, 21, TC7_CH1, 		1, TCC0_CH7, 		7},
-		{ PORTA, 22, TC4_CH0, 		0, TCC0_CH4, 		4},
-		{ PORTA, 23, TC4_CH1, 		1, TCC0_CH5, 		5},
-		{ PORTA, 24, TC5_CH0, 		0, TCC1_CH2, 		2},
-		{ PORTA, 25, TC5_CH1, 		1, TCC1_CH3, 		3},
-		{ PORTB, 22, TC7_CH0, 		0, TCC3_CH0, 		0},
-		{ PORTB, 23, TC7_CH1, 		1, TCC3_CH1, 		1},
-		{ PORTA, 27, NOT_ON_TIMER, 	0, TCC3_CH6, 		6},
-		{ PORTA, 28, NOT_ON_TIMER, 	0, TCC3_CH7, 		7},
-		{ PORTA, 30, TCC1_CH0, 		0, TCC3_CH4, 		4},
-		{ PORTA, 31, TCC1_CH1, 		1, TCC3_CH5, 		5},
-		{ PORTB, 30, TCC0_CH0, 		0, TCC1_CH2, 		2},
-		{ PORTB, 31, TCC0_CH1, 		1, TCC1_CH3, 		3},
-		{ PORTB,  0, TC7_CH0, 		0, NOT_ON_TIMER, 	0},
-		{ PORTB,  1, TC7_CH1, 		1, NOT_ON_TIMER, 	0},
-		{ PORTB,  2, TC6_CH0, 		0, TCC3_CH2, 		2},
-		{ PORTB,  3, TC6_CH1, 		1, TCC3_CH3, 		3}
+  { PORTA, 0, TCC2_CH0, 0, NOT_ON_TIMER, 0 },
+  { PORTA, 1, TCC2_CH1, 1, NOT_ON_TIMER, 0 },
+  { PORTA, 2, NOT_ON_TIMER, 0, TCC3_CH0, 0 },
+  { PORTA, 3, NOT_ON_TIMER, 0, TCC3_CH1, 1 },
+  // PB04, PB05, PB06, PB07 - no timers
+  { PORTB, 8, TC4_CH0, 0, TCC3_CH6, 6 },
+  { PORTB, 9, TC4_CH1, 1, TCC3_CH7, 7 },
+  { PORTA, 4, TCC0_CH0, 0, TCC3_CH2, 2 },
+  { PORTA, 5, TCC0_CH1, 1, TCC3_CH3, 3 },
+  { PORTA, 6, TCC1_CH0, 0, TCC3_CH4, 4 },
+  { PORTA, 7, TCC1_CH1, 1, TCC3_CH5, 5 },
+  { PORTA, 8, TCC0_CH0, 0, TCC1_CH2, 2 },
+  { PORTA, 9, TCC0_CH1, 1, TCC1_CH3, 3 },
+  { PORTA, 10, TCC1_CH0, 0, TCC0_CH2, 2 },
+  { PORTA, 11, TCC1_CH1, 1, TCC0_CH3, 3 },
+  { PORTB, 10, TC5_CH0, 0, TCC0_CH4, 4 },
+  { PORTB, 11, TC5_CH1, 1, TCC0_CH5, 5 },
+  { PORTB, 12, TC4_CH0, 0, TCC0_CH6, 6 },
+  { PORTB, 13, TC4_CH1, 1, TCC0_CH7, 7 },
+  { PORTB, 14, TC5_CH0, 0, NOT_ON_TIMER, 0 },
+  { PORTB, 15, TC5_CH1, 1, NOT_ON_TIMER, 0 },
+  { PORTA, 12, TCC2_CH0, 0, TCC0_CH6, 6 },
+  { PORTA, 13, TCC2_CH1, 1, TCC0_CH7, 7 },
+  { PORTA, 14, TC3_CH0, 0, TCC0_CH4, 4 },
+  { PORTA, 15, TC3_CH1, 1, TCC0_CH5, 5 },
+  { PORTA, 16, TCC2_CH0, 0, TCC0_CH6, 6 },
+  { PORTA, 17, TCC2_CH1, 1, TCC0_CH7, 7 },
+  { PORTA, 18, TC3_CH0, 0, TCC0_CH2, 2 },
+  { PORTA, 19, TC3_CH1, 1, TCC0_CH3, 3 },
+  { PORTB, 16, TC6_CH0, 0, TCC0_CH4, 4 },
+  { PORTB, 17, TC6_CH1, 1, TCC0_CH5, 5 },
+  { PORTA, 20, TC7_CH0, 0, TCC0_CH6, 6 },
+  { PORTA, 21, TC7_CH1, 1, TCC0_CH7, 7 },
+  { PORTA, 22, TC4_CH0, 0, TCC0_CH4, 4 },
+  { PORTA, 23, TC4_CH1, 1, TCC0_CH5, 5 },
+  { PORTA, 24, TC5_CH0, 0, TCC1_CH2, 2 },
+  { PORTA, 25, TC5_CH1, 1, TCC1_CH3, 3 },
+  { PORTB, 22, TC7_CH0, 0, TCC3_CH0, 0 },
+  { PORTB, 23, TC7_CH1, 1, TCC3_CH1, 1 },
+  { PORTA, 27, NOT_ON_TIMER, 0, TCC3_CH6, 6 },
+  { PORTA, 28, NOT_ON_TIMER, 0, TCC3_CH7, 7 },
+  { PORTA, 30, TCC1_CH0, 0, TCC3_CH4, 4 },
+  { PORTA, 31, TCC1_CH1, 1, TCC3_CH5, 5 },
+  { PORTB, 30, TCC0_CH0, 0, TCC1_CH2, 2 },
+  { PORTB, 31, TCC0_CH1, 1, TCC1_CH3, 3 },
+  { PORTB, 0, TC7_CH0, 0, NOT_ON_TIMER, 0 },
+  { PORTB, 1, TC7_CH1, 1, NOT_ON_TIMER, 0 },
+  { PORTB, 2, TC6_CH0, 0, TCC3_CH2, 2 },
+  { PORTB, 3, TC6_CH1, 1, TCC3_CH3, 3 }
 };
-wo_association ASSOCIATION_NOT_FOUND = { NOT_A_PORT, 0, NOT_ON_TIMER, 0, NOT_ON_TIMER, 0};
-
+wo_association ASSOCIATION_NOT_FOUND = { NOT_A_PORT, 0, NOT_ON_TIMER, 0, NOT_ON_TIMER, 0 };
 
 
 struct wo_association& getWOAssociation(EPortType port, uint32_t pin) {
-	for (int i=0;i<NUM_WO_ASSOCIATIONS;i++) {
-		if (WO_associations[i].port==port && WO_associations[i].pin==pin)
-			return WO_associations[i];
-	}
-	return ASSOCIATION_NOT_FOUND;
+  for (int i = 0; i < NUM_WO_ASSOCIATIONS; i++) {
+    if (WO_associations[i].port == port && WO_associations[i].pin == pin)
+      return WO_associations[i];
+  }
+  return ASSOCIATION_NOT_FOUND;
 };
 
 
-
 EPioType getPeripheralOfPermutation(int permutation, int pin_position) {
-	return ((permutation>>pin_position)&0x01)==0x1?PIO_TIMER_ALT:PIO_TIMER;
+  return ((permutation >> pin_position) & 0x01) == 0x1 ? PIO_TIMER_ALT : PIO_TIMER;
 }
-
-
-
 
 
 void syncTCC(Tcc* TCCx) {
-  while (TCCx->SYNCBUSY.reg & TCC_SYNCBUSY_MASK);       // Wait for synchronization of registers between the clock domains
+  while (TCCx->SYNCBUSY.reg & TCC_SYNCBUSY_MASK); // Wait for synchronization of registers between the clock domains
 }
-
 
 
 /**
@@ -149,28 +139,28 @@ void syncTCC(Tcc* TCCx) {
  */
 void configureSAMDClock() {
 
-	// TODO investigate using the FDPLL96M clock to get 96MHz timer clocks... this
-	//      would enable 48KHz PWM clocks, and setting the frequency between 24Khz with resolution 2000, to 48KHz with resolution 1000
+  // TODO investigate using the FDPLL96M clock to get 96MHz timer clocks... this
+  //      would enable 48KHz PWM clocks, and setting the frequency between 24Khz with resolution 2000, to 48KHz with resolution 1000
 
-	if (!SAMDClockConfigured) {
-		SAMDClockConfigured = true;						// mark clock as configured
-		for (int i=0;i<TCC_INST_NUM;i++)				// mark all the TCCs as not yet configured
-			tccConfigured[i] = false;
-		REG_GCLK_GENDIV = GCLK_GENDIV_DIV(1) |          // Divide the 48MHz clock source by divisor N=1: 48MHz/1=48MHz
-						GCLK_GENDIV_ID(4);            	// Select Generic Clock (GCLK) 4
-		while (GCLK->STATUS.bit.SYNCBUSY);              // Wait for synchronization
+  if (!SAMDClockConfigured) {
+    SAMDClockConfigured = true; // mark clock as configured
+    for (int i = 0; i < TCC_INST_NUM; i++) // mark all the TCCs as not yet configured
+      tccConfigured[i] = false;
+    REG_GCLK_GENDIV = GCLK_GENDIV_DIV(1) | // Divide the 48MHz clock source by divisor N=1: 48MHz/1=48MHz
+                      GCLK_GENDIV_ID(4); // Select Generic Clock (GCLK) 4
+    while (GCLK->STATUS.bit.SYNCBUSY); // Wait for synchronization
 
-		REG_GCLK_GENCTRL = GCLK_GENCTRL_IDC |           // Set the duty cycle to 50/50 HIGH/LOW
-						 GCLK_GENCTRL_GENEN |         	// Enable GCLK4
-						 GCLK_GENCTRL_SRC_DFLL48M |   	// Set the 48MHz clock source
-						// GCLK_GENCTRL_SRC_FDPLL |   	// Set the 96MHz clock source
-						 GCLK_GENCTRL_ID(4);          	// Select GCLK4
-		while (GCLK->STATUS.bit.SYNCBUSY);              // Wait for synchronization
+    REG_GCLK_GENCTRL = GCLK_GENCTRL_IDC | // Set the duty cycle to 50/50 HIGH/LOW
+                       GCLK_GENCTRL_GENEN | // Enable GCLK4
+                       GCLK_GENCTRL_SRC_DFLL48M | // Set the 48MHz clock source
+                       // GCLK_GENCTRL_SRC_FDPLL |   	// Set the 96MHz clock source
+                       GCLK_GENCTRL_ID(4); // Select GCLK4
+    while (GCLK->STATUS.bit.SYNCBUSY); // Wait for synchronization
 
 #ifdef SIMPLEFOC_SAMD_DEBUG
-		SIMPLEFOC_DEBUG("SAMD: Configured clock...");
+SIMPLEFOC_DEBUG ("SAMD: Configured clock...");
 #endif
-	}
+}
 }
 
 
@@ -183,57 +173,61 @@ void configureSAMDClock() {
  */
 void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate, float hw6pwm) {
 
-	long pwm_resolution = (24000000) / pwm_frequency;
-	if (pwm_resolution>SIMPLEFOC_SAMD_MAX_PWM_RESOLUTION) 
-		pwm_resolution = SIMPLEFOC_SAMD_MAX_PWM_RESOLUTION;
-	if (pwm_resolution<SIMPLEFOC_SAMD_MIN_PWM_RESOLUTION) 
-		pwm_resolution = SIMPLEFOC_SAMD_MIN_PWM_RESOLUTION;
-	// store for later use
-	tccConfig.pwm_res = pwm_resolution;
+  long pwm_resolution = (24000000) / pwm_frequency;
+  if (pwm_resolution > SIMPLEFOC_SAMD_MAX_PWM_RESOLUTION)
+    pwm_resolution = SIMPLEFOC_SAMD_MAX_PWM_RESOLUTION;
+  if (pwm_resolution < SIMPLEFOC_SAMD_MIN_PWM_RESOLUTION)
+    pwm_resolution = SIMPLEFOC_SAMD_MIN_PWM_RESOLUTION;
+  // store for later use
+  tccConfig.pwm_res = pwm_resolution;
 
-	// TODO for the moment we ignore the frequency...
-	if (!tccConfigured[tccConfig.tcc.tccn]) {
-		uint32_t GCLK_CLKCTRL_ID_ofthistcc = -1;
-		switch (tccConfig.tcc.tccn>>1) {
-		case 0: GCLK_CLKCTRL_ID_ofthistcc = GCLK_CLKCTRL_ID(GCM_TCC0_TCC1); break; //GCLK_CLKCTRL_ID_TCC0_TCC1;
-		case 1: GCLK_CLKCTRL_ID_ofthistcc = GCLK_CLKCTRL_ID(GCM_TCC2_TC3); break;  //GCLK_CLKCTRL_ID_TCC2_TC3;
-		case 2: GCLK_CLKCTRL_ID_ofthistcc = GCLK_CLKCTRL_ID(GCM_TC4_TC5); break;   //GCLK_CLKCTRL_ID_TC4_TC5;
-		case 3: GCLK_CLKCTRL_ID_ofthistcc = GCLK_CLKCTRL_ID(GCM_TC6_TC7); break;
-		default: return;
-		}
+  // TODO for the moment we ignore the frequency...
+  if (!tccConfigured[tccConfig.tcc.tccn]) {
+    uint32_t GCLK_CLKCTRL_ID_ofthistcc = -1;
+    switch (tccConfig.tcc.tccn >> 1) {
+      case 0: GCLK_CLKCTRL_ID_ofthistcc = GCLK_CLKCTRL_ID(GCM_TCC0_TCC1);
+        break; //GCLK_CLKCTRL_ID_TCC0_TCC1;
+      case 1: GCLK_CLKCTRL_ID_ofthistcc = GCLK_CLKCTRL_ID(GCM_TCC2_TC3);
+        break; //GCLK_CLKCTRL_ID_TCC2_TC3;
+      case 2: GCLK_CLKCTRL_ID_ofthistcc = GCLK_CLKCTRL_ID(GCM_TC4_TC5);
+        break; //GCLK_CLKCTRL_ID_TC4_TC5;
+      case 3: GCLK_CLKCTRL_ID_ofthistcc = GCLK_CLKCTRL_ID(GCM_TC6_TC7);
+        break;
+      default: return;
+    }
 
-		// Feed GCLK4 to TCC
-		REG_GCLK_CLKCTRL = (uint16_t)  GCLK_CLKCTRL_CLKEN |         // Enable GCLK4
-									   GCLK_CLKCTRL_GEN_GCLK4 |     // Select GCLK4
-									   GCLK_CLKCTRL_ID_ofthistcc;   // Feed GCLK4 to tcc
-		while (GCLK->STATUS.bit.SYNCBUSY);              			// Wait for synchronization
+    // Feed GCLK4 to TCC
+    REG_GCLK_CLKCTRL = (uint16_t) GCLK_CLKCTRL_CLKEN | // Enable GCLK4
+                       GCLK_CLKCTRL_GEN_GCLK4 | // Select GCLK4
+                       GCLK_CLKCTRL_ID_ofthistcc; // Feed GCLK4 to tcc
+    while (GCLK->STATUS.bit.SYNCBUSY); // Wait for synchronization
 
-		tccConfigured[tccConfig.tcc.tccn] = true;
+    tccConfigured[tccConfig.tcc.tccn] = true;
 
-		if (tccConfig.tcc.tccn>=TCC_INST_NUM) {
-			Tc* tc = (Tc*)GetTC(tccConfig.tcc.chaninfo);
-			// disable
-			tc->COUNT8.CTRLA.bit.ENABLE = 0;
-			while ( tc->COUNT8.STATUS.bit.SYNCBUSY == 1 );
-			// unfortunately we need the 8-bit counter mode to use the PER register...
-			tc->COUNT8.CTRLA.reg |= TC_CTRLA_MODE_COUNT8 | TC_CTRLA_WAVEGEN_NPWM ;
-			while ( tc->COUNT8.STATUS.bit.SYNCBUSY == 1 );
-			// meaning prescaler of 8, since TC-Unit has no up/down mode, and has resolution of 250 rather than 1000...
-			tc->COUNT8.CTRLA.bit.PRESCALER = TC_CTRLA_PRESCALER_DIV8_Val ;
-			while ( tc->COUNT8.STATUS.bit.SYNCBUSY == 1 );
-			// period is 250, period cannot be higher than 256!
-			tc->COUNT8.PER.reg = SIMPLEFOC_SAMD_PWM_TC_RESOLUTION-1;
-			while ( tc->COUNT8.STATUS.bit.SYNCBUSY == 1 );
-			// initial duty cycle is 0
-			tc->COUNT8.CC[tccConfig.tcc.chan].reg = 0;
-			while ( tc->COUNT8.STATUS.bit.SYNCBUSY == 1 );
-			// enable
-			tc->COUNT8.CTRLA.bit.ENABLE = 1;
-			while ( tc->COUNT8.STATUS.bit.SYNCBUSY == 1 );
+    if (tccConfig.tcc.tccn >= TCC_INST_NUM) {
+      Tc* tc = (Tc*) GetTC(tccConfig.tcc.chaninfo);
+      // disable
+      tc->COUNT8.CTRLA.bit.ENABLE = 0;
+      while (tc->COUNT8.STATUS.bit.SYNCBUSY == 1);
+      // unfortunately we need the 8-bit counter mode to use the PER register...
+      tc->COUNT8.CTRLA.reg |= TC_CTRLA_MODE_COUNT8 | TC_CTRLA_WAVEGEN_NPWM;
+      while (tc->COUNT8.STATUS.bit.SYNCBUSY == 1);
+      // meaning prescaler of 8, since TC-Unit has no up/down mode, and has resolution of 250 rather than 1000...
+      tc->COUNT8.CTRLA.bit.PRESCALER = TC_CTRLA_PRESCALER_DIV8_Val;
+      while (tc->COUNT8.STATUS.bit.SYNCBUSY == 1);
+      // period is 250, period cannot be higher than 256!
+      tc->COUNT8.PER.reg = SIMPLEFOC_SAMD_PWM_TC_RESOLUTION - 1;
+      while (tc->COUNT8.STATUS.bit.SYNCBUSY == 1);
+      // initial duty cycle is 0
+      tc->COUNT8.CC[tccConfig.tcc.chan].reg = 0;
+      while (tc->COUNT8.STATUS.bit.SYNCBUSY == 1);
+      // enable
+      tc->COUNT8.CTRLA.bit.ENABLE = 1;
+      while (tc->COUNT8.STATUS.bit.SYNCBUSY == 1);
 #ifdef SIMPLEFOC_SAMD_DEBUG
-			SIMPLEFOC_DEBUG("SAMD: Initialized TC ", tccConfig.tcc.tccn);
+SIMPLEFOC_DEBUG ("SAMD: Initialized TC ", tccConfig.tcc.tccn);
 #endif
-		}
+}
 		else {
 			Tcc* tcc = (Tcc*)GetTC(tccConfig.tcc.chaninfo);
 
@@ -268,17 +262,17 @@ void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate, 
 			while ( tcc->SYNCBUSY.bit.ENABLE == 1 ); // wait for sync
 
 #if defined(SIMPLEFOC_SAMD_DEBUG) && !defined(SIMPLEFOC_DISABLE_DEBUG)
-			SimpleFOCDebug::print("SAMD:     Initialized TCC ");
-			SimpleFOCDebug::print(tccConfig.tcc.tccn);
-			SimpleFOCDebug::print("-");
-			SimpleFOCDebug::print(tccConfig.tcc.chan);
-			SimpleFOCDebug::print("[");
-			SimpleFOCDebug::print(tccConfig.wo);
-			SimpleFOCDebug::print("]  pwm res ");
-			SimpleFOCDebug::print((int)pwm_resolution);
-			SimpleFOCDebug::println();
+SimpleFOCDebug::print ("SAMD:     Initialized TCC ");
+SimpleFOCDebug::print (tccConfig.tcc.tccn);
+SimpleFOCDebug::print ("-");
+SimpleFOCDebug::print (tccConfig.tcc.chan);
+SimpleFOCDebug::print ("[");
+SimpleFOCDebug::print (tccConfig.wo);
+SimpleFOCDebug::print ("]  pwm res ");
+SimpleFOCDebug::print ((int)pwm_resolution);
+SimpleFOCDebug::println();
 #endif
-		}
+}
 	}
 	else if (tccConfig.tcc.tccn<TCC_INST_NUM) {
 		// set invert bit for TCC channels in SW 6-PWM...
@@ -303,17 +297,17 @@ void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate, 
 		while ( tcc->SYNCBUSY.bit.ENABLE == 1 );
 
 #if defined(SIMPLEFOC_SAMD_DEBUG) && !defined(SIMPLEFOC_DISABLE_DEBUG)
-		SimpleFOCDebug::print("SAMD: (Re-)Initialized TCC ");
-		SimpleFOCDebug::print(tccConfig.tcc.tccn);
-		SimpleFOCDebug::print("-");
-		SimpleFOCDebug::print(tccConfig.tcc.chan);
-		SimpleFOCDebug::print("[");
-		SimpleFOCDebug::print(tccConfig.wo);
-		SimpleFOCDebug::print("]  pwm res ");
-		SimpleFOCDebug::print((int)pwm_resolution);
-		SimpleFOCDebug::println();
+SimpleFOCDebug::print ("SAMD: (Re-)Initialized TCC ");
+SimpleFOCDebug::print (tccConfig.tcc.tccn);
+SimpleFOCDebug::print ("-");
+SimpleFOCDebug::print (tccConfig.tcc.chan);
+SimpleFOCDebug::print ("[");
+SimpleFOCDebug::print (tccConfig.wo);
+SimpleFOCDebug::print ("]  pwm res ");
+SimpleFOCDebug::print ((int)pwm_resolution);
+SimpleFOCDebug::println();
 #endif
-	}
+}
 
 
 }
@@ -323,31 +317,29 @@ void configureTCC(tccConfiguration& tccConfig, long pwm_frequency, bool negate, 
 
 
 void writeSAMDDutyCycle(tccConfiguration* info, float dc) {
-	uint8_t tccn = GetTCNumber(info->tcc.chaninfo);
-	uint8_t chan = GetTCChannelNumber(info->tcc.chaninfo);
-	if (tccn<TCC_INST_NUM) {
-		Tcc* tcc = (Tcc*)GetTC(info->tcc.chaninfo);
-		// set via CC
-//		tcc->CC[chan].reg = (uint32_t)((SIMPLEFOC_SAMD_PWM_RESOLUTION-1) * dc);
-//		uint32_t chanbit = 0x1<<(TCC_SYNCBUSY_CC0_Pos+chan);
-//		while ( (tcc->SYNCBUSY.reg & chanbit) > 0 );
-		// set via CCB
-		//while ( (tcc->SYNCBUSY.vec.CC & (0x1<<chan)) > 0 );
-		tcc->CCB[chan].reg = (uint32_t)((info->pwm_res-1) * dc);
-//		while ( (tcc->SYNCBUSY.vec.CCB & (0x1<<chan)) > 0 );
-//		tcc->STATUS.vec.CCBV |= (0x1<<chan);
-//		while ( tcc->SYNCBUSY.bit.STATUS > 0 );
-//		tcc->CTRLBSET.reg |= TCC_CTRLBSET_CMD(TCC_CTRLBSET_CMD_UPDATE_Val);
-//		while ( tcc->SYNCBUSY.bit.CTRLB > 0 );
-	}
-	else {
-		Tc* tc = (Tc*)GetTC(info->tcc.chaninfo);
-		tc->COUNT8.CC[chan].reg = (uint8_t)((SIMPLEFOC_SAMD_PWM_TC_RESOLUTION-1) * dc);
-		while ( tc->COUNT8.STATUS.bit.SYNCBUSY == 1 );
-	}
+  uint8_t tccn = GetTCNumber(info->tcc.chaninfo);
+  uint8_t chan = GetTCChannelNumber(info->tcc.chaninfo);
+  if (tccn < TCC_INST_NUM) {
+    Tcc* tcc = (Tcc*) GetTC(info->tcc.chaninfo);
+    // set via CC
+    //		tcc->CC[chan].reg = (uint32_t)((SIMPLEFOC_SAMD_PWM_RESOLUTION-1) * dc);
+    //		uint32_t chanbit = 0x1<<(TCC_SYNCBUSY_CC0_Pos+chan);
+    //		while ( (tcc->SYNCBUSY.reg & chanbit) > 0 );
+    // set via CCB
+    //while ( (tcc->SYNCBUSY.vec.CC & (0x1<<chan)) > 0 );
+    tcc->CCB[chan].reg = (uint32_t)((info->pwm_res - 1) * dc);
+    //		while ( (tcc->SYNCBUSY.vec.CCB & (0x1<<chan)) > 0 );
+    //		tcc->STATUS.vec.CCBV |= (0x1<<chan);
+    //		while ( tcc->SYNCBUSY.bit.STATUS > 0 );
+    //		tcc->CTRLBSET.reg |= TCC_CTRLBSET_CMD(TCC_CTRLBSET_CMD_UPDATE_Val);
+    //		while ( tcc->SYNCBUSY.bit.CTRLB > 0 );
+  }
+  else {
+    Tc* tc = (Tc*) GetTC(info->tcc.chaninfo);
+    tc->COUNT8.CC[chan].reg = (uint8_t)((SIMPLEFOC_SAMD_PWM_TC_RESOLUTION - 1) * dc);
+    while (tc->COUNT8.STATUS.bit.SYNCBUSY == 1);
+  }
 }
-
-
 
 
 #endif

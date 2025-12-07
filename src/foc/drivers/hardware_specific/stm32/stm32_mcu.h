@@ -42,7 +42,7 @@
 
 
 typedef struct STM32DriverParams {
-  TIM_HandleTypeDef* timers_handle[6] = {NULL};
+  TIM_HandleTypeDef* timers_handle[6] = { NULL };
   uint32_t channels[6];
   uint32_t llchannels[6];
   long pwm_frequency;
@@ -58,12 +58,12 @@ int stm32_getNumTimersUsed();
 int stm32_getNumMotorsUsed();
 int stm32_getNumTimersReserved();
 STM32DriverParams* stm32_getMotorUsed(int index);
-bool stm32_isTimerUsed(TIM_HandleTypeDef* timer);
-bool stm32_isChannelUsed(PinMap* pin);
-bool stm32_isTimerReserved(TIM_TypeDef* timer);
-TIM_HandleTypeDef* stm32_getTimer(PinMap* timer);
-TIM_HandleTypeDef* stm32_useTimer(PinMap* timer);
-bool stm32_reserveTimer(TIM_TypeDef* timer);
+bool stm32_isTimerUsed(TIM_HandleTypeDef * timer);
+bool stm32_isChannelUsed(PinMap * pin);
+bool stm32_isTimerReserved(TIM_TypeDef * timer);
+TIM_HandleTypeDef* stm32_getTimer(PinMap * timer);
+TIM_HandleTypeDef* stm32_useTimer(PinMap * timer);
+bool stm32_reserveTimer(TIM_TypeDef * timer);
 
 void stm32_pause(STM32DriverParams* params);
 void stm32_resume(STM32DriverParams* params);

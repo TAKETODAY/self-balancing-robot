@@ -112,56 +112,57 @@ void* _configureADCLowSide(const void* driver_params, const int pinA, const int 
 
 
 void* _driverSyncLowSide(void* driver_params, void* cs_params) {
-#ifdef SIMPLEFOC_ESP32_INTERRUPT_DEBUG
-  pinMode(DEBUGPIN, OUTPUT);
-#endif
-  ESP32MCPWMDriverParams* p = (ESP32MCPWMDriverParams*) driver_params;
-  mcpwm_timer_t* t = (mcpwm_timer_t*) p->timers[0];
 
-  // check if low side callback is already set
-  // if it is, return error
-  if (t->on_full != nullptr) {
+#ifdef SIMPLEFOC_ESP32_INTERRUPT_DEBUG
+pinMode(DEBUGPIN, OUTPUT);
+#endif
+ESP32MCPWMDriverParams* p = (ESP32MCPWMDriverParams*) driver_params;
+mcpwm_timer_t* t = (mcpwm_timer_t*) p->timers[0];
+
+// check if low side callback is already set
+// if it is, return error
+  if (t->on_full!= nullptr) {
     SIMPLEFOC_ESP32_CS_DEBUG("ERROR: Low side callback is already set. Cannot set it again for timer: %d, group: %d", t->timer_id,  t->group->group_id);
     return SIMPLEFOC_CURRENT_SENSE_INIT_FAILED;
   }
 
-  // set the callback for the low side current sensing
-  // mcpwm_timer_event_callbacks_t can be used to set the callback
-  // for three timer events
-  // - on_full  - low-side
-  // - on_empty - high-side
-  // - on_sync  - sync event (not used with simplefoc)
-  auto cbs = mcpwm_timer_event_callbacks_t{
-    .on_full = [](mcpwm_timer_handle_t tim, const mcpwm_timer_event_data_t* edata, void* user_data) {
-      ESP32CurrentSenseParams* p = (ESP32CurrentSenseParams*) user_data;
+// set the callback for the low side current sensing
+// mcpwm_timer_event_callbacks_t can be used to set the callback
+// for three timer events
+// - on_full  - low-side
+// - on_empty - high-side
+// - on_sync  - sync event (not used with simplefoc)
+auto cbs = mcpwm_timer_event_callbacks_t{
+  .on_full = [](mcpwm_timer_handle_t tim, const mcpwm_timer_event_data_t* edata, void* user_data) {
+    ESP32CurrentSenseParams* p = (ESP32CurrentSenseParams*) user_data;
 #ifdef SIMPLEFOC_ESP32_INTERRUPT_DEBUG // debugging toggle pin to measure the time of the interrupt with oscilloscope
-      gpio_set_level(GPIO_NUM, 1); //cca 250ns for on+off
+gpio_set_level(GPIO_NUM, 1); //cca 250ns for on+off
 #endif
 
-      // sample the phase currents one at a time
-      // ESP's adc read takes around 10us which is very long
-      // increment buffer index
-      p->buffer_index = (p->buffer_index + 1) % p->no_adc_channels;
-      // so we are sampling one phase per call
-      p->adc_buffer[p->buffer_index] = adcRead(p->pins[p->buffer_index]);
+// sample the phase currents one at a time
+// ESP's adc read takes around 10us which is very long
+// increment buffer index
+p->buffer_index= (p->buffer_index+ 1) % p->no_adc_channels;
+// so we are sampling one phase per call
+p->adc_buffer [p->buffer_index] = adcRead(p->pins[p->buffer_index]);
 
 #ifdef SIMPLEFOC_ESP32_INTERRUPT_DEBUG // debugging toggle pin to measure the time of the interrupt with oscilloscope
-      gpio_set_level(GPIO_NUM, 0); //cca 250ns for on+off
+gpio_set_level(GPIO_NUM, 0); //cca 250ns for on+off
 #endif
-      return true;
+return true;
     },
   };
-  SIMPLEFOC_ESP32_CS_DEBUG("Timer %d enable interrupt callback.", t->timer_id);
-  // set the timer state to init (so that we can call the `mcpwm_timer_register_event_callbacks` )
-  // this is a hack, as this function is not supposed to be called when the timer is running
-  // the timer does not really go to the init state!
-  t->fsm = MCPWM_TIMER_FSM_INIT;
-  // set the callback
-  CHECK_CS_ERR(mcpwm_timer_register_event_callbacks(t, &cbs, cs_params), "Failed to set low side callback");
-  // set the timer state to enabled again
-  t->fsm = MCPWM_TIMER_FSM_ENABLE;
-  SIMPLEFOC_ESP32_CS_DEBUG("Timer %d enable interrupts.", t->timer_id);
-  CHECK_CS_ERR(esp_intr_enable(t->intr), "Failed to enable low-side interrupts!");
+SIMPLEFOC_ESP32_CS_DEBUG ("Timer %d enable interrupt callback.", t->timer_id);
+// set the timer state to init (so that we can call the `mcpwm_timer_register_event_callbacks` )
+// this is a hack, as this function is not supposed to be called when the timer is running
+// the timer does not really go to the init state!
+t->fsm= MCPWM_TIMER_FSM_INIT;
+// set the callback
+CHECK_CS_ERR (mcpwm_timer_register_event_callbacks(t, &cbs, cs_params), "Failed to set low side callback");
+// set the timer state to enabled again
+t->fsm= MCPWM_TIMER_FSM_ENABLE;
+SIMPLEFOC_ESP32_CS_DEBUG ("Timer %d enable interrupts.", t->timer_id);
+CHECK_CS_ERR (esp_intr_enable(t->intr), "Failed to enable low-side interrupts!");
 
   return cs_params;
 }

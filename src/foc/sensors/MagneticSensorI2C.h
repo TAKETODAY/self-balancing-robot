@@ -22,7 +22,7 @@
 #include "../common/foc_utils.h"
 #include "../common/time_utils.h"
 
-struct MagneticSensorI2CConfig_s  {
+struct MagneticSensorI2CConfig_s {
   uint8_t chip_address;
   uint8_t bit_resolution;
   uint8_t angle_register;
@@ -41,54 +41,54 @@ extern MagneticSensorI2CConfig_s AS5600_I2C, AS5048_I2C, MT6701_I2C;
 #endif
 
 
-class MagneticSensorI2C: public Sensor{
- public:
-    /**
+class MagneticSensorI2C : public Sensor {
+public:
+  /**
      * MagneticSensorI2C class constructor
      * @param chip_address  I2C chip address
      * @param bit_resolution number of bits of the sensor resolution
      * @param angle_register_msb  angle read register msb
      * @param _msb_bits_used number of used bits in msb
      */
-    MagneticSensorI2C(uint8_t chip_address, int bit_resolution, uint8_t angle_register_msb, int _msb_bits_used, bool lsb_right_aligned = true);
+  MagneticSensorI2C(uint8_t chip_address, int bit_resolution, uint8_t angle_register_msb, int _msb_bits_used, bool lsb_right_aligned = true);
 
-    /**
+  /**
      * MagneticSensorI2C class constructor
      * @param config  I2C config
      */
-    MagneticSensorI2C(MagneticSensorI2CConfig_s config);
+  MagneticSensorI2C(MagneticSensorI2CConfig_s config);
 
-    static MagneticSensorI2C AS5600();
-        
-    /** sensor initialise pins */
-    void init(espp::I2c* _wire );
+  static MagneticSensorI2C AS5600();
 
-    // implementation of abstract functions of the Sensor class
-    /** get current angle (rad) */
-    float getSensorAngle() override;
+  /** sensor initialise pins */
+  void init(espp::I2c* _wire);
 
-    /** experimental function to check and fix SDA locked LOW issues */
-    int checkBus(byte sda_pin , byte scl_pin );
+  // implementation of abstract functions of the Sensor class
+  /** get current angle (rad) */
+  float getSensorAngle() override;
 
-    /** current error code from Wire endTransmission() call **/
-    uint8_t currWireError = 0;
+  /** experimental function to check and fix SDA locked LOW issues */
+  int checkBus(byte sda_pin, byte scl_pin);
 
-  private:
-    float cpr; //!< Maximum range of the magnetic sensor
-    MagneticSensorI2CConfig_s _conf;
+  /** current error code from Wire endTransmission() call **/
+  uint8_t currWireError = 0;
 
-    // I2C functions
-    /** Read one I2C register value */
-    int read(uint8_t angle_register_msb);
+private:
+  float cpr; //!< Maximum range of the magnetic sensor
+  MagneticSensorI2CConfig_s _conf;
 
-    /**
+  // I2C functions
+  /** Read one I2C register value */
+  int read(uint8_t angle_register_msb);
+
+  /**
      * Function getting current angle register value
      * it uses angle_register variable
      */
-    int getRawCount();
-    
-    /* the two wire instance for this sensor */
-    espp::I2c* wire;
+  int getRawCount();
+
+  /* the two wire instance for this sensor */
+  espp::I2c* wire;
 };
 
 

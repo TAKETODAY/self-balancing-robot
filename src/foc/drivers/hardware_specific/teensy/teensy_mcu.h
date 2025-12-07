@@ -9,10 +9,10 @@
 #define _PWM_FREQUENCY_MAX 50000 // 50khz
 
 // debugging output 
-#define SIMPLEFOC_TEENSY_DEBUG 
+#define SIMPLEFOC_TEENSY_DEBUG
 
 typedef struct TeensyDriverParams {
-  int pins[6] = {(int)NOT_SET};
+  int pins[6] = { (int) NOT_SET };
   long pwm_frequency;
   void* additional_params;
 } TeensyDriverParams;
@@ -21,7 +21,7 @@ typedef struct TeensyDriverParams {
 void _setHighFrequency(const long freq, const int pin);
 
 void* _configureCenterAligned3PMW(long pwm_frequency, const int pinA, const int pinB, const int pinC);
-void _writeCenterAligned3PMW(float dc_a,  float dc_b, float dc_c, void* params);
+void _writeCenterAligned3PMW(float dc_a, float dc_b, float dc_c, void* params);
 
 #endif
 #endif

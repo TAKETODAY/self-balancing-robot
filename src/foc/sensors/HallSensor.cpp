@@ -6,7 +6,7 @@
   - hallA, hallB, hallC    - HallSensor A, B and C pins
   - pp           - pole pairs
 */
-HallSensor::HallSensor(int _hallA, int _hallB, int _hallC, int _pp){
+HallSensor::HallSensor(int _hallA, int _hallB, int _hallC, int _pp) {
 
   // hardware pins
   pinA = _hallA;
@@ -23,9 +23,10 @@ HallSensor::HallSensor(int _hallA, int _hallB, int _hallC, int _pp){
 //  HallSensor interrupt callback functions
 // A channel
 void HallSensor::handleA() {
-  A_active= digitalRead(pinA);
+  A_active = digitalRead(pinA);
   updateState();
 }
+
 // B channel
 void HallSensor::handleB() {
   B_active = digitalRead(pinB);
@@ -56,12 +57,14 @@ void HallSensor::updateState() {
     //underflow
     direction = Direction::CCW;
     electric_rotations += direction;
-  } else if (electric_sector_dif < (-3)) {
+  }
+  else if (electric_sector_dif < (-3)) {
     //overflow
     direction = Direction::CW;
     electric_rotations += direction;
-  } else {
-    direction = (new_electric_sector > electric_sector)? Direction::CW : Direction::CCW;
+  }
+  else {
+    direction = (new_electric_sector > electric_sector) ? Direction::CW : Direction::CCW;
   }
   electric_sector = new_electric_sector;
 
@@ -69,7 +72,8 @@ void HallSensor::updateState() {
   if (direction == old_direction) {
     // not oscilating or just changed direction
     pulse_diff = new_pulse_timestamp - pulse_timestamp;
-  } else {
+  }
+  else {
     pulse_diff = 0;
   }
 
@@ -91,13 +95,13 @@ void HallSensor::attachSectorCallback(void (*_onSectorChange)(int sector)) {
 }
 
 
-
 // Sensor update function. Safely copy volatile interrupt variables into Sensor base class state variables.
 void HallSensor::update() {
   // Copy volatile variables in minimal-duration blocking section to ensure no interrupts are missed
-  if (use_interrupt){
+  if (use_interrupt) {
     noInterrupts();
-  }else{
+  }
+  else {
     A_active = digitalRead(pinA);
     B_active = digitalRead(pinB);
     C_active = digitalRead(pinC);
@@ -108,10 +112,9 @@ void HallSensor::update() {
   long last_electric_rotations = electric_rotations;
   int8_t last_electric_sector = electric_sector;
   if (use_interrupt) interrupts();
-  angle_prev = ((float)((last_electric_rotations * 6 + last_electric_sector) % cpr) / (float)cpr) * _2PI ;
+  angle_prev = ((float) ((last_electric_rotations * 6 + last_electric_sector) % cpr) / (float) cpr) * _2PI;
   full_rotations = (int32_t)((last_electric_rotations * 6 + last_electric_sector) / cpr);
 }
-
 
 
 /*
@@ -119,44 +122,47 @@ void HallSensor::update() {
   TODO: numerical precision issue here if the electrical rotation overflows the angle will be lost
 */
 float HallSensor::getSensorAngle() {
-  return ((float)(electric_rotations * 6 + electric_sector) / (float)cpr) * _2PI ;
+  return ((float) (electric_rotations * 6 + electric_sector) / (float) cpr) * _2PI;
 }
 
 /*
   Shaft velocity calculation
   function using mixed time and frequency measurement technique
 */
-float HallSensor::getVelocity(){
+float HallSensor::getVelocity() {
   noInterrupts();
   long last_pulse_timestamp = pulse_timestamp;
   long last_pulse_diff = pulse_diff;
   interrupts();
-  if (last_pulse_diff == 0 || ((long)(_micros() - last_pulse_timestamp) > last_pulse_diff*2) ) { // last velocity isn't accurate if too old
+  if (last_pulse_diff == 0 || ((long) (_micros() - last_pulse_timestamp) > last_pulse_diff * 2)) {
+    // last velocity isn't accurate if too old
     return 0;
-  } else {
-    return direction * (_2PI / (float)cpr) / (last_pulse_diff / 1000000.0f);
+  }
+  else {
+    return direction * (_2PI / (float) cpr) / (last_pulse_diff / 1000000.0f);
   }
 
 }
 
 // HallSensor initialisation of the hardware pins 
 // and calculation variables
-void HallSensor::init(){
+void HallSensor::init() {
   // initialise the electrical rotations to 0
   electric_rotations = 0;
 
   // HallSensor - check if pullup needed for your HallSensor
-  if(pullup == Pullup::USE_INTERN){
+  if (pullup == Pullup::USE_INTERN) {
     pinMode(pinA, INPUT_PULLUP);
     pinMode(pinB, INPUT_PULLUP);
     pinMode(pinC, INPUT_PULLUP);
-  }else{
+  }
+  else {
     pinMode(pinA, INPUT);
     pinMode(pinB, INPUT);
     pinMode(pinC, INPUT);
   }
 
-    // init hall_state
+  // init hall_state
   A_active = digitalRead(pinA);
   B_active = digitalRead(pinB);
   C_active = digitalRead(pinC);
@@ -169,13 +175,13 @@ void HallSensor::init(){
 
 // function enabling hardware interrupts for the callback provided
 // if callback is not provided then the interrupt is not enabled
-void HallSensor::enableInterrupts(void (*doA)(), void(*doB)(), void(*doC)()){
+void HallSensor::enableInterrupts(void (*doA)(), void (*doB)(), void (*doC)()) {
   // attach interrupt if functions provided
 
   // A, B and C callback
-  if(doA != nullptr) attachInterrupt(digitalPinToInterrupt(pinA), doA, CHANGE);
-  if(doB != nullptr) attachInterrupt(digitalPinToInterrupt(pinB), doB, CHANGE);
-  if(doC != nullptr) attachInterrupt(digitalPinToInterrupt(pinC), doC, CHANGE);
+  if (doA != nullptr) attachInterrupt(digitalPinToInterrupt(pinA), doA, CHANGE);
+  if (doB != nullptr) attachInterrupt(digitalPinToInterrupt(pinB), doB, CHANGE);
+  if (doC != nullptr) attachInterrupt(digitalPinToInterrupt(pinC), doC, CHANGE);
 
   use_interrupt = true;
 }

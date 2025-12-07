@@ -1,11 +1,8 @@
-
-
 #pragma once
 
 #include "Arduino.h"
 
 #if defined(TARGET_RP2040) || defined(TARGET_RP2350)
-
 
 
 typedef struct RP2040DriverParams {
@@ -15,8 +12,6 @@ typedef struct RP2040DriverParams {
   long pwm_frequency;
   float dead_zone;
 } RP2040DriverParams;
-
-
 
 
 #endif

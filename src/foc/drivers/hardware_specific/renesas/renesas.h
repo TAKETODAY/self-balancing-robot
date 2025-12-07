@@ -16,13 +16,12 @@
 struct RenesasTimerConfig;
 
 typedef struct RenesasHardwareDriverParams {
-    uint8_t pins[6];
-    uint8_t channels[6];
-    RenesasTimerConfig* timer_config[6];
-    long pwm_frequency;
-    float dead_zone;
+  uint8_t pins[6];
+  uint8_t channels[6];
+  RenesasTimerConfig* timer_config[6];
+  long pwm_frequency;
+  float dead_zone;
 } RenesasHardwareDriverParams;
-
 
 
 #endif

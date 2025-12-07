@@ -33,7 +33,7 @@ float _readADCVoltageInline(const int pinA, const void* cs_params);
  * @param pinB - adc pin B
  * @param pinC - adc pin C
  */
-void* _configureADCInline(const void *driver_params, const int pinA,const int pinB,const int pinC = NOT_SET);
+void* _configureADCInline(const void* driver_params, const int pinA, const int pinB, const int pinC = NOT_SET);
 
 /**
  *  function reading an ADC value and returning the read voltage
@@ -43,7 +43,7 @@ void* _configureADCInline(const void *driver_params, const int pinA,const int pi
  * @param pinB - adc pin B
  * @param pinC - adc pin C
  */
-void* _configureADCLowSide(const void *driver_params, const int pinA,const int pinB,const int pinC = NOT_SET);
+void* _configureADCLowSide(const void* driver_params, const int pinA, const int pinB, const int pinC = NOT_SET);
 
 void _startADC3PinConversionLowSide();
 

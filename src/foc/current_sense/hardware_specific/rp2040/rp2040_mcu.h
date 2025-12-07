@@ -1,5 +1,3 @@
-
-
 #pragma once
 
 /*
@@ -47,47 +45,48 @@
 
 
 #define SIMPLEFOC_RP2040_ADC_RESOLUTION 256
-#ifndef SIMPLEFOC_RP2040_ADC_VDDA 
+#ifndef SIMPLEFOC_RP2040_ADC_VDDA
 #define SIMPLEFOC_RP2040_ADC_VDDA 3.3f
 #endif
 
 
 union ADCResults {
-    uint32_t value;
-    uint8_t raw[4];
-    struct {
-        uint8_t ch0;
-        uint8_t ch1;
-        uint8_t ch2;
-        uint8_t ch3;
-    };
+  uint32_t value;
+  uint8_t raw[4];
+
+  struct {
+    uint8_t ch0;
+    uint8_t ch1;
+    uint8_t ch2;
+    uint8_t ch3;
+  };
 };
 
 
 class RP2040ADCEngine {
 
 public:
-    RP2040ADCEngine();
-    void addPin(int pin);
-    //void setPWMTrigger(uint slice);
+  RP2040ADCEngine();
+  void addPin(int pin);
+  //void setPWMTrigger(uint slice);
 
-    bool init();
-    void start();
-    void stop();
+  bool init();
+  void start();
+  void stop();
 
-    ADCResults getLastResults(); // TODO find a better API and representation for this
+  ADCResults getLastResults(); // TODO find a better API and representation for this
 
-    int samples_per_second = 20000; // 20kHz default (assuming 2 shunts and 5kHz loop speed), set to 0 to convert in tight loop
-    float adc_conv = (SIMPLEFOC_RP2040_ADC_VDDA / SIMPLEFOC_RP2040_ADC_RESOLUTION); // conversion from raw ADC to float
+  int samples_per_second = 20000; // 20kHz default (assuming 2 shunts and 5kHz loop speed), set to 0 to convert in tight loop
+  float adc_conv = (SIMPLEFOC_RP2040_ADC_VDDA / SIMPLEFOC_RP2040_ADC_RESOLUTION); // conversion from raw ADC to float
 
-    //int triggerPWMSlice = -1;
-    bool initialized;
-    uint readDMAChannel;
-    //uint copyDMAChannel;
-    //uint triggerDMAChannel;
+  //int triggerPWMSlice = -1;
+  bool initialized;
+  uint readDMAChannel;
+  //uint copyDMAChannel;
+  //uint triggerDMAChannel;
 
-    bool channelsEnabled[4];
-    volatile uint8_t samples[4];
-    volatile ADCResults lastResults;
-    //alignas(32) volatile uint8_t nextResults[4];
+  bool channelsEnabled[4];
+  volatile uint8_t samples[4];
+  volatile ADCResults lastResults;
+  //alignas(32) volatile uint8_t nextResults[4];
 };

@@ -55,7 +55,7 @@ void __configFastADCs() {
 uint16_t IRAM_ATTR adcRead(uint8_t pin) {
   int8_t channel = digitalPinToAnalogChannel(pin);
   if (channel < 0) {
-    SIMPLEFOC_ESP32_CS_DEBUG("ERROR: Not ADC pin: %d",pin);
+    SIMPLEFOC_ESP32_CS_DEBUG("ERROR: Not ADC pin: %d", pin);
     return false; //not adc pin
   }
 

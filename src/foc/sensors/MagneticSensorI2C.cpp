@@ -58,10 +58,10 @@ MagneticSensorI2C::MagneticSensorI2C(uint8_t chip_address, int bit_resolution, u
   _conf.chip_address = chip_address;
   _conf.bit_resolution = bit_resolution;
   _conf.angle_register = angle_register_msb;
-  _conf.msb_mask = (uint8_t) ((1 << _bits_used_msb) - 1);
+  _conf.msb_mask = (uint8_t)((1 << _bits_used_msb) - 1);
 
   uint8_t lsb_used = bit_resolution - _bits_used_msb; // used bits in LSB
-  _conf.lsb_mask = (uint8_t) ((1 << (lsb_used)) - 1);
+  _conf.lsb_mask = (uint8_t)((1 << (lsb_used)) - 1);
   if (!lsb_right_aligned)
     _conf.lsb_shift = 8 - lsb_used;
   else
