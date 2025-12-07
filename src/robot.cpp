@@ -19,19 +19,20 @@
 #include "battery.hpp"
 #include "esp_log.h"
 #include "mpu6050.hpp"
+#include "nvs_flash.h"
 #include "servos.hpp"
 
 #include "esp/serial.hpp"
 #include "wifi.h"
 
-Wrobot wrobot;
+// Wrobot wrobot;
 
 static auto TAG = "robot";
 
 static SerialPort serial(UART_NUM_0);
 
-BLDCMotor motor1(7);
-BLDCMotor motor2(7);
+static BLDCMotor motor1(7);
+static BLDCMotor motor2(7);
 
 BLDCDriver3PWM driver1(32, 33, 25, 22);
 BLDCDriver3PWM driver2(26, 27, 14, 12);
@@ -39,27 +40,39 @@ BLDCDriver3PWM driver2(26, 27, 14, 12);
 MagneticSensorI2C sensor1(AS5600_I2C);
 MagneticSensorI2C sensor2(AS5600_I2C);
 
-espp::I2c i2c({
-  .port = I2C_NUM_0,
-  .sda_io_num = GPIO_NUM_19,
-  .scl_io_num = GPIO_NUM_18,
-  .sda_pullup_en = GPIO_PULLUP_ENABLE,
-  .scl_pullup_en = GPIO_PULLUP_ENABLE,
-  .clk_speed = 400000UL
-});
-
-espp::I2c i2c1({
-  .port = I2C_NUM_1,
-  .sda_io_num = GPIO_NUM_23,
-  .scl_io_num = GPIO_NUM_5,
-  .sda_pullup_en = GPIO_PULLUP_ENABLE,
-  .scl_pullup_en = GPIO_PULLUP_ENABLE,
-  .clk_speed = 400000UL
-});
+void nvs_init() {
+  //Initialize NVS
+  esp_err_t ret = nvs_flash_init();
+  if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+    ESP_ERROR_CHECK(nvs_flash_erase());
+    ret = nvs_flash_init();
+  }
+  ESP_ERROR_CHECK(ret);
+}
 
 void robot_init() {
+  nvs_init();
+
   serial.begin(115200);
   servos_init();
+
+  static espp::I2c i2c({
+    .port = I2C_NUM_0,
+    .sda_io_num = GPIO_NUM_19,
+    .scl_io_num = GPIO_NUM_18,
+    .sda_pullup_en = GPIO_PULLUP_ENABLE,
+    .scl_pullup_en = GPIO_PULLUP_ENABLE,
+    .clk_speed = 400000UL
+  });
+
+  static espp::I2c i2c1({
+    .port = I2C_NUM_1,
+    .sda_io_num = GPIO_NUM_23,
+    .scl_io_num = GPIO_NUM_5,
+    .sda_pullup_en = GPIO_PULLUP_ENABLE,
+    .scl_pullup_en = GPIO_PULLUP_ENABLE,
+    .clk_speed = 400000UL
+  });
 
   for (uint8_t address = 1; address < 128; address++) {
     if (i2c1.probe_device(address)) {
