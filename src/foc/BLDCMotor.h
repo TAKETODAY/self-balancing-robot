@@ -1,9 +1,25 @@
+// Copyright 2025 the original author or authors.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see [https://www.gnu.org/licenses/]
+
 #ifndef BLDCMotor_h
 #define BLDCMotor_h
 
-#include "esp_platform.h"
+#include "esp/platform.hpp"
 #include "common/base_classes/FOCMotor.h"
 #include "common/base_classes/Sensor.h"
+#include "common/base_classes/FOCDriver.h"
 #include "common/base_classes/BLDCDriver.h"
 #include "common/foc_utils.h"
 #include "common/time_utils.h"
@@ -39,7 +55,7 @@ class BLDCMotor: public FOCMotor
     BLDCDriver* driver; 
     
     /**  Motor hardware init function */
-  	void init() override;
+  	int init() override;
     /** Motor disable function */
   	void disable() override;
     /** Motor enable function */
@@ -49,7 +65,7 @@ class BLDCMotor: public FOCMotor
      * Function initializing FOC algorithm
      * and aligning sensor's and motors' zero position 
      */  
-    int initFOC( float zero_electric_offset = NOT_SET , Direction sensor_direction = Direction::CW) override;
+    int initFOC() override;
     /**
      * Function running FOC algorithm in real-time
      * it calculates the gets motor angle and sets the appropriate voltages 
@@ -69,8 +85,7 @@ class BLDCMotor: public FOCMotor
     void move(float target = NOT_SET) override;
     
     float Ua, Ub, Uc;//!< Current phase voltages Ua,Ub and Uc set to motor
-    float	Ualpha, Ubeta; //!< Phase voltages U alpha and U beta used for inverse Park and Clarke transform
-
+    
   /**
     * Method using FOC to set Uq to the motor at the optimal angle
     * Heart of the FOC algorithm
@@ -81,6 +96,16 @@ class BLDCMotor: public FOCMotor
     */
     void setPhaseVoltage(float Uq, float Ud, float angle_el) override;
 
+    /**
+     * Measure resistance and inductance of a BLDCMotor and print results to debug.
+     * If a sensor is available, an estimate of zero electric angle will be reported too.
+     * @param voltage The voltage applied to the motor
+     * @returns 0 for success, >0 for failure
+     */
+    int characteriseMotor(float voltage){
+      return FOCMotor::characteriseMotor(voltage, 1.5f);
+    }
+    
   private:
     // FOC methods 
 

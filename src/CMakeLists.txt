@@ -1,19 +1,31 @@
 
 set(FOC_FILES
-    "foc/common/pid.cpp"
-    "foc/common/time_utils.cpp"
-    "foc/common/lowpass_filter.cpp"
-    "foc/common/base_classes/CurrentSense.cpp"
-    "foc/common/base_classes/Sensor.cpp"
-    "foc/common/base_classes/FOCMotor.cpp"
-    "foc/communication/Commander.cpp"
-    "foc/communication/SimpleFOCDebug.cpp"
-    "foc/current_sense/GenericCurrentSense.cpp"
-    "foc/current_sense/LowsideCurrentSense.cpp"
-    "foc/sensors/GenericSensor.cpp"
-    "foc/sensors/Encoder.cpp"
-    "foc/sensors/HallSensor.cpp"
-    "foc/BLDCMotor.cpp")
+    foc/common/pid.cpp
+    foc/common/time_utils.cpp
+    foc/common/foc_utils.cpp
+    foc/common/lowpass_filter.cpp
+    foc/common/base_classes/CurrentSense.cpp
+    foc/common/base_classes/Sensor.cpp
+    foc/common/base_classes/FOCMotor.cpp
+    foc/communication/Commander.cpp
+    foc/communication/SimpleFOCDebug.cpp
+    foc/current_sense/GenericCurrentSense.cpp
+    foc/current_sense/LowsideCurrentSense.cpp
+    foc/current_sense/hardware_specific/esp32/esp32_mcu.cpp
+    foc/current_sense/hardware_specific/esp32/esp32_adc_driver.cpp
+    foc/sensors/GenericSensor.cpp
+    foc/sensors/Encoder.cpp
+    foc/sensors/HallSensor.cpp
+    foc/sensors/HallSensor.cpp
+    foc/sensors/MagneticSensorI2C.cpp
+    foc/drivers/BLDCDriver3PWM.cpp
+    foc/drivers/hardware_specific/generic_mcu.cpp
+    foc/drivers/hardware_specific/esp32/esp32_mcpwm_mcu.cpp
+    foc/drivers/hardware_specific/esp32/esp32_driver_mcpwm.cpp
+    foc/angle_sensor/as5600.cpp
+
+    foc/BLDCMotor.cpp
+)
 
 
 idf_component_register(SRCS
@@ -24,12 +36,14 @@ idf_component_register(SRCS
     mpu6050.cpp
     STSServoDriver.cpp
 
+    robot.cpp
+
     esp/io.cpp
     esp/gpio.cpp
     esp/misc.cpp
     esp/serial.cpp
 
-    #    ${FOC_FILES}
+    ${FOC_FILES}
 
     PRIV_REQUIRES nvs_flash spi_flash esp_adc esp_driver_gpio esp_timer esp_wifi freertos
     INCLUDE_DIRS "." "../include"

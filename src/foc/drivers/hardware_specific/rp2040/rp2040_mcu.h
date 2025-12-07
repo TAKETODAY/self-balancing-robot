@@ -2,7 +2,9 @@
 
 #pragma once
 
-#if defined(TARGET_RP2040)
+#include "Arduino.h"
+
+#if defined(TARGET_RP2040) || defined(TARGET_RP2350)
 
 
 

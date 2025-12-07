@@ -1,7 +1,7 @@
 #ifndef FOCUTILS_LIB_H
 #define FOCUTILS_LIB_H
 
-#include "esp_platform.h"
+#include "Arduino.h"
 
 // sign function
 #define _sign(a) ( ( (a) < 0 )  ?  -1   : ( (a) > 0 ) )
@@ -12,6 +12,9 @@
 #define _sqrt(a) (_sqrtApprox(a))
 #define _isset(a) ( (a) != (NOT_SET) )
 #define _UNUSED(v) (void) (v)
+#define _powtwo(x) (1 << (x))
+
+#define _swap(a, b) { auto temp = a; a = b; b = temp; }
 
 // utility defines
 #define _2_SQRT3 1.15470053838f
@@ -28,31 +31,38 @@
 #define _PI_6 0.52359877559f
 #define _RPM_TO_RADS 0.10471975512f
 
-#define NOT_SET -12345.0
+#define NOT_SET -12345.0f
 #define _HIGH_IMPEDANCE 0
 #define _HIGH_Z _HIGH_IMPEDANCE
 #define _ACTIVE 1
-#define _NC (NOT_SET)
+#define _NC ((int) NOT_SET)
 
 #define MIN_ANGLE_DETECT_MOVEMENT (_2PI/101.0f)
 
 // dq current structure
-struct DQCurrent_s {
-  float d;
-  float q;
+struct DQCurrent_s
+{
+    float d;
+    float q;
 };
-
 // phase current structure
-struct PhaseCurrent_s {
-  float a;
-  float b;
-  float c;
+struct PhaseCurrent_s
+{
+    float a;
+    float b;
+    float c;
 };
-
 // dq voltage structs
-struct DQVoltage_s {
-  float d;
-  float q;
+struct DQVoltage_s
+{
+    float d;
+    float q;
+};
+// alpha beta current structure
+struct ABCurrent_s
+{
+    float alpha;
+    float beta;
 };
 
 
@@ -70,6 +80,18 @@ float _sin(float a);
  * @param a angle in between 0 and 2PI
  */
 float _cos(float a);
+/**
+ * Function returning both sine and cosine of the angle in one call.
+ * Internally it uses the _sin and _cos functions, but you may wish to
+ * provide your own implementation which is more optimized.
+ */
+void _sincos(float a, float* s, float* c);
+
+/**
+ * Function approximating atan2 
+ * 
+ */
+float _atan2(float y, float x);
 
 /**
  * normalizing radian angle to [0,2PI]

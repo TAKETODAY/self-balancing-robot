@@ -1,7 +1,7 @@
 #ifndef GENERIC_CS_LIB_H
 #define GENERIC_CS_LIB_H
 
-#include "esp_platform.h"
+#include "Arduino.h"
 #include "../common/foc_utils.h"
 #include "../common/time_utils.h"
 #include "../common/defaults.h"
@@ -20,7 +20,7 @@ class GenericCurrentSense: public CurrentSense{
     // CurrentSense interface implementing functions 
     int init() override;
     PhaseCurrent_s getPhaseCurrents() override;
-    int driverAlign(float align_voltage) override;
+    int driverAlign(float align_voltage, bool modulation_centered) override;
 
 
     PhaseCurrent_s (*readCallback)() = nullptr; //!< function pointer to sensor reading

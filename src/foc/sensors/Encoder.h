@@ -1,22 +1,7 @@
-// Copyright 2025 the original author or authors.
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program. If not, see [https://www.gnu.org/licenses/]
-
 #ifndef ENCODER_LIB_H
 #define ENCODER_LIB_H
 
-#include "esp/platform.h"
+#include "Arduino.h"
 #include "../common/foc_utils.h"
 #include "../common/time_utils.h"
 #include "../common/base_classes/Sensor.h"
@@ -76,18 +61,14 @@ class Encoder: public Sensor{
     // Abstract functions of the Sensor class implementation
     /** get current angle (rad) */
     float getSensorAngle() override;
-    float getMechanicalAngle() override;
     /**  get current angular velocity (rad/s) */
     float getVelocity() override;
-    float getAngle() override;
-    double getPreciseAngle() override;
-    int32_t getFullRotations() override;
     virtual void update() override;
 
     /**
      * returns 0 if it does need search for absolute zero
      * 0 - encoder without index 
-     * 1 - ecoder with index
+     * 1 - encoder with index
      */
     int needsSearch() override;
 

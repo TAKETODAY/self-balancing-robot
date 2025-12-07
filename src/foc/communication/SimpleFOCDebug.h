@@ -1,8 +1,23 @@
 
+// Copyright 2025 the original author or authors.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see [https://www.gnu.org/licenses/]
+
 #ifndef __SIMPLEFOCDEBUG_H__
 #define __SIMPLEFOCDEBUG_H__
 
-#include "esp_platform.h"
+#include "esp/platform.hpp"
 
 
 /**
@@ -32,25 +47,29 @@
  * 
  **/
 
+// #define SIMPLEFOC_DISABLE_DEBUG
 
-#ifndef SIMPLEFOC_DISABLE_DEBUG
+#ifndef SIMPLEFOC_DISABLE_DEBUG 
 
 class SimpleFOCDebug {
 public:
-    static void enable(Print* debugPrint = &Serial);
+    static void enable(Writer* debugPrint = &Serial);
 
     static void println(const __FlashStringHelper* msg);
+    static void println(const StringSumHelper msg);
     static void println(const char* msg);
     static void println(const __FlashStringHelper* msg, float val);
     static void println(const char* msg, float val);
     static void println(const __FlashStringHelper* msg, int val);
     static void println(const char* msg, int val);
+    static void println(const char* msg, char val);
     static void println();
     static void println(int val);
     static void println(float val);
 
     static void print(const char* msg);
     static void print(const __FlashStringHelper* msg);
+    static void print(const StringSumHelper msg);
     static void print(int val);
     static void print(float val);
 
@@ -61,10 +80,6 @@ protected:
 
 #define SIMPLEFOC_DEBUG(msg, ...) \
     SimpleFOCDebug::println(F(msg), ##__VA_ARGS__)
-
-
-
-
 
 #else //ifndef SIMPLEFOC_DISABLE_DEBUG
 

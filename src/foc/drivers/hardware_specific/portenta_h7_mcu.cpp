@@ -1,7 +1,13 @@
 
 #include "../hardware_api.h"
 
-#if defined(TARGET_PORTENTA_H7)
+#if defined(TARGET_PORTENTA_H7) && false
+
+
+#pragma message("")
+#pragma message("SimpleFOC: compiling for Arduino/Portenta_H7")
+#pragma message("")
+
 
 #include "pwmout_api.h"
 #include "pinDefinitions.h"
