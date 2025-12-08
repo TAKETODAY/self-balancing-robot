@@ -24,14 +24,14 @@ extern "C" {
  *
  * @return number of microseconds since underlying timer has been started
  */
-unsigned long micros();
+uint64_t micros();
 
 /**
  * @brief Get time in us since boot.
  *
  * @return number of milliseconds since underlying timer has been started
  */
-unsigned long millis();
+uint64_t millis();
 
 /**
  * @brief Delay us.

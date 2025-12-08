@@ -225,3 +225,5 @@ private:
   size_t _txBufferSize;
 
 };
+
+extern SerialPort serial;

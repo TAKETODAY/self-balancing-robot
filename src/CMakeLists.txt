@@ -32,7 +32,7 @@ idf_component_register(SRCS
     wifi.c
     servos.cpp
     battery.cpp
-    mpu6050.cpp
+    AttitudeSensor.cpp
     STSServoDriver.cpp
 
     robot.cpp

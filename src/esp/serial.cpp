@@ -26,6 +26,8 @@ static constexpr SerialPin serialPins[UART_NUM_MAX] = {
   { UART_NUM_2_TXD_DIRECT_GPIO_NUM, UART_NUM_2_RXD_DIRECT_GPIO_NUM },
 };
 
+SerialPort serial(UART_NUM_0);
+
 SerialPort::SerialPort(const uart_port_t _uart_num) :
   _txPin(serialPins[_uart_num].tx),
   _rxPin(serialPins[_uart_num].rx),

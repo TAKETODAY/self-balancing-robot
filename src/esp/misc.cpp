@@ -19,18 +19,18 @@
 #include "freertos/task.h"
 #include "esp_timer.h"
 
-unsigned long micros() {
-  return static_cast<unsigned long>(esp_timer_get_time());
+uint64_t micros() {
+  return static_cast<uint64_t>(esp_timer_get_time());
 }
 
-unsigned long millis() {
-  return static_cast<unsigned long>(esp_timer_get_time() / 1000ULL);
+uint64_t millis() {
+  return esp_timer_get_time() / 1000ULL;
 }
 
 void delayMicroseconds(uint32_t us) {
-  uint64_t m = static_cast<uint64_t>(esp_timer_get_time());
+  auto m = static_cast<uint64_t>(esp_timer_get_time());
   if (us) {
-    uint64_t e = (m + us);
+    uint64_t e = m + us;
     if (m > e) {
       // overflow
       while (static_cast<uint64_t>(esp_timer_get_time()) > e) {
