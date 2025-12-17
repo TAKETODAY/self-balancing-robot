@@ -154,13 +154,10 @@ static void foc_balance_loop(void* pvParameters) {
     // fallRecoveryResetCounter作用：防止小车倒地后某个角度，陷入循环，motor.target一直=0
     // 向后倒地-31度，向前倒地（带支架）52度
     if (((controller->LQR_angle < -30.0f && controller->fallRecoveryResetCounter < 130) // 向后倒地
-         || (controller->LQR_angle > 35.0f && controller->fallRecoveryResetCounter < 400) // 向前倒底 实测角度小于52度，并且完全倒地耗时较长
-        )
+         || (controller->LQR_angle > 35.0f && controller->fallRecoveryResetCounter < 400)) // 向前倒底 实测角度小于52度，并且完全倒地耗时较长
         && !controller->sitting_down && controller->robot_enabled && wrobot.joyy == 0) {
       controller->resetZeroPoint();
       controller->fallRecoveryResetCounter++;
-      // motor_L_target = 0;
-      // motor_R_target = 0;
 
       motor_L.target = 0;
       motor_R.target = 0;
@@ -168,9 +165,6 @@ static void foc_balance_loop(void* pvParameters) {
 
     // 大仰角倒地，轮子就不要转了 修改
     if (abs(controller->LQR_angle) > 120.0f) {
-      // motor_L_target = 0;
-      // motor_R_target = 0;
-
       motor_L.target = 0;
       motor_R.target = 0;
     }
@@ -204,9 +198,9 @@ void LQRController::resetZeroPoint() {
 void LQRController::balance_loop() {
   LQR_distance = (-0.5) * (motor_L.shaft_angle + motor_R.shaft_angle); // 两个电机的旋转角度（shaft_angle）,单位：弧度（rad）实际位移量
   LQR_speed = (-0.5) * (motor_L.shaft_velocity + motor_R.shaft_velocity); // 两个电机角速度（shaft_velocity）,单位：弧度 / 秒（rad/s）
-  LQR_angle = attitude.getAngleY(); // mpu6050 pitch 角度，单位：度（°）
+  LQR_angle = attitude.pitch; // mpu6050 pitch 角度，单位：度（°）
 
-  LQR_gyro = attitude.getGyroY(); // pitch Y轴角速度,单位：度 / 秒（°/s）
+  LQR_gyro = attitude.gyro.y; // pitch Y轴角速度,单位：度 / 秒（°/s）
 
   angle_control = pid_pitch(LQR_angle - pitch_zeropoint) + pitch_adjust;
 
@@ -371,7 +365,7 @@ void LQRController::yaw_loop() {
   // 限制yaw_angle_control上限，避免超压（按电机7.4V反推，设为12较合适）
   yaw_angle_control = constrain(yaw_angle_control, -12.0f, 12.0f);
 
-  YAW_gyro = attitude.getGyroZ(); // 左右偏航角速度，用于纠正小车前后走直线时的角度偏差
+  YAW_gyro = attitude.gyro.z; // 左右偏航角速度，用于纠正小车前后走直线时的角度偏差
   float yaw_gyro_control = pid_yaw_gyro(YAW_gyro);
   YAW_output = yaw_angle_control + yaw_gyro_control;
 }

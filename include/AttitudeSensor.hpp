@@ -29,37 +29,21 @@ public:
   void calcGyroOffsets(bool console = false, uint16_t delayBefore = 1000, uint16_t delayAfter = 500);
   void update();
 
-  float getGyroX() { return gyro.x; }
-  float getGyroY() { return gyro.y; }
-  float getGyroZ() { return gyro.z; }
-
-  float getGyroXoffset() { return gyroXoffset; }
-  float getGyroYoffset() { return gyroYoffset; }
-  float getGyroZoffset() { return gyroZoffset; }
-
-  float getAngleX() { return roll; }
-  float getAngleY() { return pitch; }
-  float getAngleZ() { return yaw; }
-
 public:
   mpu6050_axis_value_t acce{};
   mpu6050_axis_value_t gyro{};
+  mpu6050_axis_value_t offset{};
 
   float roll{}, pitch{}, yaw{};
 
 private:
   mpu6050_handle_t mpu6050;
 
-  float gyroXoffset;
-  float gyroYoffset;
-  float gyroZoffset;
-
-  float accCoef; // Weight of gyroscope
-  float gyroCoef;
+  const float accCoef; // Weight of gyroscope
+  const float gyroCoef;
 
   float interval{};
   uint64_t preInterval{};
-
 };
 
 extern AttitudeSensor attitude;
