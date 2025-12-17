@@ -24,6 +24,9 @@
 
 #include <cstring>
 
+typedef uint8_t byte;
+
+
 /**
  * ESP32-S-Devkitc default serial port: tx:1 rx:3
  * ESP32-S3-Devkitc default serial port: tx:43 rx:44

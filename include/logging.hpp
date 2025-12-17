@@ -22,7 +22,7 @@
 // #define log_warn(TAG, format, ...) ESP_LOGW(TAG, format, __VA_ARGS__)
 // #define log_trace(TAG, format, ...) ESP_LOGV(TAG, format, __VA_ARGS__)
 // #define log_error(TAG, format, ...) ESP_LOGE(TAG, format, __VA_ARGS__)
-
+//
 
 #define log_info(format, ...) ESP_LOGI(TAG, format, __VA_ARGS__)
 #define log_debug(format, ...) ESP_LOGD(TAG, format, __VA_ARGS__)

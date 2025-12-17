@@ -17,6 +17,7 @@
 #include "servos.hpp"
 
 #include "esp_log.h"
+#include "robot.hpp"
 #include "STSServoDriver.hpp"
 #include "esp/gpio.hpp"
 #include "freertos/FreeRTOS.h"
@@ -32,15 +33,6 @@ STSServoDriver servos;
 byte ids[] = { 1, 2 };
 int positions[2];
 int speeds[] = { 800, 800 };
-
-#define SERVO0_MIN  2050 // 舵机1最低位置
-#define SERVO1_MIN  2050 // 舵机2最低位置
-#define SERVO0_MAX (2047 + 12 + 8.4 * (35 + 10)) // 2438 舵机1最高 2600
-#define SERVO1_MAX (2047 - 12 - 8.4 * (35 + 10)) // 1658 舵机2最高 1490
-#define SERVO0_ACC 100 // 舵机1加速度，不能太快，否则影响其他动作平衡
-#define SERVO1_ACC 100 // 舵机2加速度
-#define SERVO0_SPEED 400 // 舵机1速度，不能太快，否则影响其他动作平衡
-#define SERVO1_SPEED 400 // 舵机2速度
 
 
 static void servosLoop(void* pvParameters);
@@ -78,7 +70,6 @@ static void servosLoop(void* pvParameters) {
 
   int offset = SERVO0_MIN;
   int last = 0;
-  int last2 = 0;
   for (;;) {
     int pos = servos.getCurrentPosition(1) - offset;
 
@@ -87,12 +78,6 @@ static void servosLoop(void* pvParameters) {
       // ESP_LOGI(TAG, "Servo1 Position: %d", pos);
       last = pos;
     }
-    // pos = offset - servos.getCurrentPosition(2);
-    // if (last2 != pos) {
-    //   ESP_LOGI(TAG, "Servo2 Position: %d", pos);
-    //   last2 = pos;
-    // }
-    // servos.setTargetPosition(2, pos);
     delay(50);
   }
 }

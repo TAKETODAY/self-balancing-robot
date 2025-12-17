@@ -20,8 +20,6 @@
 
 #include "esp/serial.hpp"
 
-typedef uint8_t byte;
-
 // using byte = uint8_t;
 
 namespace STSRegisters {

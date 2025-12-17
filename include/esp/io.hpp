@@ -89,6 +89,8 @@ public:
    */
   size_t print(double, int = 2);
 
+  size_t printf(const char* format, ...);
+
   /**
    * @brief Write different types of data and newline.
    *

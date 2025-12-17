@@ -34,7 +34,8 @@ idf_component_register(SRCS
     battery.cpp
     AttitudeSensor.cpp
     STSServoDriver.cpp
-
+    LQRController.cpp
+    mpu6050.c
     robot.cpp
 
     esp/io.cpp

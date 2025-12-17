@@ -29,40 +29,33 @@ public:
   void calcGyroOffsets(bool console = false, uint16_t delayBefore = 1000, uint16_t delayAfter = 500);
   void update();
 
-  float getGyroX() { return gyro.gyro_x; }
-  float getGyroY() { return gyro.gyro_y; }
-  float getGyroZ() { return gyro.gyro_z; }
+  float getGyroX() { return gyro.x; }
+  float getGyroY() { return gyro.y; }
+  float getGyroZ() { return gyro.z; }
 
   float getGyroXoffset() { return gyroXoffset; }
   float getGyroYoffset() { return gyroYoffset; }
   float getGyroZoffset() { return gyroZoffset; }
 
-  float getAccAngleX() { return angleAccX; }
-  float getAccAngleY() { return angleAccY; }
-
-  float getGyroAngleX() { return angleGyroX; }
-  float getGyroAngleY() { return angleGyroY; }
-  float getGyroAngleZ() { return angleGyroZ; }
-
-  float getAngleX() { return angleX; }
-  float getAngleY() { return angleY; }
-  float getAngleZ() { return angleZ; }
+  float getAngleX() { return roll; }
+  float getAngleY() { return pitch; }
+  float getAngleZ() { return yaw; }
 
 public:
-  mpu6050_acce_value_t acce{};
-  mpu6050_gyro_value_t gyro{};
+  mpu6050_axis_value_t acce{};
+  mpu6050_axis_value_t gyro{};
+
+  float roll{}, pitch{}, yaw{};
 
 private:
   mpu6050_handle_t mpu6050;
 
-  float gyroXoffset{}, gyroYoffset{}, gyroZoffset{};
+  float gyroXoffset;
+  float gyroYoffset;
+  float gyroZoffset;
 
-  float angleGyroX{}, angleGyroY{}, angleGyroZ{},
-      angleAccX{}, angleAccY{}, angleAccZ{};
-
-  float angleX{}, angleY{}, angleZ{};
-
-  float accCoef{}, gyroCoef{};
+  float accCoef; // Weight of gyroscope
+  float gyroCoef;
 
   float interval{};
   uint64_t preInterval{};
