@@ -1,3 +1,18 @@
+// Copyright 2025 the original author or authors.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see [https://www.gnu.org/licenses/]
+
 #ifndef SENSOR_H
 #define SENSOR_H
 
@@ -45,86 +60,87 @@ class Sensor {
   friend class SmoothingSensor;
 
 public:
+  virtual ~Sensor() = default;
   /**
-         * Get mechanical shaft angle in the range 0 to 2PI. This value will be as precise as possible with
-         * the hardware. Base implementation uses the values returned by update() so that 
-         * the same values are returned until update() is called again.
-         */
+   * Get mechanical shaft angle in the range 0 to 2PI. This value will be as precise as possible with
+   * the hardware. Base implementation uses the values returned by update() so that
+   * the same values are returned until update() is called again.
+   */
   virtual float getMechanicalAngle();
 
   /**
-         * Get current position (in rad) including full rotations and shaft angle.
-         * Base implementation uses the values returned by update() so that the same
-         * values are returned until update() is called again.
-         * Note that this value has limited precision as the number of rotations increases,
-         * because the limited precision of float can't capture the large angle of the full 
-         * rotations and the small angle of the shaft angle at the same time.
-         */
+   * Get current position (in rad) including full rotations and shaft angle.
+   * Base implementation uses the values returned by update() so that the same
+   * values are returned until update() is called again.
+   * Note that this value has limited precision as the number of rotations increases,
+   * because the limited precision of float can't capture the large angle of the full
+   * rotations and the small angle of the shaft angle at the same time.
+   */
   virtual float getAngle();
 
   /** 
-         * On architectures supporting it, this will return a double precision position value,
-         * which should have improved precision for large position values.
-         * Base implementation uses the values returned by update() so that the same
-         * values are returned until update() is called again.
-         */
+   * On architectures supporting it, this will return a double precision position value,
+   * which should have improved precision for large position values.
+   * Base implementation uses the values returned by update() so that the same
+   * values are returned until update() is called again.
+   */
   virtual double getPreciseAngle();
 
   /** 
-         * Get current angular velocity (rad/s)
-         * Can be overridden in subclasses. Base implementation uses the values 
-         * returned by update() so that it only makes sense to call this if update()
-         * has been called in the meantime.
-         */
+   * Get current angular velocity (rad/s)
+   * Can be overridden in subclasses. Base implementation uses the values
+   * returned by update() so that it only makes sense to call this if update()
+   * has been called in the meantime.
+   */
   virtual float getVelocity();
 
   /**
-         * Get the number of full rotations
-         * Base implementation uses the values returned by update() so that the same
-         * values are returned until update() is called again. 
-         */
+   * Get the number of full rotations
+   * Base implementation uses the values returned by update() so that the same
+   * values are returned until update() is called again.
+   */
   virtual int32_t getFullRotations();
 
   /**
-         * Updates the sensor values by reading the hardware sensor.
-         * Some implementations may work with interrupts, and not need this.
-         * The base implementation calls getSensorAngle(), and updates internal
-         * fields for angle, timestamp and full rotations.
-         * This method must be called frequently enough to guarantee that full
-         * rotations are not "missed" due to infrequent polling.
-         * Override in subclasses if alternative behaviours are required for your
-         * sensor hardware.
-         */
+   * Updates the sensor values by reading the hardware sensor.
+   * Some implementations may work with interrupts, and not need this.
+   * The base implementation calls getSensorAngle(), and updates internal
+   * fields for angle, timestamp and full rotations.
+   * This method must be called frequently enough to guarantee that full
+   * rotations are not "missed" due to infrequent polling.
+   * Override in subclasses if alternative behaviours are required for your
+   * sensor hardware.
+   */
   virtual void update();
 
   /** 
-         * returns 0 if it does need search for absolute zero
-         * 0 - magnetic sensor (& encoder with index which is found)
-         * 1 - ecoder with index (with index not found yet)
-         */
+   * returns 0 if it does need search for absolute zero
+   * 0 - magnetic sensor (& encoder with index which is found)
+   * 1 - ecoder with index (with index not found yet)
+   */
   virtual int needsSearch();
 
   /**
-         * Minimum time between updates to velocity. If time elapsed is lower than this, the velocity is not updated.
-         */
+   * Minimum time between updates to velocity. If time elapsed is lower than this, the velocity is not updated.
+   */
   float min_elapsed_time = 0.000100; // default is 100 microseconds, or 10kHz
 
 protected:
   /** 
-         * Get current shaft angle from the sensor hardware, and 
-         * return it as a float in radians, in the range 0 to 2PI.
-         * 
-         * This method is pure virtual and must be implemented in subclasses.
-         * Calling this method directly does not update the base-class internal fields.
-         * Use update() when calling from outside code.
-         */
+   * Get current shaft angle from the sensor hardware, and
+   * return it as a float in radians, in the range 0 to 2PI.
+   *
+   * This method is pure virtual and must be implemented in subclasses.
+   * Calling this method directly does not update the base-class internal fields.
+   * Use update() when calling from outside code.
+   */
   virtual float getSensorAngle() =0;
   /**
-         * Call Sensor::init() from your sensor subclass's init method if you want smoother startup
-         * The base class init() method calls getSensorAngle() several times to initialize the internal fields
-         * to current values, ensuring there is no discontinuity ("jump from zero") during the first calls
-         * to sensor.getAngle() and sensor.getVelocity()
-         */
+   * Call Sensor::init() from your sensor subclass's init method if you want smoother startup
+   * The base class init() method calls getSensorAngle() several times to initialize the internal fields
+   * to current values, ensuring there is no discontinuity ("jump from zero") during the first calls
+   * to sensor.getAngle() and sensor.getVelocity()
+   */
   virtual void init();
 
   // velocity calculation variables

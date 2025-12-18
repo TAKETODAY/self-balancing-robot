@@ -1,16 +1,27 @@
-/*
- * SPDX-FileCopyrightText: 2023-2025 Espressif Systems (Shanghai) CO LTD
- *
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2025 the original author or authors.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see [https://www.gnu.org/licenses/]
 
 #include "as5600.h"
 #include "esp_check.h"
 
 #define PI 3.14159265358979f
+
 static const char* TAG = "AS5600";
 
-AS5600::AS5600(i2c_port_t i2c_port, gpio_num_t scl_io, gpio_num_t sda_io) {
+AS5600::AS5600(i2c_port_t i2c_port, gpio_num_t scl_io, gpio_num_t sda_io)
+  : _i2c_bus(nullptr), _i2c_device(nullptr), _raw_angle(0), _angle(0) {
   _i2c_port = i2c_port;
   _scl_io = scl_io;
   _sda_io = sda_io;
@@ -34,16 +45,16 @@ void AS5600::init() {
   conf.clk_flags = 0;
 
   _i2c_bus = i2c_bus_create(_i2c_port, &conf);
-  ESP_RETURN_ON_FALSE(_i2c_bus != NULL, , TAG, "I2C bus create fail");
+  ESP_RETURN_ON_FALSE(_i2c_bus != nullptr, , TAG, "I2C bus create fail");
   _i2c_device = i2c_bus_device_create(_i2c_bus, 0x36, 0);
-  ESP_RETURN_ON_FALSE(_i2c_device != NULL, , TAG, "AS5600 device create fail");
+  ESP_RETURN_ON_FALSE(_i2c_device != nullptr, , TAG, "AS5600 device create fail");
   _is_installed = true;
 }
 
 void AS5600::deinit() {
   esp_err_t ret = ESP_FAIL;
   i2c_bus_device_delete(&_i2c_device);
-  ESP_RETURN_ON_FALSE(_i2c_device == NULL, , TAG, "AS5600 device delete fail");
+  ESP_RETURN_ON_FALSE(_i2c_device == nullptr, , TAG, "AS5600 device delete fail");
   ret = i2c_bus_delete(&_i2c_bus);
   ESP_RETURN_ON_FALSE(ret == ESP_OK, , TAG, "I2C bus delete fail");
   _is_installed = false;
@@ -54,7 +65,7 @@ float AS5600::getSensorAngle() {
   if (i2c_bus_read_bytes(_i2c_device, 0x0C, 2, raw_angle_buf) != ESP_OK) {
     return -1.0f;
   }
-  _raw_angle = (uint16_t)(raw_angle_buf[0] << 8 | raw_angle_buf[1]);
+  _raw_angle = (uint16_t) (raw_angle_buf[0] << 8 | raw_angle_buf[1]);
   _angle = (((int) _raw_angle & 0b0000111111111111) * 360.0f / 4096.0f) * (PI / 180.0f);
   return _angle;
 }

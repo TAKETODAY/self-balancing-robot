@@ -54,35 +54,29 @@ MagneticSensorI2CConfig_s MT6701_I2C = {
 //  @param _bit_resolution  bit resolution of the sensor
 //  @param _angle_register_msb  angle read register
 //  @param _bits_used_msb number of used bits in msb
-MagneticSensorI2C::MagneticSensorI2C(uint8_t chip_address, int bit_resolution, uint8_t angle_register_msb, int _bits_used_msb, bool lsb_right_aligned) {
+MagneticSensorI2C::MagneticSensorI2C(uint8_t chip_address, int bit_resolution, uint8_t angle_register_msb, int msb_bits_used, bool lsb_right_aligned) :
+  cpr(_powtwo(bit_resolution)), _conf(), wire(nullptr) {
   _conf.chip_address = chip_address;
   _conf.bit_resolution = bit_resolution;
   _conf.angle_register = angle_register_msb;
-  _conf.msb_mask = (uint8_t)((1 << _bits_used_msb) - 1);
+  _conf.msb_mask = (uint8_t) ((1 << msb_bits_used) - 1);
 
-  uint8_t lsb_used = bit_resolution - _bits_used_msb; // used bits in LSB
-  _conf.lsb_mask = (uint8_t)((1 << (lsb_used)) - 1);
+  uint8_t lsb_used = bit_resolution - msb_bits_used; // used bits in LSB
+  _conf.lsb_mask = (uint8_t) ((1 << (lsb_used)) - 1);
   if (!lsb_right_aligned)
     _conf.lsb_shift = 8 - lsb_used;
   else
     _conf.lsb_shift = 0;
   _conf.msb_shift = lsb_used;
 
-  cpr = _powtwo(bit_resolution);
-
 }
 
 
-MagneticSensorI2C::MagneticSensorI2C(MagneticSensorI2CConfig_s config) {
-  _conf = config;
-  cpr = _powtwo(config.bit_resolution);
-  // wire = &Wire;
+MagneticSensorI2C::MagneticSensorI2C(MagneticSensorI2CConfig_s config) :
+  cpr(_powtwo(config.bit_resolution)), _conf(config), wire(nullptr) {
+
 }
 
-
-MagneticSensorI2C MagneticSensorI2C::AS5600() {
-  return { AS5600_I2C };
-}
 
 
 void MagneticSensorI2C::init(espp::I2c* _wire) {
@@ -99,31 +93,6 @@ float MagneticSensorI2C::getSensorAngle() {
   return (getRawCount() / (float) cpr) * _2PI;
 }
 
-
-// I2C functions
-/*
-* Read an angle from the angle register of the sensor
-*/
-int MagneticSensorI2C::getRawCount() {
-  // read the angle register first MSB then LSB
-  byte readArray[2];
-  uint16_t readValue = 0;
-  // notify the device that is aboout to be read
-  // wire->beginTransmission(_conf.chip_address);
-  // wire->write(_conf.angle_register);
-  // currWireError = wire->endTransmission(false);
-  // // read the data msb and lsb
-  // wire->requestFrom(_conf.chip_address, 2);
-  // for (byte i = 0; i < 2; i++) {
-  //   readArray[i] = wire->read();
-  // }
-
-  wire->read_at_register(_conf.chip_address, _conf.angle_register, readArray, 2);
-
-  readValue = (readArray[0] & _conf.msb_mask) << _conf.msb_shift;
-  readValue |= (readArray[1] & _conf.lsb_mask) >> _conf.lsb_shift;
-  return readValue;
-}
 
 /*
 * Checks whether other devices have locked the bus. Can clear SDA locks.
@@ -166,4 +135,29 @@ int MagneticSensorI2C::checkBus(byte sda_pin, byte scl_pin) {
   pinMode(scl_pin, INPUT);
 
   return 0;
+}
+
+// I2C functions
+/*
+* Read an angle from the angle register of the sensor
+*/
+int MagneticSensorI2C::getRawCount() {
+  // read the angle register first MSB then LSB
+  byte readArray[2];
+  uint16_t readValue = 0;
+  // notify the device that is aboout to be read
+  // wire->beginTransmission(_conf.chip_address);
+  // wire->write(_conf.angle_register);
+  // currWireError = wire->endTransmission(false);
+  // // read the data msb and lsb
+  // wire->requestFrom(_conf.chip_address, 2);
+  // for (byte i = 0; i < 2; i++) {
+  //   readArray[i] = wire->read();
+  // }
+
+  wire->read_at_register(_conf.chip_address, _conf.angle_register, readArray, 2);
+
+  readValue = (readArray[0] & _conf.msb_mask) << _conf.msb_shift;
+  readValue |= (readArray[1] & _conf.lsb_mask) >> _conf.lsb_shift;
+  return readValue;
 }

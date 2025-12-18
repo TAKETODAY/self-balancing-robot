@@ -44,21 +44,19 @@ extern MagneticSensorI2CConfig_s AS5600_I2C, AS5048_I2C, MT6701_I2C;
 class MagneticSensorI2C : public Sensor {
 public:
   /**
-     * MagneticSensorI2C class constructor
-     * @param chip_address  I2C chip address
-     * @param bit_resolution number of bits of the sensor resolution
-     * @param angle_register_msb  angle read register msb
-     * @param _msb_bits_used number of used bits in msb
-     */
-  MagneticSensorI2C(uint8_t chip_address, int bit_resolution, uint8_t angle_register_msb, int _msb_bits_used, bool lsb_right_aligned = true);
+   * MagneticSensorI2C class constructor
+   * @param chip_address  I2C chip address
+   * @param bit_resolution number of bits of the sensor resolution
+   * @param angle_register_msb  angle read register msb
+   * @param msb_bits_used number of used bits in msb
+   */
+  MagneticSensorI2C(uint8_t chip_address, int bit_resolution, uint8_t angle_register_msb, int msb_bits_used, bool lsb_right_aligned = true);
 
   /**
-     * MagneticSensorI2C class constructor
-     * @param config  I2C config
-     */
-  MagneticSensorI2C(MagneticSensorI2CConfig_s config);
-
-  static MagneticSensorI2C AS5600();
+   * MagneticSensorI2C class constructor
+   * @param config  I2C config
+   */
+  explicit MagneticSensorI2C(MagneticSensorI2CConfig_s config);
 
   /** sensor initialise pins */
   void init(espp::I2c* _wire);
@@ -82,9 +80,9 @@ private:
   int read(uint8_t angle_register_msb);
 
   /**
-     * Function getting current angle register value
-     * it uses angle_register variable
-     */
+   * Function getting current angle register value
+   * it uses angle_register variable
+   */
   int getRawCount();
 
   /* the two wire instance for this sensor */

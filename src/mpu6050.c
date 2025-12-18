@@ -45,10 +45,9 @@ typedef struct {
 
 static esp_err_t mpu6050_write(mpu6050_handle_t sensor, const uint8_t reg_start_addr, const uint8_t* const data_buf, const uint8_t data_len) {
   mpu6050_dev_t* sens = sensor;
-  esp_err_t ret;
-
   i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-  ret = i2c_master_start(cmd);
+
+  esp_err_t ret = i2c_master_start(cmd);
   assert(ESP_OK == ret);
   ret = i2c_master_write_byte(cmd, sens->dev_addr | I2C_MASTER_WRITE, true);
   assert(ESP_OK == ret);
@@ -96,7 +95,7 @@ mpu6050_handle_t mpu6050_create(i2c_port_t port, const uint16_t dev_addr) {
 }
 
 void mpu6050_delete(mpu6050_handle_t sensor) {
-  mpu6050_dev_t* sens = (mpu6050_dev_t*) sensor;
+  mpu6050_dev_t* sens = sensor;
   free(sens);
 }
 
@@ -105,9 +104,8 @@ esp_err_t mpu6050_get_deviceid(mpu6050_handle_t sensor, uint8_t* const deviceid)
 }
 
 esp_err_t mpu6050_wake_up(mpu6050_handle_t sensor) {
-  esp_err_t ret;
   uint8_t tmp;
-  ret = mpu6050_read(sensor, MPU6050_PWR_MGMT_1, &tmp, 1);
+  esp_err_t ret = mpu6050_read(sensor, MPU6050_PWR_MGMT_1, &tmp, 1);
   if (ESP_OK != ret) {
     return ret;
   }
@@ -117,9 +115,8 @@ esp_err_t mpu6050_wake_up(mpu6050_handle_t sensor) {
 }
 
 esp_err_t mpu6050_sleep(mpu6050_handle_t sensor) {
-  esp_err_t ret;
   uint8_t tmp;
-  ret = mpu6050_read(sensor, MPU6050_PWR_MGMT_1, &tmp, 1);
+  esp_err_t ret = mpu6050_read(sensor, MPU6050_PWR_MGMT_1, &tmp, 1);
   if (ESP_OK != ret) {
     return ret;
   }
@@ -129,7 +126,7 @@ esp_err_t mpu6050_sleep(mpu6050_handle_t sensor) {
 }
 
 esp_err_t mpu6050_config(mpu6050_handle_t sensor, const mpu6050_acce_fs_t acce_fs, const mpu6050_gyro_fs_t gyro_fs) {
-  uint8_t config_regs[2] = { gyro_fs << 3, acce_fs << 3 };
+  const uint8_t config_regs[2] = { gyro_fs << 3, acce_fs << 3 };
   return mpu6050_write(sensor, MPU6050_GYRO_CONFIG, config_regs, sizeof(config_regs));
 }
 
@@ -190,21 +187,21 @@ esp_err_t mpu6050_get_gyro_sensitivity(mpu6050_handle_t sensor, float* const gyr
 
 esp_err_t mpu6050_get_raw_acce(mpu6050_handle_t sensor, mpu6050_raw_axis_value_t* const raw_acce_value) {
   uint8_t data_rd[6];
-  esp_err_t ret = mpu6050_read(sensor, MPU6050_ACCEL_XOUT_H, data_rd, sizeof(data_rd));
+  const esp_err_t ret = mpu6050_read(sensor, MPU6050_ACCEL_XOUT_H, data_rd, sizeof(data_rd));
 
-  raw_acce_value->raw_x = (int16_t) ((data_rd[0] << 8) + (data_rd[1]));
-  raw_acce_value->raw_y = (int16_t) ((data_rd[2] << 8) + (data_rd[3]));
-  raw_acce_value->raw_z = (int16_t) ((data_rd[4] << 8) + (data_rd[5]));
+  raw_acce_value->raw_x = (int16_t) ((data_rd[0] << 8) + data_rd[1]);
+  raw_acce_value->raw_y = (int16_t) ((data_rd[2] << 8) + data_rd[3]);
+  raw_acce_value->raw_z = (int16_t) ((data_rd[4] << 8) + data_rd[5]);
   return ret;
 }
 
 esp_err_t mpu6050_get_raw_gyro(mpu6050_handle_t sensor, mpu6050_raw_axis_value_t* const raw_gyro_value) {
   uint8_t data_rd[6];
-  esp_err_t ret = mpu6050_read(sensor, MPU6050_GYRO_XOUT_H, data_rd, sizeof(data_rd));
+  const esp_err_t ret = mpu6050_read(sensor, MPU6050_GYRO_XOUT_H, data_rd, sizeof(data_rd));
 
-  raw_gyro_value->raw_x = (int16_t) ((data_rd[0] << 8) + (data_rd[1]));
-  raw_gyro_value->raw_y = (int16_t) ((data_rd[2] << 8) + (data_rd[3]));
-  raw_gyro_value->raw_z = (int16_t) ((data_rd[4] << 8) + (data_rd[5]));
+  raw_gyro_value->raw_x = (int16_t) ((data_rd[0] << 8) + data_rd[1]);
+  raw_gyro_value->raw_y = (int16_t) ((data_rd[2] << 8) + data_rd[3]);
+  raw_gyro_value->raw_z = (int16_t) ((data_rd[4] << 8) + data_rd[5]);
 
   return ret;
 }

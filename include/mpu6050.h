@@ -21,7 +21,6 @@ extern "C" {
 #endif
 
 #include "driver/i2c.h"
-#include "driver/gpio.h"
 
 #define MPU6050_I2C_ADDRESS         0x68u /*!< I2C address with AD0 pin low */
 #define MPU6050_I2C_ADDRESS_1       0x69u /*!< I2C address with AD0 pin high */
@@ -41,33 +40,6 @@ typedef enum {
   GYRO_FS_2000DPS = 3, /*!< Gyroscope full scale range is +/- 2000 degree per sencond */
 } mpu6050_gyro_fs_t;
 
-typedef enum {
-  INTERRUPT_PIN_ACTIVE_HIGH = 0, /*!< The mpu6050 sets its INT pin HIGH on interrupt */
-  INTERRUPT_PIN_ACTIVE_LOW = 1 /*!< The mpu6050 sets its INT pin LOW on interrupt */
-} mpu6050_int_pin_active_level_t;
-
-typedef enum {
-  INTERRUPT_PIN_PUSH_PULL = 0, /*!< The mpu6050 configures its INT pin as push-pull */
-  INTERRUPT_PIN_OPEN_DRAIN = 1 /*!< The mpu6050 configures its INT pin as open drain*/
-} mpu6050_int_pin_mode_t;
-
-typedef enum {
-  INTERRUPT_LATCH_50US = 0, /*!< The mpu6050 produces a 50 microsecond pulse on interrupt */
-  INTERRUPT_LATCH_UNTIL_CLEARED = 1 /*!< The mpu6050 latches its INT pin to its active level, until interrupt is cleared */
-} mpu6050_int_latch_t;
-
-typedef enum {
-  INTERRUPT_CLEAR_ON_ANY_READ = 0, /*!< INT_STATUS register bits are cleared on any register read */
-  INTERRUPT_CLEAR_ON_STATUS_READ = 1 /*!< INT_STATUS register bits are cleared only by reading INT_STATUS value*/
-} mpu6050_int_clear_t;
-
-typedef struct {
-  gpio_num_t interrupt_pin; /*!< GPIO connected to mpu6050 INT pin       */
-  mpu6050_int_pin_active_level_t active_level; /*!< Active level of mpu6050 INT pin         */
-  mpu6050_int_pin_mode_t pin_mode; /*!< Push-pull or open drain mode for INT pin*/
-  mpu6050_int_latch_t interrupt_latch; /*!< The interrupt pulse behavior of INT pin */
-  mpu6050_int_clear_t interrupt_clear_behavior; /*!< Interrupt status clear behavior         */
-} mpu6050_int_config_t;
 
 extern const uint8_t MPU6050_DATA_RDY_INT_BIT; /*!< DATA READY interrupt bit               */
 extern const uint8_t MPU6050_I2C_MASTER_INT_BIT; /*!< I2C MASTER interrupt bit               */
@@ -92,8 +64,6 @@ typedef struct {
 } mpu6050_axis_value_t;
 
 typedef void* mpu6050_handle_t;
-
-typedef gpio_isr_t mpu6050_isr_t;
 
 /**
  * @brief Create and init sensor object and return a sensor handle
