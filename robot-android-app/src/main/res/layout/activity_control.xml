@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="8dp"
+    tools:context=".activity.ControlActivity">
+
+  <RelativeLayout
+      android:layout_width="match_parent"
+      android:layout_height="70sp">
+
+    <TextView
+        android:id="@+id/name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerInParent="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10sp"
+        android:fontFamily="@font/font"
+        android:text="@string/main_title"
+        android:textColor="@color/colorPrimaryDark"
+        android:textSize="25sp" />
+
+    <TextView
+        android:id="@+id/connection_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/name"
+        android:layout_centerInParent="true"
+        android:fontFamily="@font/font"
+        android:text="@string/device_not_connected"
+        android:textColor="@color/gray"
+        android:textSize="15sp" />
+
+  </RelativeLayout>
+
+
+  <TextView
+      android:id="@+id/textView_strength_left"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_below="@+id/textView_angle_left"
+      android:text="0%" />
+
+
+  <TextView
+      android:id="@+id/textView_angle_right"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_alignParentRight="true"
+      android:text="0°" />
+
+
+  <TextView
+      android:id="@+id/textView_strength_right"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_alignParentRight="true"
+      android:layout_below="@+id/textView_angle_right"
+      android:text="0%" />
+
+
+  <TextView
+      android:id="@+id/textView_coordinate_right"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_alignParentRight="true"
+      android:layout_below="@+id/textView_strength_right"
+      android:text="x050:x050" />
+
+  <TextView
+      android:id="@+id/textView_angle_left"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="0°" />
+
+
+  <cn.taketoday.robot.widget.JoystickView
+      android:id="@+id/joystickView_left"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_alignParentBottom="true"
+      android:layout_marginTop="64dp"
+      app:autoReCenterButton="false"
+      app:backgroundColor="#BCC8C1C1"
+      app:borderColor="#00796B"
+      app:borderWidth="2dp"
+      app:buttonColor="#C9FFFEFE"
+      app:displayDirection="true"
+      app:fixedCenter="false" />
+
+  <cn.taketoday.robot.widget.JoystickView
+      android:id="@+id/joystickView_right"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_alignParentBottom="true"
+      android:layout_alignParentRight="true"
+      android:layout_marginTop="64dp"
+      app:backgroundColor="@color/colorPrimaryDark"
+      app:borderColor="#00796B"
+      app:borderWidth="2dp"
+      app:buttonColor="@color/colorAccent" />
+
+</RelativeLayout>

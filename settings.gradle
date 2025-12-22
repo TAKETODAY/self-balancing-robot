@@ -1,0 +1,8 @@
+rootProject.name = 'self-balancing-robot'
+
+
+include ':robot-android-app'
+include ':robot-embedded-firmware'
+include ':robot-android-app:common'
+
+

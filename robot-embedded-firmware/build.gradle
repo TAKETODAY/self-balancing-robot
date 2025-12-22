@@ -1,0 +1,5 @@
+plugins {
+  id "cpp"
+}
+
+description = "Robot embedded firmware"

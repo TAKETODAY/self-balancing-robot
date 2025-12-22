@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:orientation="vertical"
+  android:screenReaderFocusable="true"
+  tools:context=".fragment.DeviceConnectionFragment">
+
+  <androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal">
+
+
+    <FrameLayout
+      android:id="@+id/bluetooth_settings"
+      android:layout_width="0dp"
+      android:layout_height="match_parent"
+      app:layout_constraintEnd_toEndOf="parent">
+
+      <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <Switch
+          android:id="@+id/switch_bluetooth"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginStart="20dp"
+          android:layout_marginTop="20dp"
+          android:layout_marginEnd="20dp"
+          android:fontFamily="@font/font"
+          android:text="@string/turn_on_bluetooth"
+          android:textColor="#8a000000"
+          app:layout_constraintEnd_toEndOf="parent"
+          app:layout_constraintStart_toStartOf="parent"
+          tools:layout_editor_absoluteY="27dp"
+          />
+
+        <Switch
+          android:id="@+id/switch_refresh_bluetooth"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginStart="20dp"
+          android:layout_marginTop="20dp"
+          android:layout_marginEnd="20dp"
+          android:fontFamily="@font/font"
+          android:text="@string/refresh_bluetooth"
+          android:textColor="#8a000000"
+          app:layout_constraintEnd_toEndOf="parent"
+          app:layout_constraintStart_toStartOf="parent"
+          tools:layout_editor_absoluteY="27dp" />
+
+        <View
+          android:layout_width="wrap_content"
+          android:layout_height="1dp"
+          android:layout_marginTop="20dp"
+          android:background="?android:attr/listDivider" />
+
+
+        <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginStart="20dp"
+          android:layout_marginTop="20dp"
+          android:layout_marginEnd="20dp"
+          android:layout_marginBottom="20dp"
+          android:fontFamily="@font/font"
+          android:text="@string/select_a_nearby_bluetooth_device"
+          app:layout_constraintEnd_toEndOf="parent"
+          app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.recyclerview.widget.RecyclerView
+          android:id="@+id/bluetooth_list"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent" />
+
+      </LinearLayout>
+    </FrameLayout>
+
+
+  </androidx.constraintlayout.widget.ConstraintLayout>
+
+</LinearLayout>

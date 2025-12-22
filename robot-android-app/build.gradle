@@ -1,0 +1,90 @@
+apply plugin: 'com.android.application'
+
+android {
+  namespace "cn.taketoday.robot"
+  compileSdk 36
+
+  buildToolsVersion '36.1.0'
+  buildFeatures {
+    viewBinding true
+    buildConfig true
+    compose true
+  }
+
+  defaultConfig {
+    applicationId 'cn.taketoday.robot'
+    targetSdkVersion 31
+    minSdkVersion = 31
+    versionCode 1
+    versionName '1.0.0'
+    testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    versionNameSuffix '-SNAPSHOT'
+    proguardFiles 'proguard-rules.pro'
+  }
+
+  buildTypes {
+    release {
+      debuggable false
+
+      // Enables code shrinking, obfuscation, and optimization for only
+      // your project's release build type.
+      minifyEnabled true
+
+      // Enables resource shrinking, which is performed by the
+      // Android Gradle plugin.
+      shrinkResources true
+
+      // Includes the default ProGuard rules files that are packaged with
+      // the Android Gradle plugin. To learn more, go to the section about
+      // R8 configuration files.
+      proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
+      buildConfigField("boolean", "DEBUG", "false")
+    }
+
+    debug {
+      buildConfigField("boolean", "DEBUG", "true")
+    }
+  }
+
+  compileOptions {
+    targetCompatibility 17
+    sourceCompatibility 17
+  }
+
+}
+
+dependencies {
+  implementation project(":robot-android-app:common")
+
+  implementation 'org.greenrobot:eventbus:3.3.1'
+  implementation 'androidx.appcompat:appcompat:1.7.1'
+  implementation 'androidx.annotation:annotation:1.9.1'
+  implementation 'androidx.preference:preference:1.2.1'
+  implementation 'com.google.android.material:material:1.13.0'
+  implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
+  implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
+
+//  implementation 'com.joanzapata.iconify:android-iconify-entypo:2.2.2'
+//  implementation 'com.joanzapata.iconify:android-iconify-ionicons:2.2.2'
+//  implementation 'com.joanzapata.iconify:android-iconify-typicons:2.2.2'
+//  implementation 'com.joanzapata.iconify:android-iconify-material:2.2.2'
+//  implementation 'com.joanzapata.iconify:android-iconify-meteocons:2.2.2'
+//  implementation 'com.joanzapata.iconify:android-iconify-fontawesome:2.2.2'
+//  implementation 'com.joanzapata.iconify:android-iconify-weathericons:2.2.2'
+//  implementation 'com.joanzapata.iconify:android-iconify-simplelineicons:2.2.2'
+//  implementation 'com.joanzapata.iconify:android-iconify-material-community:2.2.2'
+
+  implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.10.0'
+  implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.10.0'
+  implementation 'androidx.recyclerview:recyclerview:1.4.0'
+  implementation 'androidx.navigation:navigation-fragment:2.9.6'
+  implementation 'androidx.navigation:navigation-ui:2.9.6'
+  implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.10.0'
+  implementation 'androidx.activity:activity-compose:1.12.2'
+  implementation 'androidx.activity:activity:1.12.2'
+
+
+//  implementation 'com.github.varunest:sparkbutton:1.0.6'
+
+}

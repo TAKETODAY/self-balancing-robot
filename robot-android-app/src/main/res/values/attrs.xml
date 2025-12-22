@@ -1,0 +1,80 @@
+<!--
+  ~ Copyright 2017 - 2025 the original author or authors.
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program. If not, see [https://www.gnu.org/licenses/]
+  -->
+
+<resources>
+
+  <!-- Declare custom theme attributes that allow changing which styles are
+       used for button bars depending on the API level.
+       ?android:attr/buttonBarStyle is new as of API 11 so this is
+       necessary to support previous API levels. -->
+  <declare-styleable name="ButtonBarContainerTheme">
+    <attr name="metaButtonBarStyle" format="reference" />
+    <attr name="metaButtonBarButtonStyle" format="reference" />
+  </declare-styleable>
+
+  <declare-styleable name="TabView">
+    <attr name="tab_textViewSelColor" format="reference|color" />
+    <attr name="tab_textViewUnSelColor" format="reference|color" />
+    <attr name="tab_tabViewBackgroundColor" format="reference|color" />
+    <attr name="tab_tabViewHeight" format="dimension" />
+    <attr name="imageViewTextViewMargin" format="dimension" />
+    <attr name="tab_textViewSize" format="dimension" />
+    <attr name="tab_imageViewWidth" format="dimension" />
+    <attr name="tab_imageViewHeight" format="dimension" />
+    <attr name="tab_tabViewGravity">
+      <flag name="top" value="0x30" />
+      <flag name="bottom" value="0x50" />
+      <flag name="left" value="0x03" />
+      <flag name="right" value="0x05" />
+    </attr>
+    <attr name="tab_tabViewDefaultPosition" format="integer" />
+  </declare-styleable>
+
+  <declare-styleable name="JoystickView">
+
+    <attr name="buttonImage" format="reference" />
+    <attr name="buttonColor" format="color" />
+    <attr name="borderColor" format="color" />
+    <attr name="borderAlpha" format="integer" />
+    <attr name="backgroundColor" format="color" />
+    <attr name="borderWidth" format="dimension" />
+    <attr name="fixedCenter" format="boolean" />
+    <attr name="autoReCenterButton" format="boolean" />
+    <attr name="buttonStickToBorder" format="boolean" />
+    <attr name="enabled" format="boolean" />
+    <attr name="displayDirection" format="boolean" />
+    <attr name="directionColor" format="color" />
+    <attr name="buttonSizeRatio" format="fraction" />
+    <attr name="backgroundSizeRatio" format="fraction" />
+
+    <attr name="buttonDirection">
+      <flag name="horizontal" value="-1" />
+      <flag name="both" value="0" />
+      <flag name="vertical" value="1" />
+    </attr>
+
+  </declare-styleable>
+
+
+  <item name="tabview_fragment_container" type="id" />
+  <item name="tabview_id" type="id" />
+  <declare-styleable name="FullscreenAttrs">
+    <attr name="fullscreenBackgroundColor" format="color" />
+    <attr name="fullscreenTextColor" format="color" />
+  </declare-styleable>
+
+</resources>

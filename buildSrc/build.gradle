@@ -1,0 +1,31 @@
+plugins {
+  id 'java-gradle-plugin'
+}
+
+repositories {
+  mavenLocal()
+  mavenCentral()
+  maven { url = "https://central.sonatype.com/repository/maven-snapshots/" }
+  gradlePluginPortal()
+  google()
+}
+
+Properties properties = new Properties()
+try (def reader = new FileReader(file("../gradle.properties"))) {
+  properties.load(reader)
+}
+
+def infraVersion = properties['infraVersion']
+
+dependencies {
+  implementation(platform("cn.taketoday:infra-bom:$infraVersion"))
+//  implementation "cn.taketoday:today-core"
+
+  implementation 'com.android.tools.build:gradle:8.13.2'
+}
+
+gradlePlugin {
+  plugins {
+
+  }
+}

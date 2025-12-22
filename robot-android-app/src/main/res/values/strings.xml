@@ -1,0 +1,56 @@
+<resources>
+
+  <string name="app_name">轮足机器人</string>
+  <string name="main_title">轮足机器人</string>
+  <string name="nav_home">主页</string>
+  <string name="nav_settings">设置</string>
+  <string name="nav_connection_settings">连接设置</string>
+
+
+  <!-- connect-->
+  <string name="connect_device">连接设备</string>
+  <string name="connect_robot">连接机器人</string>
+
+  <string name="device_connected">已连接</string>
+  <string name="device_not_connected">连接断开</string>
+  <string name="device_connect_error">连接错误</string>
+
+  <!--Dialog-->
+  <string name="dialog_prompt">提示</string>
+
+  <!-- Preference -->
+  <string name="setting_password_title">密码</string>
+
+  <!-- Messages Preferences -->
+  <string name="password_title">你的密码</string>
+
+  <!-- connection device -->
+
+  <string name="bluetooth_device">蓝牙设备</string>
+  <string name="turn_on_bluetooth">开启蓝牙</string>
+  <string name="refresh_bluetooth">搜索机器人设备</string>
+  <string name="select_a_nearby_bluetooth_device">选取附近的蓝牙设备</string>
+
+  <!--permission-->
+  <string name="request_permissions">请打开所有权限,否则程序将不能正常运行</string>
+
+  <!-- tips -->
+  <string name="error">错误</string>
+  <string name="unknown_error">未知错误</string>
+  <string name="unknown_status">未知状态</string>
+  <string name="fatal_error">致命错误</string>
+
+  <string name="insufficient_permissions">权限不足</string>
+
+
+  <string name="settings_robot">机器人参数配置</string>
+  <string name="menu_about">关于</string>
+
+
+  <string name="nav_header_title">海子 Yang</string>
+  <string name="nav_header_subtitle">https://github.com/TAKETODAY</string>
+
+  <string name="nav_header_desc">Navigation header</string>
+
+</resources>
+
