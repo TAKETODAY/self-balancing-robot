@@ -8,4 +8,8 @@ exclude_paths:
   - "**.properties"
   - "**.md"
   - "**.adoc"
+  - "**.gradle"
   - "**/test/**/*"
+  - "**/buildSrc/**/*"
+  - "buildSrc/**/*"
+  - "**/testFixtures/**/*"
