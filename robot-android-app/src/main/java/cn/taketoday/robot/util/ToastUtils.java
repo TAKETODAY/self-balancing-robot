@@ -32,8 +32,4 @@ public abstract class ToastUtils {
     Toast.makeText(context, msg, type).show();
   }
 
-  public static void makeSnackbar(View view) {
-    Snackbar.make(view, "Replace with your own detail action", Snackbar.LENGTH_LONG).setAction("Action", null).show();
-  }
-
 }

@@ -17,34 +17,37 @@
 
 package cn.taketoday.robot.bluetooth;
 
-import android.Manifest;
 import android.app.Application;
+import android.bluetooth.BluetoothA2dp;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothHeadset;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.Looper;
 
-import androidx.annotation.RequiresPermission;
-import androidx.core.content.ContextCompat;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.MutableLiveData;
 
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import cn.taketoday.robot.ApplicationSupport;
+import cn.taketoday.robot.LoggingSupport;
 
 public class BluetoothViewModel extends AndroidViewModel implements BluetoothScanningListener, ApplicationSupport {
 
-  public final MutableLiveData<List<BluetoothDeviceItem>> devices = new MutableLiveData<>();
+  public final MutableLiveData<List<BluetoothItem>> devices = new MutableLiveData<>();
 
   public final MutableLiveData<Boolean> scanning = new MutableLiveData<>(false);
 
@@ -54,7 +57,7 @@ public class BluetoothViewModel extends AndroidViewModel implements BluetoothSca
 
   public final MutableLiveData<@Nullable BluetoothProfile> bluetoothProfile = new MutableLiveData<>();
 
-  private final Map<String, BluetoothDeviceItem> deviceMap = new HashMap<>();
+  private final Map<String, BluetoothItem> deviceMap = new HashMap<>();
 
   private final Handler handler = new Handler(Looper.getMainLooper());
 
@@ -64,7 +67,7 @@ public class BluetoothViewModel extends AndroidViewModel implements BluetoothSca
 
   private final BluetoothManager bluetoothManager;
 
-  private final BluetoothBroadcastReceiver bluetoothBroadcastReceiver = new BluetoothBroadcastReceiver();
+  private final MyBroadcastReceiver bluetoothBroadcastReceiver = new MyBroadcastReceiver();
 
   public BluetoothViewModel(Application application) {
     super(application);
@@ -77,29 +80,29 @@ public class BluetoothViewModel extends AndroidViewModel implements BluetoothSca
     }
     else {
       logger("注册蓝牙监听器");
+      bluetoothEnabled.setValue(bluetoothAdapter.isEnabled());
       bluetoothAdapter.getProfileProxy(application, new BluetoothProfileListener(), BluetoothProfile.GATT);
-      ContextCompat.registerReceiver(application, bluetoothBroadcastReceiver, getIntentFilter(), ContextCompat.RECEIVER_NOT_EXPORTED);
+//      ContextCompat.registerReceiver(application, bluetoothBroadcastReceiver, getIntentFilter(), ContextCompat.RECEIVER_NOT_EXPORTED);
+      application.registerReceiver(bluetoothBroadcastReceiver, createIntentFilter());
     }
   }
 
-  @RequiresPermission(Manifest.permission.BLUETOOTH_SCAN)
   public void startScan() {
+    deviceMap.clear();
+    updateDeviceList();
+
     if (bluetoothAdapter.isDiscovering()) {
       bluetoothAdapter.cancelDiscovery();
     }
 
     bluetoothAdapter.startDiscovery();
-
-    deviceMap.clear();
-    updateDeviceList();
-
     handler.postDelayed(stopScanTask, 12000);
   }
 
-  @RequiresPermission(Manifest.permission.BLUETOOTH_SCAN)
   public void stopScan() {
-    bluetoothController.stopDiscovery();
-
+    if (bluetoothAdapter.isDiscovering()) {
+      bluetoothAdapter.cancelDiscovery();
+    }
     handler.removeCallbacks(stopScanTask);
   }
 
@@ -109,26 +112,44 @@ public class BluetoothViewModel extends AndroidViewModel implements BluetoothSca
   }
 
   private void updateDeviceList() {
-    List<BluetoothDeviceItem> deviceList = new ArrayList<>(deviceMap.values());
+    List<BluetoothItem> deviceList = new ArrayList<>(deviceMap.values());
+    deviceList.sort(Comparator.comparing(BluetoothItem::getName));
     devices.postValue(deviceList);
   }
 
-  @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
   public void loadPairedDevices() {
     updateDeviceList();
   }
 
-  @RequiresPermission(Manifest.permission.BLUETOOTH_SCAN)
   @Override
   protected void onCleared() {
     super.onCleared();
     stopScan();
+
+    destroy();
+  }
+
+  public void destroy() {
+    try {
+      getApplication().unregisterReceiver(bluetoothBroadcastReceiver);
+      BluetoothProfile profile = bluetoothProfile.getValue();
+      if (profile != null) {
+        bluetoothAdapter.closeProfileProxy(BluetoothProfile.GATT, profile);
+      }
+    }
+    catch (IllegalArgumentException e) {
+      logger("ex : %s", e);
+    }
   }
 
   @Override
   public void onDeviceFound(BluetoothDevice device) {
-    BluetoothDeviceItem deviceItem = new BluetoothDeviceItem(device);
-    deviceMap.put(device.getAddress(), deviceItem);
+    if (device.getName() != null) {
+      logger("发现新设备: %s address: %s", device.getName(), device.getAddress());
+      BluetoothItem deviceItem = new BluetoothItem(device);
+      deviceMap.put(device.getAddress(), deviceItem);
+      updateDeviceList();
+    }
   }
 
   @Override
@@ -146,25 +167,25 @@ public class BluetoothViewModel extends AndroidViewModel implements BluetoothSca
     return getApplication();
   }
 
-  private IntentFilter getIntentFilter() {
-    IntentFilter filter = new IntentFilter();
-    filter.addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED);//状态改变
-    filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED); //蓝牙开关状态
-    filter.addAction(BluetoothDevice.ACTION_FOUND);//蓝牙发现新设备(未配对)
-    filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED); //蓝牙开始搜索
-    filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED); //蓝牙搜索结束
-    filter.addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED); //设备配对状态改变
-    filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);//设备建立连接
-    filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED); //设备断开连接
-    filter.addAction(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED); //BluetoothAdapter连接状态
-    return filter;
-  }
-
   /**
    * @return true to indicate adapter shutdown has begun, or false on immediate error
    */
   public boolean disableBluetooth() {
     return bluetoothAdapter.disable();
+  }
+
+  private IntentFilter createIntentFilter() {
+    IntentFilter filter = new IntentFilter();
+    filter.addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED);//状态改变
+    filter.addAction(BluetoothDevice.ACTION_FOUND);//蓝牙发现新设备(未配对)
+    filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);//设备建立连接
+    filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED); //设备断开连接
+
+    filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED); //蓝牙开关状态
+    filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED); //蓝牙开始搜索
+    filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED); //蓝牙搜索结束
+    filter.addAction(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED); //BluetoothAdapter连接状态
+    return filter;
   }
 
   private class BluetoothProfileListener implements BluetoothProfile.ServiceListener {
@@ -180,6 +201,127 @@ public class BluetoothViewModel extends AndroidViewModel implements BluetoothSca
       bluetoothProfile.setValue(null);
     }
 
+  }
+
+  private class MyBroadcastReceiver extends BroadcastReceiver implements LoggingSupport {
+
+    private final BluetoothListeners listeners;
+
+    public MyBroadcastReceiver() {
+      this.listeners = BluetoothListeners.getInstance();
+    }
+
+    @Override
+    public void onReceive(final Context context, final Intent intent) {
+      final String action = intent.getAction();
+      if (action == null) {
+        return;
+      }
+      /*蓝牙开关状态 STATE_OFF: 蓝牙关闭 STATE_ON :蓝牙打开 STATE_TURNING_OFF: 蓝牙正在关闭 STATE_TURNING_ON :蓝牙正在打开 */
+      switch (action) {
+        case BluetoothAdapter.ACTION_STATE_CHANGED: {
+          final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, 0);
+          switch (state) {
+            case BluetoothAdapter.STATE_OFF:
+              logger("蓝牙关闭 => 事件");
+              bluetoothEnabled.setValue(false);
+              break;
+            case BluetoothAdapter.STATE_ON:
+              logger("蓝牙开启 => 事件");
+              bluetoothEnabled.setValue(true);
+              break;
+          }
+          listeners.onStatusChange(state);
+          break;
+        }
+        case BluetoothAdapter.ACTION_DISCOVERY_STARTED: { /* 蓝牙开始搜索*/
+          logger("蓝牙开始搜索 => 事件");
+          listeners.onScanningStarted();
+          break;
+        }
+        case BluetoothAdapter.ACTION_DISCOVERY_FINISHED: { /* 蓝牙搜索结束*/
+          logger("蓝牙扫描结束 => 事件");
+          listeners.onScanningFinished();
+          break;
+        }
+        case BluetoothDevice.ACTION_FOUND: { /* 发现新设备*/
+          final BluetoothDevice dev = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+          logger("发现新设备: %s address: %s", dev.getName(), dev.getAddress());
+          listeners.onDeviceFound(dev);
+          break;
+        }
+        case BluetoothDevice.ACTION_BOND_STATE_CHANGED: {
+          final BluetoothDevice dev = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+          listeners.onBindingStatusChange(dev);
+          logger("设备配对状态改变：%s => 事件", dev.getBondState());
+          break;
+        }/*设备建立连接 STATE_DISCONNECTED 未连接 STATE_CONNECTING 连接中 STATE_CONNECTED连接成功 */
+        case BluetoothDevice.ACTION_ACL_CONNECTED: {
+          final BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+          if (device != null) {
+            logger("设备建立连接：%s => 事件", device.getBondState());
+            listeners.onBindingStatusChange(device);
+          }
+          else {
+            logger("ACTION_ACL_CONNECTED: device is null");
+          }
+          break;
+        }
+        case BluetoothDevice.ACTION_ACL_DISCONNECTED: { /* 设备断开连接 */
+          final BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+          if (device != null) {
+            logger("设备断开连接：%s => 事件", device);
+            listeners.onDisconnecting(device);
+          }
+          else {
+            logger("ACTION_ACL_DISCONNECTED: device is null");
+          }
+          break;
+        } /* 地蓝牙适配器  BluetoothAdapter连接状态 */
+        case BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED: {
+          final BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+          if (device != null) {
+            logger("BluetoothAdapter 蓝牙设备: %s, %s => 事件", device.getName(), device.getAddress());
+            listeners.onBindingStatusChange(device);
+          }
+          else {
+            logger("ACTION_CONNECTION_STATE_CHANGED: device is null");
+          }
+          break;
+        }
+        case BluetoothA2dp.ACTION_CONNECTION_STATE_CHANGED:
+        case BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED: {
+          final BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+          if (device != null) {
+            switch (intent.getIntExtra(BluetoothProfile.EXTRA_STATE, -1)) {
+              case BluetoothProfile.STATE_CONNECTING:
+                logger("高质量音频设备: %s 正在连接 => 事件", device.getName());
+                listeners.onConnecting(device);
+                break;
+              case BluetoothProfile.STATE_CONNECTED:
+                logger("高质量音频设备: %s 已连接 => 事件", device.getName());
+                listeners.onConnected(device);
+                break;
+              case BluetoothProfile.STATE_DISCONNECTING:
+                logger("高质量音频设备: %s 正在断开 => 事件", device.getName());
+                listeners.onDisconnecting(device);
+                break;
+              case BluetoothProfile.STATE_DISCONNECTED:
+                logger("高质量音频设备: %s 已经断开 => 事件", device.getName());
+                listeners.onDisconnect(device);
+                break;
+              default:
+                break;
+            }
+          }
+          else {
+            logger("ACTION_CONNECTION_STATE_CHANGED: device is null");
+          }
+        }
+        default:
+          break;
+      }
+    }
   }
 
 }

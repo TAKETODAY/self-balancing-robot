@@ -39,6 +39,8 @@ import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.google.android.material.snackbar.Snackbar;
+
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -47,22 +49,22 @@ import cn.taketoday.robot.LoggingSupport;
 import cn.taketoday.robot.R;
 import cn.taketoday.robot.bluetooth.BluetoothBindingListener;
 import cn.taketoday.robot.bluetooth.BluetoothConnectionListener;
-import cn.taketoday.robot.bluetooth.BluetoothController;
+import cn.taketoday.robot.bluetooth.BluetoothItem;
+import cn.taketoday.robot.bluetooth.BluetoothListeners;
 import cn.taketoday.robot.bluetooth.BluetoothViewModel;
 import cn.taketoday.robot.databinding.FragmentDeviceConnectionBinding;
-import cn.taketoday.robot.model.BluetoothDeviceClickListener;
+import cn.taketoday.robot.model.BluetoothItemClickListener;
 import cn.taketoday.robot.model.BluetoothDeviceListAdapter;
 import cn.taketoday.robot.model.DeviceItem;
 
 import static cn.taketoday.robot.util.RobotUtils.showDialog;
-import static cn.taketoday.robot.util.ToastUtils.makeToast;
 
 /**
  * @author <a href="https://github.com/TAKETODAY">海子 Yang</a>
  * @since 1.0 2025/12/20 16:46
  */
 public class DeviceConnectionFragment extends ViewBindingFragment<FragmentDeviceConnectionBinding> implements CompoundButton.OnCheckedChangeListener,
-        BluetoothDeviceClickListener, BluetoothBindingListener, BluetoothConnectionListener, LoggingSupport, ActivityResultCallback<ActivityResult> {
+        BluetoothItemClickListener, BluetoothBindingListener, BluetoothConnectionListener, LoggingSupport, ActivityResultCallback<ActivityResult> {
 
   private BluetoothDeviceListAdapter bluetoothAdapter;
 
@@ -84,13 +86,12 @@ public class DeviceConnectionFragment extends ViewBindingFragment<FragmentDevice
     logger("onViewCreated");
     viewModel = new ViewModelProvider(this).get(BluetoothViewModel.class);
 
-    BluetoothController bluetoothController = getBluetoothController();
-    bluetoothController.addScanningListener(viewModel);
-    bluetoothController.addConnectionListener(this);
+    BluetoothListeners listeners = getBluetoothListeners();
+    listeners.addScanningListener(viewModel);
+    listeners.addConnectionListener(this);
 
     binding.swipeRefresh.setOnRefreshListener(viewModel::startScan);
 
-    binding.switchBluetooth.setChecked(bluetoothController.isEnabled()); // 蓝牙初始状态
     binding.switchBluetooth.setOnCheckedChangeListener(this);
 
     binding.bluetoothList.setNestedScrollingEnabled(true);
@@ -99,25 +100,30 @@ public class DeviceConnectionFragment extends ViewBindingFragment<FragmentDevice
     bluetoothAdapter = new BluetoothDeviceListAdapter(this);
     binding.bluetoothList.setAdapter(bluetoothAdapter);
 
-    viewModel.scanning.observe(this, scanning -> {
+//    viewModel.devices.observe(getViewLifecycleOwner(), bluetoothDeviceItems -> bluetoothAdapter.submitList(bluetoothDeviceItems));
+    viewModel.devices.observe(getViewLifecycleOwner(), bluetoothAdapter::submitList);
+
+    viewModel.scanning.observe(getViewLifecycleOwner(), scanning -> {
       if (scanning) {
         logger("成功开始搜索");
-        makeToast(requireContext(), "开始搜索", Toast.LENGTH_SHORT);
+        Snackbar.make(view, "开始搜索", Snackbar.LENGTH_SHORT).show();
       }
       else {
         binding.swipeRefresh.setRefreshing(false);
       }
     });
 
-    viewModel.bluetoothEnabled.observe(this, enabled -> {
+    viewModel.bluetoothEnabled.observe(getViewLifecycleOwner(), enabled -> {
       binding.switchBluetooth.setChecked(enabled);
       if (enabled) {
-        Toast.makeText(requireContext(), "蓝牙已打开", Toast.LENGTH_SHORT).show();
+        binding.swipeRefresh.setRefreshing(true);
+        Snackbar.make(view, "蓝牙已打开", Snackbar.LENGTH_LONG).show();
+
         viewModel.startScan();
       }
       else {
         binding.swipeRefresh.setRefreshing(false);
-        Toast.makeText(requireContext(), "蓝牙已关闭", Toast.LENGTH_SHORT).show();
+        Snackbar.make(view, "蓝牙已关闭", Snackbar.LENGTH_LONG).show();
 
         bluetoothAdapter.clear();
         viewModel.stopScan();
@@ -142,29 +148,22 @@ public class DeviceConnectionFragment extends ViewBindingFragment<FragmentDevice
   }
 
   @Override
-  public void onBluetoothDeviceClickListener(BluetoothDevice device) {
-    logger("列表点击了：%s", device);
+  public void onBluetoothItemClickListener(BluetoothItem item) {
+    logger("列表点击了：%s", item.getName());
 
-    BluetoothController bluetoothController = getBluetoothController();
-    if (!bluetoothController.isConnected(device)) {
-      bluetoothController.connect(device);
-    }
+
   }
 
   @Override
   @RequiresPermission(allOf = { Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_SCAN })
   public void onConnecting(BluetoothDevice device) {
     logger("设备正在连接中: %s", device.getName());
-    BluetoothController bluetoothController = getBluetoothController();
-    bluetoothController.stopDiscovery();
-    applyBluetoothDeviceStatus(device, DeviceItem.STATUS_CONNECTING);
+
   }
 
   @Override
   public void onConnected(BluetoothDevice device) {
     logger("设备已连接: %s", device.getName());
-
-
 
     applyBluetoothDeviceStatus(device, DeviceItem.STATUS_CONNECTED);
   }
@@ -209,12 +208,6 @@ public class DeviceConnectionFragment extends ViewBindingFragment<FragmentDevice
         break;
     }
 
-    BluetoothController bluetoothController = getBluetoothController();
-
-    if (bluetoothController.isConnected(device)) {
-      deviceItem.setStatus(DeviceItem.STATUS_CONNECTED);
-    }
-
     return deviceItem;
   }
 
@@ -252,8 +245,8 @@ public class DeviceConnectionFragment extends ViewBindingFragment<FragmentDevice
     return buildBluetoothDeviceItem(device);
   }
 
-  protected BluetoothController getBluetoothController() {
-    return BluetoothController.getInstance();
+  protected BluetoothListeners getBluetoothListeners() {
+    return BluetoothListeners.getInstance();
   }
 
   //

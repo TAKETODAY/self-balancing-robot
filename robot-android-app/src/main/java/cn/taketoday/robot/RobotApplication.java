@@ -19,8 +19,6 @@ package cn.taketoday.robot;
 
 import android.app.Application;
 
-import cn.taketoday.robot.bluetooth.BluetoothController;
-
 /**
  * @author <a href="https://github.com/TAKETODAY">海子 Yang</a>
  */
@@ -57,10 +55,6 @@ public class RobotApplication extends Application implements Constant, LoggingSu
   @Override
   public void onTerminate() {
     super.onTerminate();
-    BluetoothController bluetoothController = BluetoothController.getInstance();
-    if (bluetoothController != null) {
-      bluetoothController.destroy();
-    }
   }
 
 }

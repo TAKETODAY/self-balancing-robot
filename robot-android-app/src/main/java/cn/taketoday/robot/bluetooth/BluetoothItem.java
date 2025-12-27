@@ -21,7 +21,9 @@ import android.bluetooth.BluetoothDevice;
 
 import java.util.Objects;
 
-public class BluetoothDeviceItem {
+import cn.taketoday.robot.model.DeviceItem;
+
+public class BluetoothItem {
 
   private final BluetoothDevice device;
 
@@ -31,7 +33,7 @@ public class BluetoothDeviceItem {
 
   private final boolean paired;
 
-  public BluetoothDeviceItem(BluetoothDevice device) {
+  public BluetoothItem(BluetoothDevice device) {
     this.device = device;
     String name = device.getName();
     this.name = name != null ? name : "Unknown";
@@ -55,13 +57,17 @@ public class BluetoothDeviceItem {
     return paired;
   }
 
+  public String getStatusText() {
+    return isPaired() ? DeviceItem.STATUS_BONDED : DeviceItem.STATUS_BOND_NONE;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o)
       return true;
     if (o == null || getClass() != o.getClass())
       return false;
-    BluetoothDeviceItem that = (BluetoothDeviceItem) o;
+    BluetoothItem that = (BluetoothItem) o;
     return address.equals(that.address);
   }
 

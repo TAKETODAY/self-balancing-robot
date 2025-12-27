@@ -31,8 +31,10 @@ import cn.taketoday.robot.LoggingSupport;
  *
  * @author <a href="https://github.com/TAKETODAY">海子 Yang</a>
  */
-class CompositeBluetoothListener implements BluetoothStatusListener, BluetoothBindingListener,
+public class BluetoothListeners implements BluetoothStatusListener, BluetoothBindingListener,
         BluetoothScanningListener, BluetoothConnectionListener, LoggingSupport {
+
+  private static final BluetoothListeners instance = new BluetoothListeners();
 
   private final List<BluetoothStatusListener> statusListeners = new ArrayList<>(4);
   private final List<BluetoothBindingListener> bindingListeners = new ArrayList<>(4);
@@ -133,6 +135,12 @@ class CompositeBluetoothListener implements BluetoothStatusListener, BluetoothBi
     for (BluetoothConnectionListener connectionListener : connectionListeners) {
       connectionListener.onDisconnect(device);
     }
+  }
+
+  //
+
+  public static BluetoothListeners getInstance() {
+    return instance;
   }
 
 }

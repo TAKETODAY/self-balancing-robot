@@ -17,7 +17,6 @@
 
 package cn.taketoday.robot.model;
 
-import android.bluetooth.BluetoothDevice;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
@@ -29,18 +28,21 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 
+import cn.taketoday.robot.LoggingSupport;
+import cn.taketoday.robot.R;
+import cn.taketoday.robot.bluetooth.BluetoothItem;
 import cn.taketoday.robot.databinding.BluetoothItemBinding;
 
 /**
  * @author <a href="https://github.com/TAKETODAY">海子 Yang</a>
  * @since 1.0 2025/12/22 22:01
  */
-public class BluetoothDeviceListAdapter extends ListAdapter<BluetoothDevice, BluetoothDeviceListAdapter.BluetoothDeviceViewHolder> {
+public class BluetoothDeviceListAdapter extends ListAdapter<BluetoothItem, BluetoothDeviceListAdapter.BluetoothDeviceViewHolder> implements LoggingSupport {
 
   @Nullable
-  private final BluetoothDeviceClickListener listener;
+  private final BluetoothItemClickListener listener;
 
-  public BluetoothDeviceListAdapter(@Nullable BluetoothDeviceClickListener listener) {
+  public BluetoothDeviceListAdapter(@Nullable BluetoothItemClickListener listener) {
     super(DIFF_CALLBACK);
     this.listener = listener;
   }
@@ -56,8 +58,8 @@ public class BluetoothDeviceListAdapter extends ListAdapter<BluetoothDevice, Blu
   }
 
   @Override
-  public void onCurrentListChanged(List<BluetoothDevice> previousList, List<BluetoothDevice> currentList) {
-
+  public void onCurrentListChanged(List<BluetoothItem> previousList, List<BluetoothItem> currentList) {
+    logger("previousList: %s, currentList: %s", previousList, currentList);
   }
 
   public void clear() {
@@ -73,26 +75,14 @@ public class BluetoothDeviceListAdapter extends ListAdapter<BluetoothDevice, Blu
       this.binding = binding;
     }
 
-    public void bindTo(BluetoothDevice device, @Nullable BluetoothDeviceClickListener listener) {
-      binding.name.setText(device.getName());
-      switch (device.getBondState()) {
-        case BluetoothDevice.BOND_NONE:
-          binding.status.setText(DeviceItem.STATUS_BOND_NONE);
-          break;
-        case BluetoothDevice.BOND_BONDING:
-          binding.status.setText(DeviceItem.STATUS_BONDING);
-          break;
-        case BluetoothDevice.BOND_BONDED:
-          binding.status.setText(DeviceItem.STATUS_BONDED);
-          break;
-        default:
-          binding.status.setText(DeviceItem.STATUS_UNKNOWN);
-          break;
-      }
+    public void bindTo(BluetoothItem item, @Nullable BluetoothItemClickListener listener) {
+      binding.name.setText(item.getName());
+      binding.status.setText(item.getStatusText());
+      binding.icon.setImageResource(R.mipmap.icon_bluetooth);
 
       binding.getRoot().setOnClickListener(v -> {
         if (listener != null) {
-          listener.onBluetoothDeviceClickListener(device);
+          listener.onBluetoothItemClickListener(item);
         }
       });
 
@@ -100,15 +90,15 @@ public class BluetoothDeviceListAdapter extends ListAdapter<BluetoothDevice, Blu
 
   }
 
-  public static final DiffUtil.ItemCallback<BluetoothDevice> DIFF_CALLBACK = new DiffUtil.ItemCallback<>() {
+  public static final DiffUtil.ItemCallback<BluetoothItem> DIFF_CALLBACK = new DiffUtil.ItemCallback<>() {
 
     @Override
-    public boolean areItemsTheSame(BluetoothDevice oldItem, BluetoothDevice newItem) {
+    public boolean areItemsTheSame(BluetoothItem oldItem, BluetoothItem newItem) {
       return oldItem == newItem;
     }
 
     @Override
-    public boolean areContentsTheSame(BluetoothDevice oldItem, BluetoothDevice newUser) {
+    public boolean areContentsTheSame(BluetoothItem oldItem, BluetoothItem newUser) {
       return oldItem.equals(newUser);
     }
   };
