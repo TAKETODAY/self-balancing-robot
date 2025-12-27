@@ -13,46 +13,17 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see [https://www.gnu.org/licenses/]
 
-#include "robot.hpp"
-
-#include "foc/sensors/MagneticSensorI2C.h"
-#include "battery.hpp"
-#include "esp_log.h"
-#include "AttitudeSensor.hpp"
-#include "LQRController.hpp"
-#include "nvs_flash.h"
-#include "servos.hpp"
-
-#include "esp/serial.hpp"
-#include "wifi.h"
 #include "ble/common.h"
+#include "ble/heart_rate.h"
 
-// Wrobot wrobot;
+/* Private variables */
+static uint8_t heart_rate;
 
-Wrobot wrobot;
-
-LQRController lqr_controller;
-
-void nvs_init() {
-  //Initialize NVS
-  esp_err_t ret = nvs_flash_init();
-  if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-    ESP_ERROR_CHECK(nvs_flash_erase());
-    ret = nvs_flash_init();
-  }
-  ESP_ERROR_CHECK(ret);
+/* Public functions */
+uint8_t get_heart_rate(void) {
+  return heart_rate;
 }
 
-void robot_init() {
-  nvs_init();
-
-  serial.begin(115200);
-  servos_init();
-
-  lqr_controller.begin();
-
-  wifi_init();
-  battery_init();
-
-  ble_init();
+void update_heart_rate(void) {
+  heart_rate = 60 + (uint8_t) (esp_random() % 21);
 }

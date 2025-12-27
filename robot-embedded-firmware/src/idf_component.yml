@@ -12,3 +12,5 @@ dependencies:
     version: '^1.0.31'
 #  esp-idf-lib/mpu6050:
 #    version: '^2.1.8'
+
+  espressif/led_strip: "^2.4.1"

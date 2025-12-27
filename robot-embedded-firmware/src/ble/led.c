@@ -13,46 +13,28 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see [https://www.gnu.org/licenses/]
 
-#include "robot.hpp"
-
-#include "foc/sensors/MagneticSensorI2C.h"
-#include "battery.hpp"
-#include "esp_log.h"
-#include "AttitudeSensor.hpp"
-#include "LQRController.hpp"
-#include "nvs_flash.h"
-#include "servos.hpp"
-
-#include "esp/serial.hpp"
-#include "wifi.h"
+#include "ble/led.h"
 #include "ble/common.h"
 
-// Wrobot wrobot;
+/* Private variables */
+static uint8_t led_state;
 
-Wrobot wrobot;
+/* Public functions */
+uint8_t get_led_state(void) { return led_state; }
 
-LQRController lqr_controller;
 
-void nvs_init() {
-  //Initialize NVS
-  esp_err_t ret = nvs_flash_init();
-  if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-    ESP_ERROR_CHECK(nvs_flash_erase());
-    ret = nvs_flash_init();
-  }
-  ESP_ERROR_CHECK(ret);
+void led_on(void) {
+
+  // gpio_set_level(CONFIG_BLINK_GPIO, true);
 }
 
-void robot_init() {
-  nvs_init();
+void led_off(void) {
+  // gpio_set_level(CONFIG_BLINK_GPIO, false);
+}
 
-  serial.begin(115200);
-  servos_init();
-
-  lqr_controller.begin();
-
-  wifi_init();
-  battery_init();
-
-  ble_init();
+void led_init(void) {
+  ESP_LOGI(TAG, "example configured to blink gpio led!");
+  // gpio_reset_pin(CONFIG_BLINK_GPIO);
+  /* Set the GPIO as a push/pull output */
+  // gpio_set_direction(CONFIG_BLINK_GPIO, GPIO_MODE_OUTPUT);
 }

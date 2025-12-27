@@ -13,46 +13,45 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see [https://www.gnu.org/licenses/]
 
-#include "robot.hpp"
+#ifndef COMMON_H
+#define COMMON_H
 
-#include "foc/sensors/MagneticSensorI2C.h"
-#include "battery.hpp"
+/* STD APIs */
+#include <assert.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <string.h>
+
+/* ESP APIs */
 #include "esp_log.h"
-#include "AttitudeSensor.hpp"
-#include "LQRController.hpp"
 #include "nvs_flash.h"
-#include "servos.hpp"
+#include "sdkconfig.h"
 
-#include "esp/serial.hpp"
-#include "wifi.h"
-#include "ble/common.h"
+/* FreeRTOS APIs */
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
 
-// Wrobot wrobot;
+/* NimBLE stack APIs */
+#include "host/ble_hs.h"
+#include "host/ble_uuid.h"
+#include "host/util/util.h"
+#include "nimble/ble.h"
+#include "nimble/nimble_port.h"
+#include "nimble/nimble_port_freertos.h"
 
-Wrobot wrobot;
+/* Defines */
+#define TAG "NimBLE_GATT_Server"
+#define DEVICE_NAME "NimBLE_GATT"
 
-LQRController lqr_controller;
+#ifdef __cplusplus
+extern "C" {
 
-void nvs_init() {
-  //Initialize NVS
-  esp_err_t ret = nvs_flash_init();
-  if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-    ESP_ERROR_CHECK(nvs_flash_erase());
-    ret = nvs_flash_init();
-  }
-  ESP_ERROR_CHECK(ret);
+#endif
+
+void ble_init();
+
+#ifdef __cplusplus
 }
+#endif
 
-void robot_init() {
-  nvs_init();
-
-  serial.begin(115200);
-  servos_init();
-
-  lqr_controller.begin();
-
-  wifi_init();
-  battery_init();
-
-  ble_init();
-}
+#endif // COMMON_H
