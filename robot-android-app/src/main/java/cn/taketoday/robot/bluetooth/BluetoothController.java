@@ -17,6 +17,7 @@
 
 package cn.taketoday.robot.bluetooth;
 
+import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
@@ -29,7 +30,9 @@ import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.RequiresPermission;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import org.jspecify.annotations.Nullable;
 
@@ -47,7 +50,9 @@ import infra.util.concurrent.Promise;
 /**
  * @author <a href="https://github.com/TAKETODAY">海子 Yang</a>
  */
-public class BluetoothController implements ApplicationSupport {
+public class BluetoothController extends CompositeBluetoothListener implements ApplicationSupport {
+
+  static BluetoothController instance;
 
   private final AppCompatActivity activity;
 
@@ -57,15 +62,14 @@ public class BluetoothController implements ApplicationSupport {
 
   private final EnableBluetoothLauncher enableBluetoothLauncher;
 
-  private final BluetoothProfileListener bluetoothProfileListener = new BluetoothProfileListener(this);
-
   private final BluetoothBroadcastReceiver bluetoothBroadcastReceiver = new BluetoothBroadcastReceiver(this);
-
-  private @Nullable BluetoothProfile bluetoothProfile;
 
   private final Set<BluetoothDevice> bluetoothDevices = new HashSet<>();
 
+  private @Nullable BluetoothProfile bluetoothProfile;
+
   public BluetoothController(AppCompatActivity activity) {
+    instance = this;
     this.activity = activity;
     logger("初始化蓝牙控制器: %s", this);
 
@@ -76,12 +80,13 @@ public class BluetoothController implements ApplicationSupport {
     }
     else {
       logger("注册蓝牙监听器");
-      this.bluetoothAdapter.getProfileProxy(activity, bluetoothProfileListener, BluetoothProfile.A2DP);
-      activity.registerReceiver(bluetoothBroadcastReceiver, getIntentFilter());
+      bluetoothAdapter.getProfileProxy(activity, new BluetoothProfileListener(this), BluetoothProfile.GATT);
+      ContextCompat.registerReceiver(activity, bluetoothBroadcastReceiver, getIntentFilter(), ContextCompat.RECEIVER_NOT_EXPORTED);
     }
 
     this.enableBluetoothLauncher = new EnableBluetoothLauncher(activity);
     logger("初始化蓝牙控制器完毕!");
+
   }
 
   @Override
@@ -173,7 +178,7 @@ public class BluetoothController implements ApplicationSupport {
 
   public boolean connect(BluetoothDevice device) {
     try {
-      //todo
+//      device.connectGatt(activity, true, );
       return false;
     }
     catch (Exception e) {
@@ -186,6 +191,7 @@ public class BluetoothController implements ApplicationSupport {
     return bluetoothAdapter.isEnabled();
   }
 
+  @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
   public boolean isConnected(final BluetoothDevice device) {
     final BluetoothProfile profile = this.bluetoothProfile;
     if (profile != null && profile.getConnectionState(device) == BluetoothProfile.STATE_CONNECTED) {
@@ -209,14 +215,18 @@ public class BluetoothController implements ApplicationSupport {
   public void destroy() {
     try {
       activity.unregisterReceiver(bluetoothBroadcastReceiver);
-      bluetoothAdapter.closeProfileProxy(BluetoothProfile.A2DP, bluetoothProfile);
+      bluetoothAdapter.closeProfileProxy(BluetoothProfile.GATT, bluetoothProfile);
     }
     catch (IllegalArgumentException e) {
       logger("ex : %s", e);
     }
   }
 
-  protected static class BluetoothProfileListener implements BluetoothProfile.ServiceListener {
+  public static BluetoothController getInstance() {
+    return instance;
+  }
+
+  private static class BluetoothProfileListener implements BluetoothProfile.ServiceListener {
 
     private final BluetoothController bluetoothController;
 
@@ -228,15 +238,13 @@ public class BluetoothController implements ApplicationSupport {
     public void onServiceConnected(int profile, BluetoothProfile proxy) {
       bluetoothController.bluetoothProfile = proxy;
 
-      final BluetoothController bluetoothController = this.bluetoothController;
-
-      bluetoothController.logger("蓝牙服务已连接, A2DP,: %s", proxy);
+      bluetoothController.logger("蓝牙服务已连接 %s", proxy);
       final List<BluetoothDevice> deviceList = proxy.getConnectedDevices();
       if (deviceList.isEmpty()) {
-        bluetoothController.logger("音频蓝牙设备为空");
+        bluetoothController.logger("蓝牙设备为空");
       }
       else {
-        bluetoothController.logger("音频蓝牙设备: %s", deviceList);
+        bluetoothController.logger("蓝牙设备: %s", deviceList);
         bluetoothController.bluetoothDevices.addAll(deviceList);
       }
     }
@@ -245,6 +253,7 @@ public class BluetoothController implements ApplicationSupport {
     public void onServiceDisconnected(int profile) {
       bluetoothController.logger("蓝牙服务断开");
     }
+
   }
 
   private static class EnableBluetoothLauncher implements ActivityResultCallback<ActivityResult> {

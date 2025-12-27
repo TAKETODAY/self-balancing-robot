@@ -20,6 +20,8 @@ package cn.taketoday.robot.fragment;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
+import org.jspecify.annotations.Nullable;
+
 import cn.taketoday.robot.databinding.FragmentAboutBinding;
 
 /**
@@ -29,7 +31,7 @@ import cn.taketoday.robot.databinding.FragmentAboutBinding;
 public class AboutFragment extends ViewBindingFragment<FragmentAboutBinding> {
 
   @Override
-  protected FragmentAboutBinding createBinding(LayoutInflater inflater, ViewGroup container) {
+  protected FragmentAboutBinding createBinding(LayoutInflater inflater, @Nullable ViewGroup container) {
     return FragmentAboutBinding.inflate(inflater, container, false);
   }
 

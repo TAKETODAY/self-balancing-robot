@@ -14,13 +14,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see [https://www.gnu.org/licenses/]
  */
+
 package cn.taketoday.robot.bluetooth;
 
 import android.bluetooth.BluetoothDevice;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -31,14 +31,8 @@ import cn.taketoday.robot.LoggingSupport;
  *
  * @author <a href="https://github.com/TAKETODAY">海子 Yang</a>
  */
-public class CompositeBluetoothListener implements BluetoothStatusListener, BluetoothBindingListener,
+class CompositeBluetoothListener implements BluetoothStatusListener, BluetoothBindingListener,
         BluetoothScanningListener, BluetoothConnectionListener, LoggingSupport {
-
-  private static final CompositeBluetoothListener BLUETOOTH_LISTENER = new CompositeBluetoothListener();
-
-  public static CompositeBluetoothListener getInstance() {
-    return BLUETOOTH_LISTENER;
-  }
 
   private final List<BluetoothStatusListener> statusListeners = new ArrayList<>(4);
   private final List<BluetoothBindingListener> bindingListeners = new ArrayList<>(4);
@@ -67,7 +61,6 @@ public class CompositeBluetoothListener implements BluetoothStatusListener, Blue
   }
 
   public void addConnectionListener(BluetoothConnectionListener... connectionListeners) {
-
     if (isDebugEnabled()) {
       logger("添加连接监听器", Arrays.toString(connectionListeners));
     }
@@ -75,14 +68,14 @@ public class CompositeBluetoothListener implements BluetoothStatusListener, Blue
   }
 
   @Override
-  public void onStatusChange(final int status) {
+  public void onStatusChange(int status) {
     for (BluetoothStatusListener statusListener : statusListeners) {
       statusListener.onStatusChange(status);
     }
   }
 
   @Override
-  public void onBindingStatusChange(final BluetoothDevice device) {
+  public void onBindingStatusChange(BluetoothDevice device) {
     for (BluetoothBindingListener bindingListener : bindingListeners) {
       bindingListener.onBindingStatusChange(device);
     }
@@ -91,21 +84,21 @@ public class CompositeBluetoothListener implements BluetoothStatusListener, Blue
   // BluetoothScanningListener
   // -------------------
   @Override
-  public void onScanningStart() {
+  public void onScanningStarted() {
     for (BluetoothScanningListener scanningListener : scanningListeners) {
-      scanningListener.onScanningStart();
+      scanningListener.onScanningStarted();
     }
   }
 
   @Override
-  public void onScanningStop() {
+  public void onScanningFinished() {
     for (BluetoothScanningListener scanningListener : scanningListeners) {
-      scanningListener.onScanningStop();
+      scanningListener.onScanningFinished();
     }
   }
 
   @Override
-  public void onDeviceFound(final BluetoothDevice device) {
+  public void onDeviceFound(BluetoothDevice device) {
     for (BluetoothScanningListener scanningListener : scanningListeners) {
       scanningListener.onDeviceFound(device);
     }
@@ -115,41 +108,31 @@ public class CompositeBluetoothListener implements BluetoothStatusListener, Blue
   //-------------------------------------------------
 
   @Override
-  public void onConnecting(final BluetoothDevice device) {
+  public void onConnecting(BluetoothDevice device) {
     for (BluetoothConnectionListener connectionListener : connectionListeners) {
       connectionListener.onConnecting(device);
     }
   }
 
   @Override
-  public void onConnected(final BluetoothDevice device) {
+  public void onConnected(BluetoothDevice device) {
     for (BluetoothConnectionListener connectionListener : connectionListeners) {
       connectionListener.onConnected(device);
     }
   }
 
   @Override
-  public void onDisconnecting(final BluetoothDevice device) {
+  public void onDisconnecting(BluetoothDevice device) {
     for (BluetoothConnectionListener connectionListener : connectionListeners) {
       connectionListener.onDisconnecting(device);
     }
   }
 
   @Override
-  public void onDisconnect(final BluetoothDevice device) {
+  public void onDisconnect(BluetoothDevice device) {
     for (BluetoothConnectionListener connectionListener : connectionListeners) {
       connectionListener.onDisconnect(device);
     }
   }
-
-  @Override
-  public void onConnectedDevice(final Collection<BluetoothDevice> devices) {
-    for (BluetoothConnectionListener connectionListener : connectionListeners) {
-      connectionListener.onConnectedDevice(devices);
-    }
-  }
-
-  //
-  // -------------------
 
 }

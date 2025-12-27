@@ -14,10 +14,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see [https://www.gnu.org/licenses/]
  */
+
 package cn.taketoday.robot;
 
 import android.app.Application;
-import android.util.Log;
 
 import cn.taketoday.robot.bluetooth.BluetoothController;
 
@@ -39,7 +39,7 @@ public class RobotApplication extends Application implements Constant, LoggingSu
   @Override
   public void onCreate() {
     super.onCreate();
-    Log.i("RobotApplication", "RobotApplication startup");
+    logger("RobotApplication startup");
 
 //    Iconify.with(new FontAwesomeModule())
 //            .with(new EntypoModule())
@@ -52,13 +52,12 @@ public class RobotApplication extends Application implements Constant, LoggingSu
 //            .with(new IoniconsModule());
 
     instance = this;
-
   }
 
   @Override
   public void onTerminate() {
     super.onTerminate();
-    final BluetoothController bluetoothController = RobotController.getBluetoothController();
+    BluetoothController bluetoothController = BluetoothController.getInstance();
     if (bluetoothController != null) {
       bluetoothController.destroy();
     }

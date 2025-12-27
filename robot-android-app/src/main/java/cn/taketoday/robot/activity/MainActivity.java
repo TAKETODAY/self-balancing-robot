@@ -35,6 +35,7 @@ import org.jspecify.annotations.Nullable;
 
 import cn.taketoday.robot.LoggingSupport;
 import cn.taketoday.robot.R;
+import cn.taketoday.robot.bluetooth.BluetoothController;
 import cn.taketoday.robot.databinding.ActivityMainBinding;
 import cn.taketoday.robot.util.PermissionUtils;
 
@@ -48,6 +49,8 @@ public class MainActivity extends AppCompatActivity implements LoggingSupport {
   private AppBarConfiguration appBarConfiguration;
 
   private NavController navController;
+
+  private BluetoothController bluetoothController;
 
   @Override
   protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -69,6 +72,8 @@ public class MainActivity extends AppCompatActivity implements LoggingSupport {
 
     NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
     NavigationUI.setupWithNavController(binding.navView, navController);
+
+    bluetoothController = new BluetoothController(this);
   }
 
   @Override

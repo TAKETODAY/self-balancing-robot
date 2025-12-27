@@ -16,27 +16,15 @@
  */
 package cn.taketoday.robot;
 
-import cn.taketoday.robot.bluetooth.BluetoothController;
-
 /**
  * @author <a href="https://github.com/TAKETODAY">海子 Yang</a>
  */
 public class RobotController implements ApplicationSupport {
 
-  private static BluetoothController bluetoothController;
-
   private static final RobotController INSTANCE = new RobotController();
 
   public static RobotController getController() {
     return INSTANCE;
-  }
-
-  public static BluetoothController getBluetoothController() {
-    return bluetoothController;
-  }
-
-  public static void setBluetoothController(final BluetoothController bluetoothController) {
-    RobotController.bluetoothController = bluetoothController;
   }
 
 }

@@ -18,8 +18,6 @@ package cn.taketoday.robot.bluetooth;
 
 import android.bluetooth.BluetoothDevice;
 
-import java.util.Collection;
-
 /**
  * BluetoothConnectionListener
  *
@@ -35,5 +33,4 @@ public interface BluetoothConnectionListener {
 
   void onDisconnect(BluetoothDevice device);//断开
 
-  void onConnectedDevice(Collection<BluetoothDevice> devices);//已连接的设备
 }

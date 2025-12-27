@@ -20,6 +20,7 @@ import android.bluetooth.BluetoothA2dp;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothHeadset;
+import android.bluetooth.BluetoothProfile;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -31,14 +32,12 @@ import cn.taketoday.robot.LoggingSupport;
  *
  * @author <a href="https://github.com/TAKETODAY">海子 Yang</a>
  */
-public class BluetoothBroadcastReceiver extends BroadcastReceiver implements LoggingSupport {
+class BluetoothBroadcastReceiver extends BroadcastReceiver implements LoggingSupport {
 
-  private final BluetoothController bluetoothController;
+  private final BluetoothController controller;
 
-  private final CompositeBluetoothListener listeners = CompositeBluetoothListener.getInstance();
-
-  public BluetoothBroadcastReceiver(final BluetoothController bluetoothController) {
-    this.bluetoothController = bluetoothController;
+  public BluetoothBroadcastReceiver(BluetoothController controller) {
+    this.controller = controller;
   }
 
   @Override
@@ -51,73 +50,91 @@ public class BluetoothBroadcastReceiver extends BroadcastReceiver implements Log
     switch (action) {
       case BluetoothAdapter.ACTION_STATE_CHANGED: {
         final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, 0);
-        listeners.onStatusChange(state);
+        controller.onStatusChange(state);
         break;
       }
       case BluetoothAdapter.ACTION_DISCOVERY_STARTED: { /* 蓝牙开始搜索*/
         logger("蓝牙开始搜索 => 事件");
-        listeners.onScanningStart();
+        controller.onScanningStarted();
         break;
       }
       case BluetoothAdapter.ACTION_DISCOVERY_FINISHED: { /* 蓝牙搜索结束*/
         logger("蓝牙扫描结束 => 事件");
-        listeners.onScanningStop();
+        controller.onScanningFinished();
         break;
       }
       case BluetoothDevice.ACTION_FOUND: { /* 发现新设备*/
         final BluetoothDevice dev = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
         logger("发现新设备: %s address: %s => 事件", dev.getName(), dev.getAddress());
-        listeners.onDeviceFound(dev);
+        controller.onDeviceFound(dev);
         break;
       }
       case BluetoothDevice.ACTION_BOND_STATE_CHANGED: {
         final BluetoothDevice dev = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-        listeners.onBindingStatusChange(dev);
+        controller.onBindingStatusChange(dev);
         logger("设备配对状态改变：%s => 事件", dev.getBondState());
         break;
       }/*设备建立连接 STATE_DISCONNECTED 未连接 STATE_CONNECTING 连接中 STATE_CONNECTED连接成功 */
       case BluetoothDevice.ACTION_ACL_CONNECTED: {
-        final BluetoothDevice dev = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-        logger("设备建立连接：%s => 事件", dev.getBondState());
-        listeners.onBindingStatusChange(dev);
+        final BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+        if (device != null) {
+          logger("设备建立连接：%s => 事件", device.getBondState());
+          controller.onBindingStatusChange(device);
+        }
+        else {
+          logger("ACTION_ACL_CONNECTED: device is null");
+        }
         break;
       }
       case BluetoothDevice.ACTION_ACL_DISCONNECTED: { /* 设备断开连接 */
-        final BluetoothDevice dev = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-        logger("设备断开连接：%s => 事件", dev);
-        listeners.onDisconnecting(dev);
+        final BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+        if (device != null) {
+          logger("设备断开连接：%s => 事件", device);
+          controller.onDisconnecting(device);
+        }
+        else {
+          logger("ACTION_ACL_DISCONNECTED: device is null");
+        }
         break;
       } /* 地蓝牙适配器  BluetoothAdapter连接状态 */
       case BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED: {
-        final BluetoothDevice dev = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-        // logger("Adapter STATE: %s", intent.getIntExtra(BluetoothAdapter.EXTRA_CONNECTION_STATE, 0));
-        logger("BluetoothAdapter 蓝牙设备: %s, %s => 事件", dev.getName(), dev.getAddress());
-        listeners.onBindingStatusChange(dev);
+        final BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+        if (device != null) {
+          logger("BluetoothAdapter 蓝牙设备: %s, %s => 事件", device.getName(), device.getAddress());
+          controller.onBindingStatusChange(device);
+        }
+        else {
+          logger("ACTION_CONNECTION_STATE_CHANGED: device is null");
+        }
         break;
       }
       case BluetoothA2dp.ACTION_CONNECTION_STATE_CHANGED:
       case BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED: {
         final BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-        //  logger("Headset STATE: %s", intent.getIntExtra(BluetoothHeadset.EXTRA_STATE, 0));
-        switch (intent.getIntExtra(BluetoothA2dp.EXTRA_STATE, -1)) {
-          case BluetoothA2dp.STATE_CONNECTING:
-            logger("高质量音频设备: %s 正在连接 => 事件", device.getName());
-            listeners.onConnecting(device);
-            break;
-          case BluetoothA2dp.STATE_CONNECTED:
-            logger("高质量音频设备: %s 已连接 => 事件", device.getName());
-            listeners.onConnected(device);
-            break;
-          case BluetoothA2dp.STATE_DISCONNECTING:
-            logger("高质量音频设备: %s 正在断开 => 事件", device.getName());
-            listeners.onDisconnecting(device);
-            break;
-          case BluetoothA2dp.STATE_DISCONNECTED:
-            logger("高质量音频设备: %s 已经断开 => 事件", device.getName());
-            listeners.onDisconnect(device);
-            break;
-          default:
-            break;
+        if (device != null) {
+          switch (intent.getIntExtra(BluetoothProfile.EXTRA_STATE, -1)) {
+            case BluetoothProfile.STATE_CONNECTING:
+              logger("高质量音频设备: %s 正在连接 => 事件", device.getName());
+              controller.onConnecting(device);
+              break;
+            case BluetoothProfile.STATE_CONNECTED:
+              logger("高质量音频设备: %s 已连接 => 事件", device.getName());
+              controller.onConnected(device);
+              break;
+            case BluetoothProfile.STATE_DISCONNECTING:
+              logger("高质量音频设备: %s 正在断开 => 事件", device.getName());
+              controller.onDisconnecting(device);
+              break;
+            case BluetoothProfile.STATE_DISCONNECTED:
+              logger("高质量音频设备: %s 已经断开 => 事件", device.getName());
+              controller.onDisconnect(device);
+              break;
+            default:
+              break;
+          }
+        }
+        else {
+          logger("ACTION_CONNECTION_STATE_CHANGED: device is null");
         }
       }
       default:

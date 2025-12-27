@@ -42,7 +42,6 @@
           android:elevation="4dp"
           android:theme="@style/AppTheme.AppBarOverlay"
           app:popupTheme="@style/AppTheme.PopupOverlay"
-          app:subtitle="1"
           app:subtitleCentered="true"
           app:subtitleTextColor="@color/gray" />
 

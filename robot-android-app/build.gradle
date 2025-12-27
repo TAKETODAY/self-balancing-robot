@@ -22,6 +22,10 @@ android {
     proguardFiles 'proguard-rules.pro'
   }
 
+  lintOptions {
+    disable "MissingPermission", "NonConstantResourceId"
+  }
+
   buildTypes {
     release {
       debuggable false
@@ -75,6 +79,7 @@ dependencies {
 //  implementation 'com.joanzapata.iconify:android-iconify-simplelineicons:2.2.2'
 //  implementation 'com.joanzapata.iconify:android-iconify-material-community:2.2.2'
 
+  implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.2.0"
   implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.10.0'
   implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.10.0'
   implementation 'androidx.recyclerview:recyclerview:1.4.0'

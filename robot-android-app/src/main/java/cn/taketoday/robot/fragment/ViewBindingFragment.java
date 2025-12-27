@@ -37,12 +37,12 @@ public abstract class ViewBindingFragment<BindingType extends ViewBinding> exten
   protected BindingType binding;
 
   @Override
-  public final View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, @Nullable Bundle savedInstanceState) {
+  public final View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
     binding = createBinding(inflater, container);
     return binding.getRoot();
   }
 
-  protected abstract BindingType createBinding(LayoutInflater inflater, ViewGroup container);
+  protected abstract BindingType createBinding(LayoutInflater inflater, @Nullable ViewGroup container);
 
   @Override
   public void onDestroyView() {

@@ -14,35 +14,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see [https://www.gnu.org/licenses/]
  */
-package cn.taketoday.robot.bluetooth;
+
+package cn.taketoday.robot.model;
 
 import android.bluetooth.BluetoothDevice;
 
-/**
- * BluetoothScanningListener
- *
- * @author <a href="https://github.com/TAKETODAY">海子 Yang</a>
- */
-public interface BluetoothScanningListener {
+public interface BluetoothDeviceClickListener {
 
-  /**
-   * 搜索开始
-   */
-  default void onScanningStarted() {
-  }
-
-  /**
-   * 搜索结束
-   */
-  default void onScanningFinished() {
-  }
-
-  /**
-   * 发现新设备
-   *
-   * @param device new device
-   */
-  default void onDeviceFound(BluetoothDevice device) {
-  }
-
+  void onBluetoothDeviceClickListener(BluetoothDevice device);
 }
