@@ -43,28 +43,28 @@ public class BluetoothListeners implements BluetoothStatusListener, BluetoothBin
 
   public void addBindingListener(BluetoothBindingListener... bindingListeners) {
     if (isDebugEnabled()) {
-      logger("添加配对状态监听器", Arrays.toString(bindingListeners));
+      debug("添加配对状态监听器", Arrays.toString(bindingListeners));
     }
     Collections.addAll(this.bindingListeners, bindingListeners);
   }
 
   public void addStatusListener(BluetoothStatusListener... statusListeners) {
     if (isDebugEnabled()) {
-      logger("添加状态监听器", Arrays.toString(statusListeners));
+      debug("添加状态监听器", Arrays.toString(statusListeners));
     }
     Collections.addAll(this.statusListeners, statusListeners);
   }
 
   public void addScanningListener(BluetoothScanningListener... scanningListeners) {
     if (isDebugEnabled()) {
-      logger("添加扫描监听器", Arrays.toString(scanningListeners));
+      debug("添加扫描监听器", Arrays.toString(scanningListeners));
     }
     Collections.addAll(this.scanningListeners, scanningListeners);
   }
 
   public void addConnectionListener(BluetoothConnectionListener... connectionListeners) {
     if (isDebugEnabled()) {
-      logger("添加连接监听器", Arrays.toString(connectionListeners));
+      debug("添加连接监听器", Arrays.toString(connectionListeners));
     }
     Collections.addAll(this.connectionListeners, connectionListeners);
   }
@@ -100,9 +100,9 @@ public class BluetoothListeners implements BluetoothStatusListener, BluetoothBin
   }
 
   @Override
-  public void onDeviceFound(BluetoothDevice device) {
+  public void onDeviceFound(BluetoothDevice device, short rssi) {
     for (BluetoothScanningListener scanningListener : scanningListeners) {
-      scanningListener.onDeviceFound(device);
+      scanningListener.onDeviceFound(device, rssi);
     }
   }
 

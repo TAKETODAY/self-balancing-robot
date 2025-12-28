@@ -15,31 +15,7 @@
  * along with this program. If not, see [https://www.gnu.org/licenses/]
  */
 
+@NullMarked
 package cn.taketoday.robot.protocol;
 
-import infra.lang.Enumerable;
-
-/**
- * @author <a href="https://github.com/TAKETODAY">海子 Yang</a>
- * @since 1.0 2025/12/20 14:40
- */
-public enum FrameType implements Enumerable<Integer> {
-
-  CONTROL(1),
-
-  CONFIG_SET(2),
-
-  CONFIG_GET(3);
-
-  private final int value;
-
-  FrameType(int value) {
-    this.value = value;
-  }
-
-  @Override
-  public Integer getValue() {
-    return value;
-  }
-
-}
+import org.jspecify.annotations.NullMarked;

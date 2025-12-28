@@ -59,7 +59,7 @@ public class BluetoothDeviceListAdapter extends ListAdapter<BluetoothItem, Bluet
 
   @Override
   public void onCurrentListChanged(List<BluetoothItem> previousList, List<BluetoothItem> currentList) {
-    logger("previousList: %s, currentList: %s", previousList, currentList);
+    debug("previousList: %s, currentList: %s", previousList, currentList);
   }
 
   public void clear() {
@@ -82,7 +82,7 @@ public class BluetoothDeviceListAdapter extends ListAdapter<BluetoothItem, Bluet
 
       binding.getRoot().setOnClickListener(v -> {
         if (listener != null) {
-          listener.onBluetoothItemClickListener(item);
+          listener.onBluetoothItemClickListener(v, item);
         }
       });
 

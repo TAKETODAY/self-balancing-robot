@@ -17,9 +17,11 @@
 
 package cn.taketoday.robot.model;
 
+import android.view.View;
+
 import cn.taketoday.robot.bluetooth.BluetoothItem;
 
 public interface BluetoothItemClickListener {
 
-  void onBluetoothItemClickListener(BluetoothItem item);
+  void onBluetoothItemClickListener(View view, BluetoothItem item);
 }

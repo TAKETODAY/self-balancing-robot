@@ -56,6 +56,11 @@ android {
     sourceCompatibility 17
   }
 
+  packaging {
+    resources {
+      excludes.add("META-INF/io.netty.versions.properties")
+    }
+  }
 }
 
 dependencies {
@@ -88,6 +93,7 @@ dependencies {
   implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.10.0'
   implementation 'androidx.activity:activity-compose:1.12.2'
   implementation 'androidx.activity:activity:1.12.2'
+  implementation 'io.netty:netty-buffer:4.2.7.Final'
 
 
 //  implementation 'com.github.varunest:sparkbutton:1.0.6'

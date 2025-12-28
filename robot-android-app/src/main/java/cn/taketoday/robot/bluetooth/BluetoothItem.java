@@ -25,6 +25,16 @@ import cn.taketoday.robot.model.DeviceItem;
 
 public class BluetoothItem {
 
+  public static final String STATUS_UNKNOWN = "未知状态 Unknown Status";//已配对
+  public static final String STATUS_BONDED = "已配对";//已配对
+  public static final String STATUS_BONDING = "配对中";
+  public static final String STATUS_UNCONNECT = "未连接";//
+  public static final String STATUS_CONNECTED = "已连接";//
+  public static final String STATUS_BOND_NONE = "未配对";
+  public static final String STATUS_CONNECTING = "正在连接";//
+  public static final String STATUS_DISCONNECTED = "已断开";//(但还保存)
+  public static final String STATUS_DISCONNECTING = "正在断开";//
+
   private final BluetoothDevice device;
 
   private final String name;
@@ -33,7 +43,10 @@ public class BluetoothItem {
 
   private final boolean paired;
 
-  public BluetoothItem(BluetoothDevice device) {
+  private final int rssi;
+
+  public BluetoothItem(BluetoothDevice device, int rssi) {
+    this.rssi = rssi;
     this.device = device;
     String name = device.getName();
     this.name = name != null ? name : "Unknown";
@@ -57,8 +70,12 @@ public class BluetoothItem {
     return paired;
   }
 
+  public int getRssi() {
+    return rssi;
+  }
+
   public String getStatusText() {
-    return isPaired() ? DeviceItem.STATUS_BONDED : DeviceItem.STATUS_BOND_NONE;
+    return isPaired() ? STATUS_BONDED : STATUS_BOND_NONE;
   }
 
   @Override
@@ -82,6 +99,7 @@ public class BluetoothItem {
             "name='" + name + '\'' +
             ", address='" + address + '\'' +
             ", isPaired=" + paired +
+            ", rssi=" + rssi +
             '}';
   }
 }

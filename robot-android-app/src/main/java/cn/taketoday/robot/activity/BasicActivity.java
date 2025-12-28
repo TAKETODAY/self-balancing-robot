@@ -45,13 +45,13 @@ import cn.taketoday.robot.ApplicationSupport;
 public abstract class BasicActivity extends AppCompatActivity implements ApplicationSupport {
 
   public BasicActivity() {
-    logger("Activity:[%s] Are Created", this);
+    debug("Activity:[%s] Are Created", this);
   }
 
   @Override
   protected void onCreate(@Nullable final Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    logger("onCreate");
+    debug("onCreate");
 
     setContentView(getContentViewId());
 
@@ -127,55 +127,55 @@ public abstract class BasicActivity extends AppCompatActivity implements Applica
   @Override
   protected void onRestoreInstanceState(final Bundle savedInstanceState) {
     super.onRestoreInstanceState(savedInstanceState);
-    logger("Activity On onRestoreInstanceState");
+    debug("Activity On onRestoreInstanceState");
   }
 
   @Override
   protected void onStart() {
     super.onStart();
-    logger("Activity On Start");
+    debug("Activity On Start");
   }
 
   @Override
   protected void onRestart() {
     super.onRestart();
-    logger("Activity onRestart");
+    debug("Activity onRestart");
   }
 
   @Override
   protected void onDestroy() {
     super.onDestroy();
-    logger("Activity onDestroy");
+    debug("Activity onDestroy");
   }
 
   @Override
   protected void onPostCreate(@Nullable final Bundle savedInstanceState) {
     super.onPostCreate(savedInstanceState);
-    logger("Activity onPostCreate");
+    debug("Activity onPostCreate");
   }
 
   @Override
   protected void onPause() {
     super.onPause();
-    logger("Activity onPause");
+    debug("Activity onPause");
   }
 
   @Override
   protected void onResume() {
     super.onResume();
-    logger("Activity onResume");
+    debug("Activity onResume");
   }
 
   @Override
   protected void onStop() {
     super.onStop();
-    logger("Activity onStop");
+    debug("Activity onStop");
   }
 
   @Override
   protected void onPostResume() {
     super.onPostResume();
-    logger("Activity onPostResume");
+    debug("Activity onPostResume");
   }
 
   protected abstract int getContentViewId();

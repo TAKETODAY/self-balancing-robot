@@ -53,8 +53,8 @@ import cn.taketoday.robot.bluetooth.BluetoothItem;
 import cn.taketoday.robot.bluetooth.BluetoothListeners;
 import cn.taketoday.robot.bluetooth.BluetoothViewModel;
 import cn.taketoday.robot.databinding.FragmentDeviceConnectionBinding;
-import cn.taketoday.robot.model.BluetoothItemClickListener;
 import cn.taketoday.robot.model.BluetoothDeviceListAdapter;
+import cn.taketoday.robot.model.BluetoothItemClickListener;
 import cn.taketoday.robot.model.DeviceItem;
 
 import static cn.taketoday.robot.util.RobotUtils.showDialog;
@@ -83,7 +83,7 @@ public class DeviceConnectionFragment extends ViewBindingFragment<FragmentDevice
 
   @Override
   public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-    logger("onViewCreated");
+    debug("onViewCreated");
     viewModel = new ViewModelProvider(this).get(BluetoothViewModel.class);
 
     BluetoothListeners listeners = getBluetoothListeners();
@@ -100,12 +100,20 @@ public class DeviceConnectionFragment extends ViewBindingFragment<FragmentDevice
     bluetoothAdapter = new BluetoothDeviceListAdapter(this);
     binding.bluetoothList.setAdapter(bluetoothAdapter);
 
-//    viewModel.devices.observe(getViewLifecycleOwner(), bluetoothDeviceItems -> bluetoothAdapter.submitList(bluetoothDeviceItems));
     viewModel.devices.observe(getViewLifecycleOwner(), bluetoothAdapter::submitList);
+
+    viewModel.connected.observe(getViewLifecycleOwner(), connected -> {
+      if (connected) {
+        Snackbar.make(view, "连接成功", Snackbar.LENGTH_SHORT).show();
+      }
+      else {
+        Snackbar.make(view, "连接断开", Snackbar.LENGTH_SHORT).show();
+      }
+    });
 
     viewModel.scanning.observe(getViewLifecycleOwner(), scanning -> {
       if (scanning) {
-        logger("成功开始搜索");
+        debug("成功开始搜索");
         Snackbar.make(view, "开始搜索", Snackbar.LENGTH_SHORT).show();
       }
       else {
@@ -130,7 +138,7 @@ public class DeviceConnectionFragment extends ViewBindingFragment<FragmentDevice
       }
     });
 
-    logger("create end");
+    debug("create end");
   }
 
   @Override
@@ -148,36 +156,35 @@ public class DeviceConnectionFragment extends ViewBindingFragment<FragmentDevice
   }
 
   @Override
-  public void onBluetoothItemClickListener(BluetoothItem item) {
-    logger("列表点击了：%s", item.getName());
-
-
+  public void onBluetoothItemClickListener(View view, BluetoothItem item) {
+    debug("列表点击了：%s", item.getName());
+    viewModel.connect(view, item);
   }
 
   @Override
   @RequiresPermission(allOf = { Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_SCAN })
   public void onConnecting(BluetoothDevice device) {
-    logger("设备正在连接中: %s", device.getName());
+    debug("设备正在连接中: %s", device.getName());
 
   }
 
   @Override
   public void onConnected(BluetoothDevice device) {
-    logger("设备已连接: %s", device.getName());
+    debug("设备已连接: %s", device.getName());
 
-    applyBluetoothDeviceStatus(device, DeviceItem.STATUS_CONNECTED);
+    applyBluetoothDeviceStatus(device, BluetoothItem.STATUS_CONNECTED);
   }
 
   @Override
   public void onDisconnecting(BluetoothDevice device) {
-    logger("正在断开设备: %s", device.getName());
-    applyBluetoothDeviceStatus(device, DeviceItem.STATUS_DISCONNECTING);
+    debug("正在断开设备: %s", device.getName());
+    applyBluetoothDeviceStatus(device, BluetoothItem.STATUS_DISCONNECTING);
   }
 
   @Override
   public void onDisconnect(BluetoothDevice device) {
-    logger("已经断开设备: %s", device.getName());
-    applyBluetoothDeviceStatus(device, DeviceItem.STATUS_DISCONNECTED);
+    debug("已经断开设备: %s", device.getName());
+    applyBluetoothDeviceStatus(device, BluetoothItem.STATUS_DISCONNECTED);
   }
 
   public void applyBluetoothDeviceStatus(BluetoothDevice device, String status) {
@@ -195,16 +202,16 @@ public class DeviceConnectionFragment extends ViewBindingFragment<FragmentDevice
     deviceItem.setName(device.getName());
     switch (device.getBondState()) {
       case BluetoothDevice.BOND_NONE:
-        deviceItem.setStatus(DeviceItem.STATUS_BOND_NONE);
+        deviceItem.setStatus(BluetoothItem.STATUS_BOND_NONE);
         break;
       case BluetoothDevice.BOND_BONDING:
-        deviceItem.setStatus(DeviceItem.STATUS_BONDING);
+        deviceItem.setStatus(BluetoothItem.STATUS_BONDING);
         break;
       case BluetoothDevice.BOND_BONDED:
-        deviceItem.setStatus(DeviceItem.STATUS_BONDED);
+        deviceItem.setStatus(BluetoothItem.STATUS_BONDED);
         break;
       default:
-        deviceItem.setStatus(DeviceItem.STATUS_UNKNOWN);
+        deviceItem.setStatus(BluetoothItem.STATUS_UNKNOWN);
         break;
     }
 
@@ -215,20 +222,20 @@ public class DeviceConnectionFragment extends ViewBindingFragment<FragmentDevice
   public void onBindingStatusChange(BluetoothDevice device) {
     if (device.getBondState() == BluetoothDevice.BOND_BONDED) {
       DeviceItem deviceItem = getBluetoothDeviceItem(device);
-      deviceItem.setStatus(DeviceItem.STATUS_BONDED);
+      deviceItem.setStatus(BluetoothItem.STATUS_BONDED);
       bluetoothAdapter.notifyDataSetChanged();
     }
     else if (device.getBondState() == BluetoothDevice.BOND_BONDING) {//配对中
       DeviceItem deviceItem = getBluetoothDeviceItem(device);
-      deviceItem.setStatus(DeviceItem.STATUS_BONDING);
+      deviceItem.setStatus(BluetoothItem.STATUS_BONDING);
       bluetoothAdapter.notifyDataSetChanged();
     }
     else {//未配对
       DeviceItem deviceItem = getBluetoothDeviceItem(device);
       // showDialog("错误", "不存在该设备: " + device.getName());
-      if (deviceItem != null && deviceItem.getStatus().equals(DeviceItem.STATUS_BONDING)) {
+      if (deviceItem != null && deviceItem.getStatus().equals(BluetoothItem.STATUS_BONDING)) {
         Toast.makeText(requireContext(), "请确认配对设备已打开且在通信范围内", Toast.LENGTH_SHORT).show();
-        deviceItem.setStatus(DeviceItem.STATUS_BONDING);
+        deviceItem.setStatus(BluetoothItem.STATUS_BONDING);
         bluetoothAdapter.notifyDataSetChanged();
       }
     }
@@ -264,10 +271,10 @@ public class DeviceConnectionFragment extends ViewBindingFragment<FragmentDevice
         }
       }
       if (allGranted) {
-        logger("allGranted");
+        debug("allGranted");
       }
       else {
-        logger("allGranted failed");
+        debug("allGranted failed");
       }
     });
   }

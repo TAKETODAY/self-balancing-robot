@@ -17,11 +17,15 @@
 
 package cn.taketoday.robot.protocol;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
+import io.netty.buffer.Unpooled;
+
 /**
  * @author <a href="https://github.com/TAKETODAY">海子 Yang</a>
  * @since 1.0 2025/12/20 14:40
  */
-public class Frame {
+public class Frame implements Message {
 
   public final FrameType type;
 
@@ -30,6 +34,42 @@ public class Frame {
   public Frame(FrameType type, byte[] data) {
     this.type = type;
     this.data = data;
+  }
+
+  public byte[] toBytes() {
+    ByteBuf buffer = Unpooled.buffer(16);
+    new MessagePackOutput(buffer).write(this);
+    return ByteBufUtil.getBytes(buffer);
+  }
+
+  public <T extends Message> T read(Class<T> type) {
+    try {
+      T t = type.newInstance();
+      t.readFrom(new MessagePackInput(Unpooled.wrappedBuffer(data)));
+      return t;
+    }
+    catch (Exception e) {
+      throw new SerializationException("read failed", e);
+    }
+  }
+
+  public <T> T read(Factory<T> factory) {
+    return factory.create(new MessagePackInput(Unpooled.wrappedBuffer(data)));
+  }
+
+  @Override
+  public void writeTo(Output output) {
+    output.write(type);
+    output.writeFully(data);
+  }
+
+  public static Frame parse(byte[] data) {
+    return parse(new MessagePackInput(Unpooled.wrappedBuffer(data)));
+  }
+
+  public static Frame parse(Input source) {
+    FrameType frameType = source.readEnum(FrameType.class);
+    return new Frame(frameType, source.readFully());
   }
 
 }

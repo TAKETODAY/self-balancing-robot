@@ -41,8 +41,9 @@ public interface BluetoothScanningListener {
    * 发现新设备
    *
    * @param device new device
+   * @param rssi
    */
-  default void onDeviceFound(BluetoothDevice device) {
+  default void onDeviceFound(BluetoothDevice device, short rssi) {
   }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 - 2025 the original author or authors.
+ * Copyright 2021 - 2024 the original author or authors.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -12,34 +12,18 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see [https://www.gnu.org/licenses/]
+ * along with this program.  If not, see [http://www.gnu.org/licenses/]
  */
 
-package cn.taketoday.robot.protocol;
-
-import infra.lang.Enumerable;
+package cn.taketoday.robot.protocol.format;
 
 /**
- * @author <a href="https://github.com/TAKETODAY">海子 Yang</a>
- * @since 1.0 2025/12/20 14:40
+ * Exception that indicates end of input.
  */
-public enum FrameType implements Enumerable<Integer> {
+public class MessageInsufficientBufferException extends MessagePackException {
 
-  CONTROL(1),
-
-  CONFIG_SET(2),
-
-  CONFIG_GET(3);
-
-  private final int value;
-
-  FrameType(int value) {
-    this.value = value;
-  }
-
-  @Override
-  public Integer getValue() {
-    return value;
+  public MessageInsufficientBufferException() {
+    super(null, null);
   }
 
 }

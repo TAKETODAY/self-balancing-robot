@@ -37,7 +37,7 @@ public class RobotApplication extends Application implements Constant, LoggingSu
   @Override
   public void onCreate() {
     super.onCreate();
-    logger("RobotApplication startup");
+    debug("RobotApplication startup");
 
 //    Iconify.with(new FontAwesomeModule())
 //            .with(new EntypoModule())
