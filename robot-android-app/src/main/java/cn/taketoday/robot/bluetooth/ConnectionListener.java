@@ -3,6 +3,9 @@ package cn.taketoday.robot.bluetooth;
 import android.bluetooth.BluetoothDevice;
 
 /**
+ * A listener for receiving notifications about the state of a Bluetooth connection.
+ * Implement this interface to handle events such as connection, disconnection, data reception, and RSSI updates.
+ *
  * @author <a href="https://github.com/TAKETODAY">海子 Yang</a>
  * @since 1.0 2025/12/28 15:19
  */

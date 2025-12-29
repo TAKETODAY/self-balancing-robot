@@ -19,18 +19,21 @@ package cn.taketoday.robot.bluetooth;
 import android.bluetooth.BluetoothDevice;
 
 /**
- * BluetoothConnectionListener
+ * A listener for receiving notifications about changes in the Bluetooth device pairing (bonding) state.
+ * Implement this interface to handle events related to the bonding process.
  *
  * @author <a href="https://github.com/TAKETODAY">海子 Yang</a>
+ * @see BluetoothDevice#BOND_NONE
+ * @see BluetoothDevice#BOND_BONDING
+ * @see BluetoothDevice#BOND_BONDED
  */
-public interface BluetoothConnectionListener {
+public interface BindingStatusListener {
 
-  void onConnecting(BluetoothDevice device);//连接中
-
-  void onConnected(BluetoothDevice device);//连接成功
-
-  void onDisconnecting(BluetoothDevice device);//断开中
-
-  void onDisconnect(BluetoothDevice device);//断开
-
+  /**
+   * 设备配对状态改变
+   * int BOND_NONE = 10; //配对没有成功
+   * int BOND_BONDING = 11; //配对中
+   * int BOND_BONDED = 12; //配对成功
+   */
+  void onBindingStatusChange(BluetoothDevice device);
 }

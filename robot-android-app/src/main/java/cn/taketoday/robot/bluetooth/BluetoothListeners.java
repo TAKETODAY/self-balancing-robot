@@ -31,38 +31,38 @@ import cn.taketoday.robot.LoggingSupport;
  *
  * @author <a href="https://github.com/TAKETODAY">海子 Yang</a>
  */
-public class BluetoothListeners implements BluetoothStatusListener, BluetoothBindingListener,
-        BluetoothScanningListener, BluetoothConnectionListener, LoggingSupport {
+public class BluetoothListeners implements StatusListener, BindingStatusListener,
+        ScanningListener, ConnectionListener, LoggingSupport {
 
   private static final BluetoothListeners instance = new BluetoothListeners();
 
-  private final List<BluetoothStatusListener> statusListeners = new ArrayList<>(4);
-  private final List<BluetoothBindingListener> bindingListeners = new ArrayList<>(4);
-  private final List<BluetoothScanningListener> scanningListeners = new ArrayList<>(4);
-  private final List<BluetoothConnectionListener> connectionListeners = new ArrayList<>(4);
+  private final List<StatusListener> statusListeners = new ArrayList<>(4);
+  private final List<BindingStatusListener> bindingListeners = new ArrayList<>(4);
+  private final List<ScanningListener> scanningListeners = new ArrayList<>(4);
+  private final List<ConnectionListener> connectionListeners = new ArrayList<>(4);
 
-  public void addBindingListener(BluetoothBindingListener... bindingListeners) {
+  public void addBindingListener(BindingStatusListener... bindingListeners) {
     if (isDebugEnabled()) {
       debug("添加配对状态监听器", Arrays.toString(bindingListeners));
     }
     Collections.addAll(this.bindingListeners, bindingListeners);
   }
 
-  public void addStatusListener(BluetoothStatusListener... statusListeners) {
+  public void addStatusListener(StatusListener... statusListeners) {
     if (isDebugEnabled()) {
       debug("添加状态监听器", Arrays.toString(statusListeners));
     }
     Collections.addAll(this.statusListeners, statusListeners);
   }
 
-  public void addScanningListener(BluetoothScanningListener... scanningListeners) {
+  public void addScanningListener(ScanningListener... scanningListeners) {
     if (isDebugEnabled()) {
       debug("添加扫描监听器", Arrays.toString(scanningListeners));
     }
     Collections.addAll(this.scanningListeners, scanningListeners);
   }
 
-  public void addConnectionListener(BluetoothConnectionListener... connectionListeners) {
+  public void addConnectionListener(ConnectionListener... connectionListeners) {
     if (isDebugEnabled()) {
       debug("添加连接监听器", Arrays.toString(connectionListeners));
     }
@@ -71,14 +71,14 @@ public class BluetoothListeners implements BluetoothStatusListener, BluetoothBin
 
   @Override
   public void onStatusChange(int status) {
-    for (BluetoothStatusListener statusListener : statusListeners) {
+    for (StatusListener statusListener : statusListeners) {
       statusListener.onStatusChange(status);
     }
   }
 
   @Override
   public void onBindingStatusChange(BluetoothDevice device) {
-    for (BluetoothBindingListener bindingListener : bindingListeners) {
+    for (BindingStatusListener bindingListener : bindingListeners) {
       bindingListener.onBindingStatusChange(device);
     }
   }
@@ -87,53 +87,67 @@ public class BluetoothListeners implements BluetoothStatusListener, BluetoothBin
   // -------------------
   @Override
   public void onScanningStarted() {
-    for (BluetoothScanningListener scanningListener : scanningListeners) {
+    for (ScanningListener scanningListener : scanningListeners) {
       scanningListener.onScanningStarted();
     }
   }
 
   @Override
   public void onScanningFinished() {
-    for (BluetoothScanningListener scanningListener : scanningListeners) {
+    for (ScanningListener scanningListener : scanningListeners) {
       scanningListener.onScanningFinished();
     }
   }
 
   @Override
   public void onDeviceFound(BluetoothDevice device, short rssi) {
-    for (BluetoothScanningListener scanningListener : scanningListeners) {
+    for (ScanningListener scanningListener : scanningListeners) {
       scanningListener.onDeviceFound(device, rssi);
     }
   }
 
-  // BluetoothConnectionListener
+  // ConnectionListener
   //-------------------------------------------------
 
   @Override
   public void onConnecting(BluetoothDevice device) {
-    for (BluetoothConnectionListener connectionListener : connectionListeners) {
+    for (ConnectionListener connectionListener : connectionListeners) {
       connectionListener.onConnecting(device);
     }
   }
 
   @Override
   public void onConnected(BluetoothDevice device) {
-    for (BluetoothConnectionListener connectionListener : connectionListeners) {
+    for (ConnectionListener connectionListener : connectionListeners) {
       connectionListener.onConnected(device);
     }
   }
 
   @Override
   public void onDisconnecting(BluetoothDevice device) {
-    for (BluetoothConnectionListener connectionListener : connectionListeners) {
+    for (ConnectionListener connectionListener : connectionListeners) {
       connectionListener.onDisconnecting(device);
     }
   }
 
   @Override
-  public void onDisconnect(BluetoothDevice device) {
-    for (BluetoothConnectionListener connectionListener : connectionListeners) {
-      connectionListener.onDisconnect(device);
+  public void onDataReceived(BluetoothDevice device, byte[] data) {
+    for (ConnectionListener connectionListener : connectionListeners) {
+      connectionListener.onDataReceived(device, data);
+    }
+  }
+
+  @Override
+  public void onRssiUpdated(BluetoothDevice device, int rssi) {
+    for (ConnectionListener connectionListener : connectionListeners) {
+      connectionListener.onRssiUpdated(device, rssi);
+    }
+  }
+
+  @Override
+  public void onDisconnected(BluetoothDevice device) {
+    for (ConnectionListener connectionListener : connectionListeners) {
+      connectionListener.onDisconnected(device);
     }
   }
 

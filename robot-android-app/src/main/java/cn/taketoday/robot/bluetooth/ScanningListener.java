@@ -17,23 +17,35 @@
 
 package cn.taketoday.robot.bluetooth;
 
-import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 
 /**
- * 蓝牙状态监听(开关 、 配对 、 扫描 、 连接)
+ * Interface for receiving notifications about Bluetooth scanning events.
+ * Implement this interface to handle events such as the start and end of a scan,
+ * and the discovery of new Bluetooth devices.
  *
  * @author <a href="https://github.com/TAKETODAY">海子 Yang</a>
  */
-public interface BluetoothStatusListener {
+public interface ScanningListener {
 
   /**
-   * 蓝牙开关状态
-   *
-   * @see BluetoothAdapter#STATE_OFF
-   * @see BluetoothAdapter#STATE_ON
-   * @see BluetoothAdapter#STATE_TURNING_ON
-   * @see BluetoothAdapter#STATE_TURNING_OFF
+   * 搜索开始
    */
-  void onStatusChange(int status);
+  default void onScanningStarted() {
+  }
+
+  /**
+   * 搜索结束
+   */
+  default void onScanningFinished() {
+  }
+
+  /**
+   * 发现新设备
+   *
+   * @param device new device
+   */
+  default void onDeviceFound(BluetoothDevice device, short rssi) {
+  }
 
 }

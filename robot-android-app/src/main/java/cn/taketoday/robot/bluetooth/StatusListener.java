@@ -14,22 +14,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see [https://www.gnu.org/licenses/]
  */
+
 package cn.taketoday.robot.bluetooth;
 
-import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothAdapter;
 
 /**
- * BluetoothBindingListener
+ * Listener for Bluetooth status changes (enabled/disabled, pairing, scanning, connection).
  *
  * @author <a href="https://github.com/TAKETODAY">海子 Yang</a>
  */
-public interface BluetoothBindingListener {
+public interface StatusListener {
 
   /**
-   * 设备配对状态改变
-   * int BOND_NONE = 10; //配对没有成功
-   * int BOND_BONDING = 11; //配对中
-   * int BOND_BONDED = 12; //配对成功
+   * 蓝牙开关状态
+   *
+   * @see BluetoothAdapter#STATE_OFF
+   * @see BluetoothAdapter#STATE_ON
+   * @see BluetoothAdapter#STATE_TURNING_ON
+   * @see BluetoothAdapter#STATE_TURNING_OFF
    */
-  void onBindingStatusChange(BluetoothDevice device);
+  void onStatusChange(int status);
+
 }

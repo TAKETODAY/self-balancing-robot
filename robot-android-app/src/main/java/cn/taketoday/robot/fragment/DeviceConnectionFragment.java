@@ -27,7 +27,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
-import android.widget.Toast;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
@@ -47,11 +46,11 @@ import java.util.ArrayList;
 
 import cn.taketoday.robot.LoggingSupport;
 import cn.taketoday.robot.R;
-import cn.taketoday.robot.bluetooth.BluetoothBindingListener;
-import cn.taketoday.robot.bluetooth.BluetoothConnectionListener;
+import cn.taketoday.robot.bluetooth.BindingStatusListener;
 import cn.taketoday.robot.bluetooth.BluetoothItem;
 import cn.taketoday.robot.bluetooth.BluetoothListeners;
 import cn.taketoday.robot.bluetooth.BluetoothViewModel;
+import cn.taketoday.robot.bluetooth.ConnectionListener;
 import cn.taketoday.robot.databinding.FragmentDeviceConnectionBinding;
 import cn.taketoday.robot.model.BluetoothDeviceListAdapter;
 import cn.taketoday.robot.model.BluetoothItemClickListener;
@@ -64,7 +63,7 @@ import static cn.taketoday.robot.util.RobotUtils.showDialog;
  * @since 1.0 2025/12/20 16:46
  */
 public class DeviceConnectionFragment extends ViewBindingFragment<FragmentDeviceConnectionBinding> implements CompoundButton.OnCheckedChangeListener,
-        BluetoothItemClickListener, BluetoothBindingListener, BluetoothConnectionListener, LoggingSupport, ActivityResultCallback<ActivityResult> {
+        BluetoothItemClickListener, BindingStatusListener, ConnectionListener, LoggingSupport, ActivityResultCallback<ActivityResult> {
 
   private BluetoothDeviceListAdapter bluetoothAdapter;
 
@@ -172,19 +171,26 @@ public class DeviceConnectionFragment extends ViewBindingFragment<FragmentDevice
   public void onConnected(BluetoothDevice device) {
     debug("设备已连接: %s", device.getName());
 
-    applyBluetoothDeviceStatus(device, BluetoothItem.STATUS_CONNECTED);
   }
 
   @Override
   public void onDisconnecting(BluetoothDevice device) {
     debug("正在断开设备: %s", device.getName());
-    applyBluetoothDeviceStatus(device, BluetoothItem.STATUS_DISCONNECTING);
   }
 
   @Override
-  public void onDisconnect(BluetoothDevice device) {
+  public void onDataReceived(BluetoothDevice device, byte[] data) {
+
+  }
+
+  @Override
+  public void onRssiUpdated(BluetoothDevice device, int rssi) {
+
+  }
+
+  @Override
+  public void onDisconnected(BluetoothDevice device) {
     debug("已经断开设备: %s", device.getName());
-    applyBluetoothDeviceStatus(device, BluetoothItem.STATUS_DISCONNECTED);
   }
 
   public void applyBluetoothDeviceStatus(BluetoothDevice device, String status) {
@@ -220,35 +226,10 @@ public class DeviceConnectionFragment extends ViewBindingFragment<FragmentDevice
 
   @Override
   public void onBindingStatusChange(BluetoothDevice device) {
-    if (device.getBondState() == BluetoothDevice.BOND_BONDED) {
-      DeviceItem deviceItem = getBluetoothDeviceItem(device);
-      deviceItem.setStatus(BluetoothItem.STATUS_BONDED);
-      bluetoothAdapter.notifyDataSetChanged();
-    }
-    else if (device.getBondState() == BluetoothDevice.BOND_BONDING) {//配对中
-      DeviceItem deviceItem = getBluetoothDeviceItem(device);
-      deviceItem.setStatus(BluetoothItem.STATUS_BONDING);
-      bluetoothAdapter.notifyDataSetChanged();
-    }
-    else {//未配对
-      DeviceItem deviceItem = getBluetoothDeviceItem(device);
-      // showDialog("错误", "不存在该设备: " + device.getName());
-      if (deviceItem != null && deviceItem.getStatus().equals(BluetoothItem.STATUS_BONDING)) {
-        Toast.makeText(requireContext(), "请确认配对设备已打开且在通信范围内", Toast.LENGTH_SHORT).show();
-        deviceItem.setStatus(BluetoothItem.STATUS_BONDING);
-        bluetoothAdapter.notifyDataSetChanged();
-      }
-    }
+
   }
 
   private DeviceItem getBluetoothDeviceItem(BluetoothDevice device) {
-//    if (!bluetoothAdapter.isEmpty()) {
-//      for (DeviceItem data : bluetoothAdapter.getData()) {
-//        if (data.getNativeResource().equals(device)) {
-//          return data;
-//        }
-//      }
-//    }
     return buildBluetoothDeviceItem(device);
   }
 

@@ -48,9 +48,8 @@ import java.util.Map;
 
 import cn.taketoday.robot.ApplicationSupport;
 import cn.taketoday.robot.LoggingSupport;
-import cn.taketoday.robot.protocol.Frame;
 
-public class BluetoothViewModel extends AndroidViewModel implements BluetoothScanningListener, ApplicationSupport, ConnectionListener {
+public class BluetoothViewModel extends AndroidViewModel implements ScanningListener, ApplicationSupport, ConnectionListener {
 
   public final MutableLiveData<List<BluetoothItem>> devices = new MutableLiveData<>();
 
@@ -377,7 +376,7 @@ public class BluetoothViewModel extends AndroidViewModel implements BluetoothSca
                 break;
               case BluetoothProfile.STATE_DISCONNECTED:
                 debug("高质量音频设备: %s 已经断开 => 事件", device.getName());
-                listeners.onDisconnect(device);
+                listeners.onDisconnected(device);
                 break;
               default:
                 break;
