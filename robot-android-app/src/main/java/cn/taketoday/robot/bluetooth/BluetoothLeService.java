@@ -364,28 +364,7 @@ public class BluetoothLeService implements LoggingSupport {
     public void onServicesDiscovered(BluetoothGatt gatt, int status) {
       if (status == BluetoothGatt.GATT_SUCCESS) {
         info("Services discovered");
-
-//        if (isDebugEnabled()) {
-//          List<BluetoothGattService> services = gatt.getServices();
-//          for (BluetoothGattService service : services) {
-//            debug("Service: %s", service.getUuid());
-//
-//            // 打印服务下的特征
-//            List<BluetoothGattCharacteristic> characteristics = service.getCharacteristics();
-//            for (BluetoothGattCharacteristic characteristic : characteristics) {
-//              debug("  Characteristic: %s", characteristic.getUuid());
-//
-//              // 打印特征下的描述符
-//              List<BluetoothGattDescriptor> descriptors = characteristic.getDescriptors();
-//              for (BluetoothGattDescriptor descriptor : descriptors) {
-//                debug("    Descriptor: %s", descriptor.getUuid());
-//              }
-//
-//            }
-//          }
-//        }
-
-        connectionListener.onServicesDiscovered(gatt.getDevice());
+        connectionListener.onServicesDiscovered(gatt, gatt.getDevice());
       }
       else {
         debug("onServicesDiscovered received: %s", status);

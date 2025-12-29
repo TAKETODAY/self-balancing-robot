@@ -21,6 +21,7 @@ import android.app.Application;
 import android.bluetooth.BluetoothA2dp;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothHeadset;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
@@ -232,9 +233,29 @@ public class BluetoothViewModel extends AndroidViewModel implements ScanningList
   }
 
   @Override
-  public void onServicesDiscovered(BluetoothDevice device) {
+  public void onServicesDiscovered(BluetoothGatt gatt, BluetoothDevice device) {
     bluetoothLeService.setCharacteristicIndication(true);
 //    bluetoothLeService.setCharacteristicNotification(true);
+
+//    if (isDebugEnabled()) {
+//      List<BluetoothGattService> services = gatt.getServices();
+//      for (BluetoothGattService service : services) {
+//        debug("Service: %s", service.getUuid());
+//
+//        // 打印服务下的特征
+//        List<BluetoothGattCharacteristic> characteristics = service.getCharacteristics();
+//        for (BluetoothGattCharacteristic characteristic : characteristics) {
+//          debug("  Characteristic: %s", characteristic.getUuid());
+//
+//          // 打印特征下的描述符
+//          List<BluetoothGattDescriptor> descriptors = characteristic.getDescriptors();
+//          for (BluetoothGattDescriptor descriptor : descriptors) {
+//            debug("    Descriptor: %s", descriptor.getUuid());
+//          }
+//        }
+//      }
+//    }
+
   }
 
   @Override

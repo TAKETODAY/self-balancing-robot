@@ -1,6 +1,7 @@
 package cn.taketoday.robot.bluetooth;
 
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGatt;
 
 /**
  * A listener for receiving notifications about the state of a Bluetooth connection.
@@ -21,7 +22,7 @@ public interface ConnectionListener {
   default void onDisconnecting(BluetoothDevice device) {
   }
 
-  default void onServicesDiscovered(BluetoothDevice device) {
+  default void onServicesDiscovered(BluetoothGatt gatt, BluetoothDevice device) {
   }
 
   void onDataReceived(BluetoothDevice device, byte[] data);
