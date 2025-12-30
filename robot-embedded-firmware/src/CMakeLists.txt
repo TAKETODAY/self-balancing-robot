@@ -38,11 +38,13 @@ idf_component_register(SRCS
     mpu6050.c
     robot.cpp
 
-    ble.c
-    ble/gap.c
-    ble/gatt_svc.c
+    ble/ble.c
+
+#    ble.c
+#    ble/gap.c
+#    ble/gatt_svc.c
     ble/heart_rate_mock.c
-    ble/led.c
+#    ble/led.c
 
     esp/io.cpp
     esp/adc.cpp

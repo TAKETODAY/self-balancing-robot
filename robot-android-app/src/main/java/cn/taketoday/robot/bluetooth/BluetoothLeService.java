@@ -230,7 +230,7 @@ public class BluetoothLeService implements LoggingSupport {
    */
   public void setCharacteristicIndication(BluetoothGattCharacteristic characteristic, boolean enabled) {
     if (bluetoothGatt == null) {
-      debug("BluetoothAdapter not initialized");
+      debug("bluetoothGatt not initialized");
       return;
     }
 
@@ -245,6 +245,9 @@ public class BluetoothLeService implements LoggingSupport {
         descriptor.setValue(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
       }
       bluetoothGatt.writeDescriptor(descriptor);
+    }
+    else {
+      warn("descriptor not found");
     }
   }
 

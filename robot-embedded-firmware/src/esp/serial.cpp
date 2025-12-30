@@ -27,6 +27,8 @@ static constexpr SerialPin serialPins[UART_NUM_MAX] = {
 };
 
 SerialPort serial(UART_NUM_0);
+SerialPort serial1(UART_NUM_1);
+SerialPort serial2(UART_NUM_2);
 
 SerialPort::SerialPort(const uart_port_t _uart_num) :
   _txPin(serialPins[_uart_num].tx),

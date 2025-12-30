@@ -12,28 +12,20 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see [https://www.gnu.org/licenses/]
-#ifndef HEART_RATE_H
-#define HEART_RATE_H
 
-/* Includes */
-/* ESP APIs */
-#include "esp_random.h"
 
-/* Defines */
-#define HEART_RATE_TASK_PERIOD (1000 / portTICK_PERIOD_MS)
+#ifndef BLE_H
+#define BLE_H
 
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* Public function declarations */
-uint8_t get_heart_rate(void);
-void update_heart_rate(void);
+void ble_init();
 
 #ifdef __cplusplus
 }
 #endif
 
-
-#endif // HEART_RATE_H
+#endif //BLE_H

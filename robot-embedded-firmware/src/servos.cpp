@@ -25,8 +25,6 @@
 
 static auto TAG = "servos";
 
-static SerialPort serial2(UART_NUM_2);
-
 STSServoDriver servos;
 
 

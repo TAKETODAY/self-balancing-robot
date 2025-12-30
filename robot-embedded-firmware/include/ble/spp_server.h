@@ -12,28 +12,30 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see [https://www.gnu.org/licenses/]
-#ifndef HEART_RATE_H
-#define HEART_RATE_H
 
-/* Includes */
-/* ESP APIs */
-#include "esp_random.h"
+#ifndef H_BLESPPSERVER_
+#define H_BLESPPSERVER_
 
-/* Defines */
-#define HEART_RATE_TASK_PERIOD (1000 / portTICK_PERIOD_MS)
-
-
+#include <stdbool.h>
+#include "nimble/ble.h"
+#include "modlog/modlog.h"
+#include "esp_peripheral.h"
 #ifdef __cplusplus
 extern "C" {
+
 #endif
 
-/* Public function declarations */
-uint8_t get_heart_rate(void);
-void update_heart_rate(void);
+/* 16 Bit SPP Service UUID */
+#define BLE_SVC_SPP_UUID16                                  0xABF0
+
+/* 16 Bit SPP Service Characteristic UUID */
+#define BLE_SVC_SPP_CHR_UUID16                              0xABF1
+
+struct ble_hs_cfg;
+struct ble_gatt_register_ctxt;
 
 #ifdef __cplusplus
 }
 #endif
 
-
-#endif // HEART_RATE_H
+#endif

@@ -230,3 +230,5 @@ private:
 };
 
 extern SerialPort serial;
+extern SerialPort serial1;
+extern SerialPort serial2;

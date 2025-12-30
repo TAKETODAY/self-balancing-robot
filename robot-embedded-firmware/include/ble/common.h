@@ -48,7 +48,7 @@ extern "C" {
 
 #endif
 
-void ble_init();
+// void ble_init();
 
 #ifdef __cplusplus
 }

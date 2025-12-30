@@ -19,15 +19,19 @@
 #include "battery.hpp"
 #include "esp_log.h"
 #include "AttitudeSensor.hpp"
+#include "ble.h"
 #include "LQRController.hpp"
 #include "nvs_flash.h"
 #include "servos.hpp"
 
 #include "esp/serial.hpp"
 #include "wifi.h"
-#include "ble/common.h"
+#include "ble/gatt_svc.h"
+#include "ble/heart_rate.h"
 
 // Wrobot wrobot;
+
+static const char* TAG = "default";
 
 Wrobot wrobot;
 
@@ -43,6 +47,27 @@ void nvs_init() {
   ESP_ERROR_CHECK(ret);
 }
 
+void heart_rate_task(void* param) {
+  /* Task entry log */
+  log_info("heart rate task has been started!");
+
+  /* Loop forever */
+  while (true) {
+    /* Update heart rate value every 1 second */
+    update_heart_rate();
+    uint8_t val = get_heart_rate();
+    log_info("heart rate updated to %d", val);
+
+    serial1.write(val);
+
+    /* Sleep */
+    vTaskDelay(HEART_RATE_TASK_PERIOD);
+  }
+
+  /* Clean up at exit */
+  vTaskDelete(nullptr);
+}
+
 void robot_init() {
   nvs_init();
 
@@ -54,5 +79,9 @@ void robot_init() {
   wifi_init();
   battery_init();
 
+  log_info("ble_init started!");
   ble_init();
+  log_info("ble_init end");
+
+  xTaskCreate(heart_rate_task, "Heart Rate", 4 * 1024, nullptr, 5, nullptr);
 }
