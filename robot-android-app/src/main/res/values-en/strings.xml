@@ -57,6 +57,7 @@
   <string name="insufficient_permissions">Insufficient permissions</string>
 
 
+  <string name="control_panel">Control Panel</string>
   <string name="connect_device">Connect Device</string>
   <string name="connect_robot">Connect Robot</string>
   <string name="settings_robot">Robot Settings</string>

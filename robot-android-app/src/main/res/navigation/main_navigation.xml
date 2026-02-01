@@ -8,18 +8,22 @@
   <fragment
     android:id="@+id/nav_main"
     android:name="cn.taketoday.robot.fragment.ControlFragment"
-    android:label="@string/main_title"
+    android:label="@string/control_panel"
     tools:layout="@layout/fragment_control" />
+
+  <fragment
+    android:id="@+id/nav_device_connection"
+    android:name="cn.taketoday.robot.fragment.DeviceConnectionFragment"
+    android:label="@string/connect_robot"
+    tools:layout="@layout/fragment_device_connection">
+
+  </fragment>
 
   <fragment
     android:id="@+id/nav_settings"
     android:name="cn.taketoday.robot.fragment.SettingsFragment"
     android:label="@string/settings_robot"
     tools:layout="@layout/fragment_settings">
-
-    <action
-      android:id="@+id/action_nav_settings_to_nav_device_connection"
-      app:destination="@id/nav_device_connection" />
 
   </fragment>
 

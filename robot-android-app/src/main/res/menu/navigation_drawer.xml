@@ -22,6 +22,11 @@
   <group android:checkableBehavior="single">
 
     <item
+      android:id="@+id/nav_main"
+      android:icon="@drawable/press"
+      android:title="@string/control_panel" />
+
+    <item
       android:id="@+id/nav_device_connection"
       android:icon="@mipmap/icon_bluetooth"
       android:title="@string/connect_robot" />

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 - 2025 the original author or authors.
+ * Copyright 2025 - 2026 the original author or authors.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,9 @@
 
 package cn.taketoday.robot.fragment;
 
+import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import org.jspecify.annotations.Nullable;
@@ -35,4 +37,9 @@ public class AboutFragment extends ViewBindingFragment<FragmentAboutBinding> {
     return FragmentAboutBinding.inflate(inflater, container, false);
   }
 
+  @Override
+  public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+//    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://taketoday.cn"));
+//    startActivity(browserIntent);
+  }
 }

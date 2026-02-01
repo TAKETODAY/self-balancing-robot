@@ -30,13 +30,19 @@
     android:title="@string/settings_robot"
     app:showAsAction="ifRoom|withText" />
 
+
   <item
-    android:id="@+id/action_debug"
+    android:id="@+id/menu_main"
+    android:title="@string/control_panel"
+    app:showAsAction="never" />
+
+  <item
+    android:id="@+id/menu_action_debug"
     android:title="调试模式"
     app:showAsAction="never" />
 
   <item
-    android:id="@+id/action_about"
+    android:id="@+id/menu_action_about"
     android:title="关于"
     app:showAsAction="never" />
 

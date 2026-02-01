@@ -7,7 +7,7 @@
   android:layout_height="match_parent"
   android:orientation="vertical"
   android:screenReaderFocusable="true"
-  tools:context=".fragment.DeviceConnectionFragment">
+  tools:context=".activity.MainActivity">
 
   <LinearLayout
     android:layout_width="match_parent"

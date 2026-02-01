@@ -5,6 +5,7 @@
   <string name="nav_home">主页</string>
   <string name="nav_settings">设置</string>
   <string name="nav_connection_settings">连接设置</string>
+  <string name="control_panel">控制界面</string>
 
 
   <!-- connect-->
