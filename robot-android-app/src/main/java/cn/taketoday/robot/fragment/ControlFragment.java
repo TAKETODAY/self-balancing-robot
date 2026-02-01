@@ -23,6 +23,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.fragment.NavHostFragment;
 
 import org.jspecify.annotations.Nullable;
 
@@ -63,6 +64,13 @@ public class ControlFragment extends ViewBindingFragment<FragmentControlBinding>
       setConnectionStatus(connected);
     });
 
+    NavHostFragment navHostFragment = (NavHostFragment) requireParentFragment();
+    var navController = navHostFragment.getNavController();
+
+    binding.connectionStatus.setOnClickListener(e -> {
+      navController.navigate(R.id.nav_device_connection);
+    });
+
     binding.joystick.setOnMoveListener((angle, strength) -> {
 //      binding.textViewAngleLeft.setText(angle + "°");
 //      binding.textViewStrengthLeft.setText(strength + "%");
@@ -72,6 +80,7 @@ public class ControlFragment extends ViewBindingFragment<FragmentControlBinding>
 
   private void setConnectionStatus(boolean connected) {
     binding.connectionStatus.setText(connected ? R.string.device_connected : R.string.device_not_connected);
+    binding.connectionStatus.setTextColor(getResources().getColor(connected ? R.color.color_success : R.color.color_warning, requireActivity().getTheme()));
   }
 
 }
