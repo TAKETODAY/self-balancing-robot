@@ -18,6 +18,7 @@
 package cn.taketoday.robot.bluetooth;
 
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGatt;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,9 +28,22 @@ import java.util.List;
 import cn.taketoday.robot.LoggingSupport;
 
 /**
- * all Bluetooth listeners
+ * A centralized manager for all Bluetooth-related event listeners.
+ *
+ * <p>This class acts as a hub, implementing various Bluetooth listener interfaces
+ * ({@link StatusListener}, {@link BindingStatusListener}, {@link ScanningListener},
+ * and {@link ConnectionListener}). It maintains lists of registered listeners for
+ * each category and dispatches events to all relevant listeners when a callback
+ * method is invoked.
+ *
+ * <p>This class follows the Singleton pattern to provide a single, globally accessible
+ * instance, simplifying listener management throughout the application.
  *
  * @author <a href="https://github.com/TAKETODAY">海子 Yang</a>
+ * @see StatusListener
+ * @see BindingStatusListener
+ * @see ScanningListener
+ * @see ConnectionListener
  */
 public class BluetoothListeners implements StatusListener, BindingStatusListener,
         ScanningListener, ConnectionListener, LoggingSupport {
@@ -131,14 +145,14 @@ public class BluetoothListeners implements StatusListener, BindingStatusListener
   }
 
   @Override
-  public void onDataReceived(BluetoothDevice device, byte[] data) {
+  public void onDataReceived(BluetoothGatt device, byte[] data) {
     for (ConnectionListener connectionListener : connectionListeners) {
       connectionListener.onDataReceived(device, data);
     }
   }
 
   @Override
-  public void onRssiUpdated(BluetoothDevice device, int rssi) {
+  public void onRssiUpdated(BluetoothGatt device, int rssi) {
     for (ConnectionListener connectionListener : connectionListeners) {
       connectionListener.onRssiUpdated(device, rssi);
     }

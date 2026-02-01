@@ -25,8 +25,8 @@ public interface ConnectionListener {
   default void onServicesDiscovered(BluetoothGatt gatt, BluetoothDevice device) {
   }
 
-  void onDataReceived(BluetoothDevice device, byte[] data);
+  void onDataReceived(BluetoothGatt device, byte[] data);
 
-  void onRssiUpdated(BluetoothDevice device, int rssi);
+  void onRssiUpdated(BluetoothGatt device, int rssi);
 
 }

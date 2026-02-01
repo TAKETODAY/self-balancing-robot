@@ -21,19 +21,11 @@ import android.bluetooth.BluetoothDevice;
 
 import java.util.Objects;
 
-import cn.taketoday.robot.model.DeviceItem;
-
 public class BluetoothItem {
 
-  public static final String STATUS_UNKNOWN = "未知状态 Unknown Status";//已配对
-  public static final String STATUS_BONDED = "已配对";//已配对
-  public static final String STATUS_BONDING = "配对中";
-  public static final String STATUS_UNCONNECT = "未连接";//
-  public static final String STATUS_CONNECTED = "已连接";//
+  public static final String STATUS_BONDED = "已配对";
+  public static final String STATUS_CONNECTED = "已连接";
   public static final String STATUS_BOND_NONE = "未配对";
-  public static final String STATUS_CONNECTING = "正在连接";//
-  public static final String STATUS_DISCONNECTED = "已断开";//(但还保存)
-  public static final String STATUS_DISCONNECTING = "正在断开";//
 
   private final BluetoothDevice device;
 
@@ -43,11 +35,14 @@ public class BluetoothItem {
 
   private final boolean paired;
 
+  private final boolean connected;
+
   private final int rssi;
 
-  public BluetoothItem(BluetoothDevice device, int rssi) {
+  public BluetoothItem(BluetoothDevice device, int rssi, boolean connected) {
     this.rssi = rssi;
     this.device = device;
+    this.connected = connected;
     String name = device.getName();
     this.name = name != null ? name : "Unknown";
     this.address = device.getAddress();
@@ -70,11 +65,18 @@ public class BluetoothItem {
     return paired;
   }
 
+  public boolean isConnected() {
+    return connected;
+  }
+
   public int getRssi() {
     return rssi;
   }
 
   public String getStatusText() {
+    if (connected) {
+      return STATUS_CONNECTED;
+    }
     return isPaired() ? STATUS_BONDED : STATUS_BOND_NONE;
   }
 
@@ -95,7 +97,7 @@ public class BluetoothItem {
 
   @Override
   public String toString() {
-    return "BluetoothDeviceItem{" +
+    return "BluetoothItem{" +
             "name='" + name + '\'' +
             ", address='" + address + '\'' +
             ", isPaired=" + paired +

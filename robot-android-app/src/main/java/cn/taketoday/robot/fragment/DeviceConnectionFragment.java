@@ -19,7 +19,6 @@ package cn.taketoday.robot.fragment;
 
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -32,7 +31,6 @@ import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.RequiresPermission;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
@@ -45,34 +43,48 @@ import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 
 import cn.taketoday.robot.LoggingSupport;
-import cn.taketoday.robot.R;
-import cn.taketoday.robot.bluetooth.BindingStatusListener;
 import cn.taketoday.robot.bluetooth.BluetoothItem;
-import cn.taketoday.robot.bluetooth.BluetoothListeners;
 import cn.taketoday.robot.bluetooth.BluetoothViewModel;
-import cn.taketoday.robot.bluetooth.ConnectionListener;
 import cn.taketoday.robot.databinding.FragmentDeviceConnectionBinding;
 import cn.taketoday.robot.model.BluetoothDeviceListAdapter;
 import cn.taketoday.robot.model.BluetoothItemClickListener;
-import cn.taketoday.robot.model.DeviceItem;
 
 import static cn.taketoday.robot.util.RobotUtils.showDialog;
 
 /**
+ * A fragment for managing Bluetooth device connections.
+ * <p>
+ * This fragment provides a user interface for enabling/disabling Bluetooth,
+ * scanning for nearby devices, and establishing a connection. It displays a list
+ * of discovered devices and allows the user to initiate a connection by tapping
+ * on a device. The UI state, such as scanning status and connection status, is
+ * managed through a {@link BluetoothViewModel}.
+ * </p>
+ * <p>
+ * It handles Bluetooth permissions and user requests to enable the Bluetooth adapter.
+ * The list of devices is presented using a {@link androidx.recyclerview.widget.RecyclerView}
+ * populated by a {@link BluetoothDeviceListAdapter}. User interactions, like toggling
+ * Bluetooth or selecting a device, are delegated to the {@code BluetoothViewModel}.
+ * </p>
+ *
  * @author <a href="https://github.com/TAKETODAY">海子 Yang</a>
+ * @see BluetoothViewModel
+ * @see ViewBindingFragment
+ * @see BluetoothDeviceListAdapter
  * @since 1.0 2025/12/20 16:46
  */
-public class DeviceConnectionFragment extends ViewBindingFragment<FragmentDeviceConnectionBinding> implements CompoundButton.OnCheckedChangeListener,
-        BluetoothItemClickListener, BindingStatusListener, ConnectionListener, LoggingSupport, ActivityResultCallback<ActivityResult> {
+public class DeviceConnectionFragment extends ViewBindingFragment<FragmentDeviceConnectionBinding>
+        implements CompoundButton.OnCheckedChangeListener, BluetoothItemClickListener, LoggingSupport, ActivityResultCallback<ActivityResult> {
 
   private BluetoothDeviceListAdapter bluetoothAdapter;
 
   private BluetoothViewModel viewModel;
 
-  private final ActivityResultLauncher<Intent> enableBluetoothLauncher;
+  private ActivityResultLauncher<Intent> enableBluetoothLauncher;
+
+  private ActivityResultLauncher<String[]> requestPermissionLauncher;
 
   public DeviceConnectionFragment() {
-    this.enableBluetoothLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), this);
   }
 
   @Override
@@ -85,16 +97,12 @@ public class DeviceConnectionFragment extends ViewBindingFragment<FragmentDevice
     debug("onViewCreated");
     viewModel = new ViewModelProvider(this).get(BluetoothViewModel.class);
 
-    BluetoothListeners listeners = getBluetoothListeners();
-    listeners.addScanningListener(viewModel);
-    listeners.addConnectionListener(this);
-
     binding.swipeRefresh.setOnRefreshListener(viewModel::startScan);
 
     binding.switchBluetooth.setOnCheckedChangeListener(this);
 
     binding.bluetoothList.setNestedScrollingEnabled(true);
-    binding.bluetoothList.setLayoutManager(new LinearLayoutManager(getActivity()));
+    binding.bluetoothList.setLayoutManager(new LinearLayoutManager(requireContext()));
 
     bluetoothAdapter = new BluetoothDeviceListAdapter(this);
     binding.bluetoothList.setAdapter(bluetoothAdapter);
@@ -102,12 +110,7 @@ public class DeviceConnectionFragment extends ViewBindingFragment<FragmentDevice
     viewModel.devices.observe(getViewLifecycleOwner(), bluetoothAdapter::submitList);
 
     viewModel.connected.observe(getViewLifecycleOwner(), connected -> {
-      if (connected) {
-        Snackbar.make(view, "连接成功", Snackbar.LENGTH_SHORT).show();
-      }
-      else {
-        Snackbar.make(view, "连接断开", Snackbar.LENGTH_SHORT).show();
-      }
+      Snackbar.make(view, connected ? "连接成功" : "连接断开", Snackbar.LENGTH_SHORT).show();
     });
 
     viewModel.scanning.observe(getViewLifecycleOwner(), scanning -> {
@@ -160,102 +163,19 @@ public class DeviceConnectionFragment extends ViewBindingFragment<FragmentDevice
     viewModel.connect(view, item);
   }
 
-  @Override
-  @RequiresPermission(allOf = { Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_SCAN })
-  public void onConnecting(BluetoothDevice device) {
-    debug("设备正在连接中: %s", device.getName());
-
-  }
-
-  @Override
-  public void onConnected(BluetoothDevice device) {
-    debug("设备已连接: %s", device.getName());
-
-  }
-
-  @Override
-  public void onDisconnecting(BluetoothDevice device) {
-    debug("正在断开设备: %s", device.getName());
-  }
-
-  @Override
-  public void onDataReceived(BluetoothDevice device, byte[] data) {
-
-  }
-
-  @Override
-  public void onRssiUpdated(BluetoothDevice device, int rssi) {
-
-  }
-
-  @Override
-  public void onDisconnected(BluetoothDevice device) {
-    debug("已经断开设备: %s", device.getName());
-  }
-
-  public void applyBluetoothDeviceStatus(BluetoothDevice device, String status) {
-    DeviceItem deviceItem = getBluetoothDeviceItem(device);
-    if (deviceItem != null) {
-      deviceItem.setStatus(status);
-      bluetoothAdapter.notifyDataSetChanged();
-    }
-  }
-
-  protected DeviceItem buildBluetoothDeviceItem(BluetoothDevice device) {
-    DeviceItem deviceItem = new DeviceItem(device);
-
-    deviceItem.setIcon(R.mipmap.icon_bluetooth);
-    deviceItem.setName(device.getName());
-    switch (device.getBondState()) {
-      case BluetoothDevice.BOND_NONE:
-        deviceItem.setStatus(BluetoothItem.STATUS_BOND_NONE);
-        break;
-      case BluetoothDevice.BOND_BONDING:
-        deviceItem.setStatus(BluetoothItem.STATUS_BONDING);
-        break;
-      case BluetoothDevice.BOND_BONDED:
-        deviceItem.setStatus(BluetoothItem.STATUS_BONDED);
-        break;
-      default:
-        deviceItem.setStatus(BluetoothItem.STATUS_UNKNOWN);
-        break;
-    }
-
-    return deviceItem;
-  }
-
-  @Override
-  public void onBindingStatusChange(BluetoothDevice device) {
-
-  }
-
-  private DeviceItem getBluetoothDeviceItem(BluetoothDevice device) {
-    return buildBluetoothDeviceItem(device);
-  }
-
-  protected BluetoothListeners getBluetoothListeners() {
-    return BluetoothListeners.getInstance();
-  }
-
   //
-  private ActivityResultLauncher<String[]> requestPermissionLauncher;
 
   @Override
   public void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+    enableBluetoothLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), this);
     requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
-      boolean allGranted = true;
-      for (Boolean isGranted : result.values()) {
-        if (!isGranted) {
-          allGranted = false;
-          break;
-        }
-      }
+      boolean allGranted = result.values().stream().allMatch(isGranted -> isGranted);
       if (allGranted) {
-        debug("allGranted");
+        debug("All Bluetooth permissions granted.");
       }
       else {
-        debug("allGranted failed");
+        debug("Some Bluetooth permissions were denied.");
       }
     });
   }
@@ -268,6 +188,13 @@ public class DeviceConnectionFragment extends ViewBindingFragment<FragmentDevice
     }
 
     requestPermissionLauncher.launch(permissionsNeeded.toArray(new String[0]));
+  }
+
+  @Override
+  public void onResume() {
+    super.onResume();
+    // It's a good practice to check for permissions when the fragment becomes active.
+    checkAndRequestBluetoothPermissions();
   }
 
   @Override

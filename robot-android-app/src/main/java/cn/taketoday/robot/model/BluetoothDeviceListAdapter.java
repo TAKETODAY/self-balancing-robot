@@ -34,7 +34,15 @@ import cn.taketoday.robot.bluetooth.BluetoothItem;
 import cn.taketoday.robot.databinding.BluetoothItemBinding;
 
 /**
+ * An adapter for displaying a list of Bluetooth devices in a {@link RecyclerView}.
+ * <p>
+ * This class uses {@link ListAdapter} to efficiently update the list of devices
+ * by leveraging {@link DiffUtil}. It binds {@link BluetoothItem} data to the
+ * corresponding views in the list and handles item click events.
+ *
  * @author <a href="https://github.com/TAKETODAY">海子 Yang</a>
+ * @see BluetoothItem
+ * @see BluetoothDeviceViewHolder
  * @since 1.0 2025/12/22 22:01
  */
 public class BluetoothDeviceListAdapter extends ListAdapter<BluetoothItem, BluetoothDeviceListAdapter.BluetoothDeviceViewHolder> implements LoggingSupport {
@@ -70,14 +78,21 @@ public class BluetoothDeviceListAdapter extends ListAdapter<BluetoothItem, Bluet
 
     private final BluetoothItemBinding binding;
 
+    private final int connectedColor;
+
+    private final int notConnectedColor;
+
     public BluetoothDeviceViewHolder(BluetoothItemBinding binding) {
       super(binding.getRoot());
       this.binding = binding;
+      this.connectedColor = binding.layout.getContext().getColor(R.color.colorPrimary);
+      this.notConnectedColor = binding.layout.getContext().getColor(android.R.color.darker_gray);
     }
 
     public void bindTo(BluetoothItem item, @Nullable BluetoothItemClickListener listener) {
       binding.name.setText(item.getName());
       binding.status.setText(item.getStatusText());
+      binding.status.setTextColor(item.isConnected() ? connectedColor : notConnectedColor);
       binding.icon.setImageResource(R.mipmap.icon_bluetooth);
 
       binding.getRoot().setOnClickListener(v -> {

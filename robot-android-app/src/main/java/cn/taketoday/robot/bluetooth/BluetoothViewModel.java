@@ -97,11 +97,14 @@ public class BluetoothViewModel extends AndroidViewModel implements ScanningList
       application.registerReceiver(bluetoothBroadcastReceiver, createIntentFilter());
     }
     this.bluetoothLeService = new BluetoothLeService(application, this);
+
+    BluetoothListeners.getInstance().addScanningListener(this);
+    BluetoothListeners.getInstance().addConnectionListener(this);
   }
 
   public void startScan() {
     deviceMap.clear();
-    updateDeviceList();
+    collectDevices();
 
     if (bluetoothAdapter.isDiscovering()) {
       bluetoothAdapter.cancelDiscovery();
@@ -123,7 +126,7 @@ public class BluetoothViewModel extends AndroidViewModel implements ScanningList
     updateDeviceList();
   }
 
-  private void updateDeviceList() {
+  private void collectDevices() {
     for (BluetoothDevice bondedDevice : bluetoothAdapter.getBondedDevices()) {
       putDevice(bondedDevice);
     }
@@ -131,6 +134,10 @@ public class BluetoothViewModel extends AndroidViewModel implements ScanningList
     bluetoothManager.getConnectedDevices(BluetoothProfile.GATT).forEach(this::putDevice);
     bluetoothManager.getConnectedDevices(BluetoothProfile.GATT_SERVER).forEach(this::putDevice);
 
+    updateDeviceList();
+  }
+
+  private void updateDeviceList() {
     List<BluetoothItem> deviceList = new ArrayList<>(deviceMap.values());
     deviceList.sort(Comparator.comparing(BluetoothItem::getRssi).thenComparing(BluetoothItem::getName));
     devices.postValue(deviceList);
@@ -172,7 +179,7 @@ public class BluetoothViewModel extends AndroidViewModel implements ScanningList
   }
 
   private void putDevice(BluetoothDevice device, int rssi) {
-    BluetoothItem deviceItem = new BluetoothItem(device, rssi);
+    BluetoothItem deviceItem = new BluetoothItem(device, rssi, isConnected(device));
     deviceMap.put(device.getAddress(), deviceItem);
   }
 
@@ -231,8 +238,7 @@ public class BluetoothViewModel extends AndroidViewModel implements ScanningList
   @Override
   public void onConnected(BluetoothDevice device) {
     connected.postValue(true);
-//    bluetoothLeService.readRemoteRssi();
-
+    bluetoothLeService.readRemoteRssi();
   }
 
   @Override
@@ -273,17 +279,21 @@ public class BluetoothViewModel extends AndroidViewModel implements ScanningList
   }
 
   @Override
-  public void onDataReceived(BluetoothDevice device, byte[] data) {
+  public void onDataReceived(BluetoothGatt gatt, byte[] data) {
     debug("onDataReceived: %s", Arrays.toString(data));
 //    Frame parse = Frame.parse(data);
-
     bluetoothLeService.write(data);
     debug("write: %s", Arrays.toString(data));
   }
 
   @Override
-  public void onRssiUpdated(BluetoothDevice device, int rssi) {
+  public void onRssiUpdated(BluetoothGatt gatt, int rssi) {
+    putDevice(gatt.getDevice(), rssi);
+    updateDeviceList();
+  }
 
+  private boolean isConnected(BluetoothDevice device) {
+    return bluetoothManager.getConnectionState(device, BluetoothProfile.GATT) == BluetoothProfile.STATE_CONNECTED;
   }
 
   private class BluetoothProfileListener implements BluetoothProfile.ServiceListener {

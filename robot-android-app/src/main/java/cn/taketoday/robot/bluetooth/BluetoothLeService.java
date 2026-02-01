@@ -418,7 +418,7 @@ public class BluetoothLeService implements LoggingSupport {
     public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status) {
       if (status == BluetoothGatt.GATT_SUCCESS) {
         debug("Remote RSSI: %s dBm", rssi);
-        connectionListener.onRssiUpdated(gatt.getDevice(), rssi);
+        connectionListener.onRssiUpdated(gatt, rssi);
       }
     }
 
@@ -451,7 +451,7 @@ public class BluetoothLeService implements LoggingSupport {
     if (UUID_PROTOCOL_FRAME.equals(characteristic.getUuid())) {
       final byte[] data = characteristic.getValue();
       if (data != null && data.length > 0) {
-        connectionListener.onDataReceived(gatt.getDevice(), data);
+        connectionListener.onDataReceived(gatt, data);
       }
     }
     else {
