@@ -12,8 +12,8 @@
   <string name="connect_device">连接设备</string>
   <string name="connect_robot">连接机器人</string>
 
-  <string name="device_connected">已连接</string>
-  <string name="device_not_connected">连接断开</string>
+  <string name="device_connected">状态：已连接</string>
+  <string name="device_not_connected">状态：连接断开</string>
   <string name="device_connect_error">连接错误</string>
 
   <!--Dialog-->

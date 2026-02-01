@@ -20,7 +20,7 @@
     app:layout_constraintTop_toTopOf="parent">
 
     <TextView
-      android:id="@+id/tv_connection_status"
+      android:id="@+id/connection_status"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:text="状态：未连接"
@@ -34,10 +34,12 @@
       android:layout_height="wrap_content"
       android:orientation="horizontal"
       android:gravity="center_vertical">
+
       <ImageView
         android:layout_width="20dp"
         android:layout_height="20dp"
-        android:src="@android:drawable/ic_battery" />
+        android:src="@drawable/battery"  />
+
       <TextView
         android:id="@+id/tv_battery_level"
         android:layout_width="wrap_content"
@@ -74,7 +76,8 @@
     app:layout_constraintTop_toBottomOf="@id/top_status_bar"
     android:layout_marginStart="24dp"
     android:layout_marginBottom="24dp"
-    android:layout_marginTop="24dp"/>
+    android:layout_marginTop="24dp"
+    />
 
   <!-- 摇杆标签 -->
   <TextView

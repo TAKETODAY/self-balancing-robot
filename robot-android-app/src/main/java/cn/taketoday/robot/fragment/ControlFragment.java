@@ -64,8 +64,8 @@ public class ControlFragment extends ViewBindingFragment<FragmentControlBinding>
     });
 
     binding.joystick.setOnMoveListener((angle, strength) -> {
-      binding.textViewAngleLeft.setText(angle + "°");
-      binding.textViewStrengthLeft.setText(strength + "%");
+//      binding.textViewAngleLeft.setText(angle + "°");
+//      binding.textViewStrengthLeft.setText(strength + "%");
     });
 
   }
