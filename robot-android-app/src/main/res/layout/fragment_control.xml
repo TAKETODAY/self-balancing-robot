@@ -73,7 +73,7 @@
     android:layout_marginTop="108dp"
     android:gravity="center_horizontal"
     android:orientation="horizontal"
-    android:padding="12dp"
+    android:paddingTop="12dp"
     app:layout_constraintTop_toTopOf="parent"
     tools:layout_editor_absoluteX="8dp">
 
@@ -163,7 +163,7 @@
     app:backgroundColor="@color/colorPrimaryDark"
     app:borderColor="#00796B"
     app:borderWidth="2dp"
-    app:buttonColor="@color/light_blue_600"
+    app:buttonColor="@color/black"
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintHorizontal_bias="0.0"
