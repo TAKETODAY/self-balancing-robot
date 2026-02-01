@@ -93,7 +93,6 @@ public class BluetoothViewModel extends AndroidViewModel implements ScanningList
       scanning.setValue(bluetoothAdapter.isDiscovering());
       bluetoothEnabled.setValue(bluetoothAdapter.isEnabled());
       bluetoothAdapter.getProfileProxy(application, new BluetoothProfileListener(), BluetoothProfile.GATT);
-//      ContextCompat.registerReceiver(application, bluetoothBroadcastReceiver, getIntentFilter(), ContextCompat.RECEIVER_NOT_EXPORTED);
       application.registerReceiver(bluetoothBroadcastReceiver, createIntentFilter());
     }
     this.bluetoothLeService = new BluetoothLeService(application, this);
