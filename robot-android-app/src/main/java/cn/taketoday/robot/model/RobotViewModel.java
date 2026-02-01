@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 - 2025 the original author or authors.
+ * Copyright 2025 - 2026 the original author or authors.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,6 @@
 
 package cn.taketoday.robot.model;
 
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
@@ -32,32 +31,5 @@ public class RobotViewModel extends ViewModel {
   public final MutableLiveData<Integer> batteryLevel = new MutableLiveData<>(100);
 
   public final MutableLiveData<String> latestCommand = new MutableLiveData<>("");
-
-  public LiveData<String> getConnectionStatus() {
-    return connectionStatus;
-  }
-
-  public LiveData<Integer> getBatteryLevel() {
-    return batteryLevel;
-  }
-
-  public LiveData<String> getLatestCommand() {
-    return latestCommand;
-  }
-
-  public void updateConnectionStatus(String status) {
-    connectionStatus.postValue(status);
-  }
-
-  public void updateBatteryLevel(int level) {
-    batteryLevel.postValue(level);
-  }
-
-  public void sendControlCommand(String command) {
-    latestCommand.postValue(command);
-  }
-
-  public void sendEmergencyStop() {
-  }
 
 }

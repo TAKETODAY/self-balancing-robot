@@ -26,6 +26,8 @@ import androidx.lifecycle.ViewModelProvider;
 
 import org.jspecify.annotations.Nullable;
 
+import cn.taketoday.robot.LoggingSupport;
+import cn.taketoday.robot.R;
 import cn.taketoday.robot.bluetooth.BluetoothViewModel;
 import cn.taketoday.robot.databinding.FragmentControlBinding;
 
@@ -43,7 +45,7 @@ import cn.taketoday.robot.databinding.FragmentControlBinding;
  * @see FragmentControlBinding
  * @since 1.0 2026/2/1 17:49
  */
-public class ControlFragment extends ViewBindingFragment<FragmentControlBinding> {
+public class ControlFragment extends ViewBindingFragment<FragmentControlBinding> implements LoggingSupport {
 
   private BluetoothViewModel viewModel;
 
@@ -54,13 +56,22 @@ public class ControlFragment extends ViewBindingFragment<FragmentControlBinding>
 
   @Override
   public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-    viewModel = new ViewModelProvider(this).get(BluetoothViewModel.class);
+    viewModel = new ViewModelProvider(requireActivity()).get(BluetoothViewModel.class);
+    setConnectionStatus(Boolean.TRUE.equals(viewModel.connected.getValue()));
+    viewModel.connected.observe(getViewLifecycleOwner(), connected -> {
+      debug("connected: %s", connected);
+      setConnectionStatus(connected);
+    });
 
     binding.joystick.setOnMoveListener((angle, strength) -> {
       binding.textViewAngleLeft.setText(angle + "°");
       binding.textViewStrengthLeft.setText(strength + "%");
     });
 
+  }
+
+  private void setConnectionStatus(boolean connected) {
+    binding.connectionStatus.setText(connected ? R.string.device_connected : R.string.device_not_connected);
   }
 
 }

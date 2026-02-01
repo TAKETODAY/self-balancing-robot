@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 - 2025 the original author or authors.
+ * Copyright 2025 - 2026 the original author or authors.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -99,6 +99,7 @@ public class BluetoothViewModel extends AndroidViewModel implements ScanningList
 
     BluetoothListeners.getInstance().addScanningListener(this);
     BluetoothListeners.getInstance().addConnectionListener(this);
+    addCloseable(this::destroy);
   }
 
   public void startScan() {
@@ -146,11 +147,10 @@ public class BluetoothViewModel extends AndroidViewModel implements ScanningList
   protected void onCleared() {
     super.onCleared();
     stopScan();
-
-    destroy();
   }
 
   public void destroy() {
+    debug("destroy %s", this);
     try {
       bluetoothLeService.close();
       getApplication().unregisterReceiver(bluetoothBroadcastReceiver);

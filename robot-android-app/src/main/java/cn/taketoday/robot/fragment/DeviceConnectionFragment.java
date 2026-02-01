@@ -95,7 +95,7 @@ public class DeviceConnectionFragment extends ViewBindingFragment<FragmentDevice
   @Override
   public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
     debug("onViewCreated");
-    viewModel = new ViewModelProvider(this).get(BluetoothViewModel.class);
+    viewModel = new ViewModelProvider(requireActivity()).get(BluetoothViewModel.class);
 
     binding.swipeRefresh.setOnRefreshListener(viewModel::startScan);
 

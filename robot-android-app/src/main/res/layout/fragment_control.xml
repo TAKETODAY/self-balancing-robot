@@ -12,27 +12,14 @@
     android:layout_height="70sp">
 
     <TextView
-      android:id="@+id/name"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_alignParentTop="true"
-      android:layout_centerInParent="true"
-      android:layout_centerHorizontal="true"
-      android:layout_marginTop="10sp"
-      android:fontFamily="@font/font"
-      android:text="@string/main_title"
-      android:textColor="@color/colorPrimaryDark"
-      android:textSize="25sp" />
-
-    <TextView
       android:id="@+id/connection_status"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:layout_below="@+id/name"
       android:layout_centerInParent="true"
       android:fontFamily="@font/font"
       android:text="@string/device_not_connected"
-      android:textColor="@color/gray"
+      android:textColor="@color/colorPrimaryDark"
+      android:textStyle="bold"
       android:textSize="15sp" />
 
   </RelativeLayout>
@@ -43,8 +30,8 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_below="@+id/textView_angle_left"
+    android:layout_marginTop="247dp"
     android:text="0%" />
-
 
   <TextView
     android:id="@+id/textView_angle_right"
@@ -71,12 +58,6 @@
     android:layout_alignParentRight="true"
     android:text="x050:x050" />
 
-  <TextView
-    android:id="@+id/textView_angle_left"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:text="0°" />
-
 
   <!--
     <cn.taketoday.robot.widget.JoystickView
@@ -93,6 +74,12 @@
       app:displayDirection="true"
       app:fixedCenter="false" />
   -->
+
+  <TextView
+    android:id="@+id/textView_angle_left"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="0°" />
 
   <cn.taketoday.robot.widget.JoystickView
     android:id="@+id/joystick"

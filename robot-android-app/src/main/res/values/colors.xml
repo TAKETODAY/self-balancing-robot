@@ -17,9 +17,9 @@
 
 <resources>
 
-<!--  <color name="colorPrimary">#3F51B5</color>-->
-<!--  <color name="colorPrimaryDark">#303F9F</color>-->
-<!--  <color name="colorAccent">#FF4081</color>-->
+  <!--  <color name="colorPrimary">#3F51B5</color>-->
+  <!--  <color name="colorPrimaryDark">#303F9F</color>-->
+  <!--  <color name="colorAccent">#FF4081</color>-->
 
   <color name="colorPrimary">#1C784F</color> <!--009641-->
   <color name="colorPrimaryDark">#1C784F</color> <!--R: 28, G: 120, B: 79-->
@@ -38,32 +38,45 @@
   <color name="light_blue_A400">#FF00B0FF</color>
 
 
-<!--    <color name="colorPrimary">#3F51B5</color>-->
-<!--    <color name="colorPrimaryDark">#303F9F</color>-->
-<!--    <color name="colorAccent">#FF4081</color>-->
+  <!--    <color name="colorPrimary">#3F51B5</color>-->
+  <!--    <color name="colorPrimaryDark">#303F9F</color>-->
+  <!--    <color name="colorAccent">#FF4081</color>-->
 
   <color name="colorPrimaryLight">#C5CAE9</color>
 
-    <!-- 状态颜色 -->
-    <color name="state_connected">#4CAF50</color>
-    <color name="state_connecting">#FF9800</color>
-    <color name="state_disconnected">#F44336</color>
-    <color name="state_discovering">#2196F3</color>
+  <!-- 状态颜色 -->
+  <color name="state_connected">#4CAF50</color>
+  <color name="state_connecting">#FF9800</color>
+  <color name="state_disconnected">#F44336</color>
+  <color name="state_discovering">#2196F3</color>
 
-    <!-- 信号强度颜色 -->
-    <color name="signal_excellent">#4CAF50</color>
-    <color name="signal_good">#8BC34A</color>
-    <color name="signal_fair">#FFEB3B</color>
-    <color name="signal_weak">#FF9800</color>
-    <color name="signal_poor">#F44336</color>
+  <!-- 信号强度颜色 -->
+  <color name="signal_excellent">#4CAF50</color>
+  <color name="signal_good">#8BC34A</color>
+  <color name="signal_fair">#FFEB3B</color>
+  <color name="signal_weak">#FF9800</color>
+  <color name="signal_poor">#F44336</color>
 
-    <!-- 背景颜色 -->
-    <color name="background_light">#FAFAFA</color>
-    <color name="card_background">#FFFFFF</color>
+  <!-- 背景颜色 -->
+  <color name="background_light">#FAFAFA</color>
+  <color name="card_background">#FFFFFF</color>
 
-    <!-- 文本颜色 -->
-    <color name="text_primary">#212121</color>
-    <color name="text_secondary">#757575</color>
-    <color name="text_hint">#BDBDBD</color>
+  <!-- 文本颜色 -->
+  <color name="text_primary">#212121</color>
+  <color name="text_secondary">#757575</color>
+  <color name="text_hint">#BDBDBD</color>
+
+  <!-- 主色调 -->
+  <color name="color_primary">#3F51B5</color>
+  <color name="color_accent">#FF4081</color>
+  <color name="color_emergency">#F44336</color>
+
+  <!-- 界面背景与文字 -->
+  <color name="dashboard_background">#FAFAFA</color>
+  <color name="secondary_text">#757575</color>
+
+  <!-- 状态指示色 -->
+  <color name="color_warning">#FF9800</color>
+  <color name="color_success">#4CAF50</color>
 
 </resources>
