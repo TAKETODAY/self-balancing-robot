@@ -25,12 +25,41 @@ import android.view.ViewGroup;
 import androidx.fragment.app.Fragment;
 import androidx.viewbinding.ViewBinding;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
+ * An abstract base class for {@link Fragment}s that use <a href="https://developer.android.com/topic/libraries/view-binding">View Binding</a>.
+ * <p>
+ * This class simplifies the process of inflating a layout and accessing its views in a type-safe manner.
+ * Subclasses must implement the {@link #createBinding(LayoutInflater, ViewGroup)} method to provide the specific
+ * binding instance for their layout. The binding is automatically created in {@code onCreateView} and cleared in
+ * {@code onDestroyView} to prevent memory leaks.
+ * <p>
+ * Example Usage:
+ * <pre>{@code
+ * public class ProfileFragment extends ViewBindingFragment<FragmentProfileBinding> {
+ *
+ *     @Override
+ *     protected FragmentProfileBinding createBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
+ *         // Inflate and return the binding object for the fragment's layout.
+ *         return FragmentProfileBinding.inflate(inflater, container, false);
+ *     }
+ *
+ *     @Override
+ *     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+ *         super.onViewCreated(view, savedInstanceState);
+ *
+ *         // Access views through the 'binding' property, which is never null in onViewCreated.
+ *         binding.nameTextView.setText("John Doe");
+ *         binding.profileImage.setImageResource(R.drawable.ic_profile);
+ *     }
+ * }
+ * }</pre>
+ *
+ * @param <BindingType> The type of the ViewBinding class generated for the fragment's layout.
  * @author <a href="https://github.com/TAKETODAY">海子 Yang</a>
- * @since 1.0 2025/12/20 23:06
+ * @see ViewBinding
+ * @see Fragment
  */
 public abstract class ViewBindingFragment<BindingType extends ViewBinding> extends Fragment {
 
