@@ -29,7 +29,6 @@ set(FOC_FILES
 
 idf_component_register(SRCS
     main.cpp
-    wifi.c
     servos.cpp
     battery.cpp
     AttitudeSensor.cpp
@@ -39,12 +38,7 @@ idf_component_register(SRCS
     robot.cpp
 
     ble/ble.c
-
-#    ble.c
-#    ble/gap.c
-#    ble/gatt_svc.c
     ble/heart_rate_mock.c
-#    ble/led.c
 
     esp/io.cpp
     esp/adc.cpp

@@ -86,6 +86,8 @@ public class BluetoothDeviceListAdapter extends ListAdapter<BluetoothItem, Bluet
         }
       });
 
+      binding.deviceAddress.setText(item.getAddress());
+      binding.rssiValue.setText(String.format("RSSI: %s dBm", item.getRssi()));
     }
 
   }

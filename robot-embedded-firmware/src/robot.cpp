@@ -25,7 +25,6 @@
 #include "servos.hpp"
 
 #include "esp/serial.hpp"
-#include "wifi.h"
 #include "ble/gatt_svc.h"
 #include "ble/heart_rate.h"
 
@@ -58,7 +57,7 @@ void heart_rate_task(void* param) {
     uint8_t val = get_heart_rate();
     log_info("heart rate updated to %d", val);
 
-    esp_err_t err = ble_spp_send_data(&val, 1);
+    esp_err_t err = ble_send(&val, 1);
 
     ESP_ERROR_CHECK(err);
 
@@ -78,7 +77,6 @@ void robot_init() {
 
   lqr_controller.begin();
 
-  wifi_init();
   battery_init();
 
   ble_init();

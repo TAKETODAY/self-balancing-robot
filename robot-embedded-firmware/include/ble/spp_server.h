@@ -19,7 +19,7 @@
 #include <stdbool.h>
 #include "nimble/ble.h"
 #include "modlog/modlog.h"
-#include "esp_peripheral.h"
+// #include "esp_peripheral.h"
 #ifdef __cplusplus
 extern "C" {
 

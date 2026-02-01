@@ -28,38 +28,36 @@
 #define BLE_RX_QUEUE_LEN 10
 #define BLE_RX_ITEM_SIZE 128 // 根据你的协议最大长度调整
 
-static int ble_spp_server_gap_event(struct ble_gap_event* event, void* arg);
+static int ble_server_gap_event(struct ble_gap_event* event, void* arg);
 static uint8_t own_addr_type;
 int gatt_svr_register(void);
 QueueHandle_t spp_common_uart_queue = NULL;
 static bool conn_handle_subs[CONFIG_BT_NIMBLE_MAX_CONNECTIONS + 1];
-static uint16_t ble_spp_svc_gatt_read_val_handle;
+static uint16_t ble_svc_gatt_read_val_handle;
 
 void ble_store_config_init(void);
+
+static void print_addr(const void* addr) {
+  const uint8_t* u8p = addr;
+  MODLOG_DFLT(INFO, "%02x:%02x:%02x:%02x:%02x:%02x",
+    u8p[5], u8p[4], u8p[3], u8p[2], u8p[1], u8p[0]);
+}
 
 /**
  * Logs information about a connection to the console.
  */
-static void ble_spp_server_print_conn_desc(struct ble_gap_conn_desc* desc) {
-  MODLOG_DFLT(INFO, "handle=%d our_ota_addr_type=%d our_ota_addr=",
-    desc->conn_handle, desc->our_ota_addr.type);
+static void ble_server_print_conn_desc(const struct ble_gap_conn_desc* desc) {
+  MODLOG_DFLT(INFO, "handle=%d our_ota_addr_type=%d our_ota_addr=", desc->conn_handle, desc->our_ota_addr.type);
   print_addr(desc->our_ota_addr.val);
-  MODLOG_DFLT(INFO, " our_id_addr_type=%d our_id_addr=",
-    desc->our_id_addr.type);
+  MODLOG_DFLT(INFO, " our_id_addr_type=%d our_id_addr=", desc->our_id_addr.type);
   print_addr(desc->our_id_addr.val);
-  MODLOG_DFLT(INFO, " peer_ota_addr_type=%d peer_ota_addr=",
-    desc->peer_ota_addr.type);
+  MODLOG_DFLT(INFO, " peer_ota_addr_type=%d peer_ota_addr=", desc->peer_ota_addr.type);
   print_addr(desc->peer_ota_addr.val);
-  MODLOG_DFLT(INFO, " peer_id_addr_type=%d peer_id_addr=",
-    desc->peer_id_addr.type);
+  MODLOG_DFLT(INFO, " peer_id_addr_type=%d peer_id_addr=", desc->peer_id_addr.type);
   print_addr(desc->peer_id_addr.val);
-  MODLOG_DFLT(INFO, " conn_itvl=%d conn_latency=%d supervision_timeout=%d "
-    "encrypted=%d authenticated=%d bonded=%d\n",
-    desc->conn_itvl, desc->conn_latency,
-    desc->supervision_timeout,
-    desc->sec_state.encrypted,
-    desc->sec_state.authenticated,
-    desc->sec_state.bonded);
+  MODLOG_DFLT(INFO, " conn_itvl=%d conn_latency=%d supervision_timeout=%d encrypted=%d authenticated=%d bonded=%d\n",
+    desc->conn_itvl, desc->conn_latency, desc->supervision_timeout,
+    desc->sec_state.encrypted, desc->sec_state.authenticated, desc->sec_state.bonded);
 }
 
 /**
@@ -67,7 +65,7 @@ static void ble_spp_server_print_conn_desc(struct ble_gap_conn_desc* desc) {
  *     o General discoverable mode.
  *     o Undirected connectable mode.
  */
-static void ble_spp_server_advertise(void) {
+static void ble_server_advertise(void) {
   struct ble_gap_adv_params adv_params;
   struct ble_hs_adv_fields fields = { 0 };
 
@@ -115,7 +113,7 @@ static void ble_spp_server_advertise(void) {
   memset(&adv_params, 0, sizeof adv_params);
   adv_params.conn_mode = BLE_GAP_CONN_MODE_UND;
   adv_params.disc_mode = BLE_GAP_DISC_MODE_GEN;
-  rc = ble_gap_adv_start(own_addr_type, NULL, BLE_HS_FOREVER, &adv_params, ble_spp_server_gap_event, NULL);
+  rc = ble_gap_adv_start(own_addr_type, NULL, BLE_HS_FOREVER, &adv_params, ble_server_gap_event, NULL);
   if (rc != 0) {
     MODLOG_DFLT(ERROR, "error enabling advertisement; rc=%d\n", rc);
   }
@@ -124,64 +122,59 @@ static void ble_spp_server_advertise(void) {
 /**
  * The nimble host executes this callback when a GAP event occurs.  The
  * application associates a GAP event callback with each connection that forms.
- * ble_spp_server uses the same callback for all connections.
+ * ble_server uses the same callback for all connections.
  *
  * @param event                 The type of event being signalled.
  * @param arg                   Application-specified argument; unused by
- *                                  ble_spp_server.
+ *                                  ble_server.
  *
  * @return                      0 if the application successfully handled the
  *                                  event; nonzero on failure.  The semantics
  *                                  of the return code is specific to the
  *                                  particular GAP event being signalled.
  */
-static int ble_spp_server_gap_event(struct ble_gap_event* event, void* arg) {
+static int ble_server_gap_event(struct ble_gap_event* event, void* arg) {
   struct ble_gap_conn_desc desc;
-  int rc;
 
   switch (event->type) {
     case BLE_GAP_EVENT_CONNECT:
       /* A new connection was established or a connection attempt failed. */
-      MODLOG_DFLT(INFO, "connection %s; status=%d ",
-        event->connect.status == 0 ? "established" : "failed",
-        event->connect.status);
+      MODLOG_DFLT(INFO, "connection %s; status=%d ", event->connect.status == 0 ? "established" : "failed", event->connect.status);
       if (event->connect.status == 0) {
-        rc = ble_gap_conn_find(event->connect.conn_handle, &desc);
+        const int rc = ble_gap_conn_find(event->connect.conn_handle, &desc);
         assert(rc == 0);
-        ble_spp_server_print_conn_desc(&desc);
+        ble_server_print_conn_desc(&desc);
       }
       MODLOG_DFLT(INFO, "\n");
       if (event->connect.status != 0 || CONFIG_BT_NIMBLE_MAX_CONNECTIONS > 1) {
         /* Connection failed or if multiple connection allowed; resume advertising. */
-        ble_spp_server_advertise();
+        ble_server_advertise();
       }
       return 0;
 
     case BLE_GAP_EVENT_DISCONNECT:
       MODLOG_DFLT(INFO, "disconnect; reason=%d ", event->disconnect.reason);
-      ble_spp_server_print_conn_desc(&event->disconnect.conn);
+      ble_server_print_conn_desc(&event->disconnect.conn);
       MODLOG_DFLT(INFO, "\n");
 
       conn_handle_subs[event->disconnect.conn.conn_handle] = false;
 
       /* Connection terminated; resume advertising. */
-      ble_spp_server_advertise();
+      ble_server_advertise();
       return 0;
 
     case BLE_GAP_EVENT_CONN_UPDATE:
       /* The central has updated the connection parameters. */
-      MODLOG_DFLT(INFO, "connection updated; status=%d ",
-        event->conn_update.status);
-      rc = ble_gap_conn_find(event->conn_update.conn_handle, &desc);
+      MODLOG_DFLT(INFO, "connection updated; status=%d ", event->conn_update.status);
+      const int rc = ble_gap_conn_find(event->conn_update.conn_handle, &desc);
       assert(rc == 0);
-      ble_spp_server_print_conn_desc(&desc);
+      ble_server_print_conn_desc(&desc);
       MODLOG_DFLT(INFO, "\n");
       return 0;
 
     case BLE_GAP_EVENT_ADV_COMPLETE:
-      MODLOG_DFLT(INFO, "advertise complete; reason=%d",
-        event->adv_complete.reason);
-      ble_spp_server_advertise();
+      MODLOG_DFLT(INFO, "advertise complete; reason=%d", event->adv_complete.reason);
+      ble_server_advertise();
       return 0;
 
     case BLE_GAP_EVENT_MTU:
@@ -209,11 +202,11 @@ static int ble_spp_server_gap_event(struct ble_gap_event* event, void* arg) {
   }
 }
 
-static void ble_spp_server_on_reset(int reason) {
+static void ble_server_on_reset(const int reason) {
   MODLOG_DFLT(ERROR, "Resetting state; reason=%d\n", reason);
 }
 
-static void ble_spp_server_on_sync(void) {
+static void ble_server_on_sync(void) {
   int rc = ble_hs_util_ensure_addr(0);
   assert(rc == 0);
 
@@ -232,10 +225,10 @@ static void ble_spp_server_on_sync(void) {
   print_addr(addr_val);
   MODLOG_DFLT(INFO, "\n");
   /* Begin advertising. */
-  ble_spp_server_advertise();
+  ble_server_advertise();
 }
 
-void ble_spp_server_host_task(void* param) {
+void ble_server_host_task(void* param) {
   MODLOG_DFLT(INFO, "BLE Host Task Started");
   /* This function will return only when nimble_port_stop() is executed */
   nimble_port_run();
@@ -291,7 +284,7 @@ static const struct ble_gatt_svc_def new_ble_svc_gatt_defs[] = {
         /* Support SPP service */
         .uuid = BLE_UUID16_DECLARE(BLE_SVC_SPP_CHR_UUID16),
         .access_cb = ble_svc_gatt_handler,
-        .val_handle = &ble_spp_svc_gatt_read_val_handle,
+        .val_handle = &ble_svc_gatt_read_val_handle,
         .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_WRITE | BLE_GATT_CHR_F_NOTIFY,
       },
       {
@@ -354,7 +347,7 @@ int gatt_svr_init(void) {
  * @param len  数据长度（字节）
  * @return esp_err_t 发送结果，ESP_OK表示成功
  */
-esp_err_t ble_spp_send_data(const uint8_t* data, size_t len) {
+esp_err_t ble_send(const uint8_t* data, size_t len) {
   int rc = 0;
   if (data == NULL || len == 0) {
     return ESP_ERR_INVALID_ARG;
@@ -372,7 +365,7 @@ esp_err_t ble_spp_send_data(const uint8_t* data, size_t len) {
       }
 
       // 关键调用：发送通知
-      rc = ble_gatts_notify_custom(conn_handle, ble_spp_svc_gatt_read_val_handle, txom);
+      rc = ble_gatts_notify_custom(conn_handle, ble_svc_gatt_read_val_handle, txom);
 
       if (rc == 0) {
         MODLOG_DFLT(INFO, "Notification sent successfully to conn_handle=%d", conn_handle);
@@ -419,8 +412,8 @@ void ble_init(void) {
   xTaskCreate(ble_server_uart_task, "robot_ctrl", 4096, NULL, 8, NULL);
 
   /* Initialize the NimBLE host configuration. */
-  ble_hs_cfg.reset_cb = ble_spp_server_on_reset;
-  ble_hs_cfg.sync_cb = ble_spp_server_on_sync;
+  ble_hs_cfg.reset_cb = ble_server_on_reset;
+  ble_hs_cfg.sync_cb = ble_server_on_sync;
   ble_hs_cfg.gatts_register_cb = gatt_svr_register_cb;
   ble_hs_cfg.store_status_cb = ble_store_util_status_rr;
 
@@ -453,5 +446,5 @@ void ble_init(void) {
 
   /* XXX Need to have template for store */
   ble_store_config_init();
-  nimble_port_freertos_init(ble_spp_server_host_task);
+  nimble_port_freertos_init(ble_server_host_task);
 }

@@ -21,11 +21,14 @@
 #ifdef __cplusplus
 extern "C" {
 
+
+
 #endif
 
 void ble_init();
 
-esp_err_t ble_spp_send_data(const uint8_t* data, size_t len);
+esp_err_t ble_send(const uint8_t* data, size_t len);
+
 
 #ifdef __cplusplus
 }
