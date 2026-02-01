@@ -23,9 +23,9 @@
 
   <fragment
     android:id="@+id/nav_device_connection"
-    android:name="cn.taketoday.robot.fragment.DeviceConnectionFragment"
-    android:label="@string/connect_robot"
-    tools:layout="@layout/fragment_device_connection" />
+    android:name="cn.taketoday.robot.fragment.ControlFragment"
+    android:label="@string/nav_home"
+    tools:layout="@layout/fragment_control" />
 
   <fragment
     android:id="@+id/nav_settings"

@@ -354,8 +354,6 @@ public class BluetoothViewModel extends AndroidViewModel implements ScanningList
         case BluetoothDevice.ACTION_FOUND: {
           BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
           short rssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, Short.MIN_VALUE);
-
-          debug("发现新设备: %s address: %s", device.getName(), device.getAddress());
           listeners.onDeviceFound(device, rssi);
           break;
         }
