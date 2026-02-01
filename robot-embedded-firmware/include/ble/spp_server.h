@@ -27,9 +27,11 @@ extern "C" {
 
 /* 16 Bit SPP Service UUID */
 #define BLE_SVC_SPP_UUID16                                  0xABF0
+// #define BLE_SVC_SPP_UUID16                                  0xFF10
 
 /* 16 Bit SPP Service Characteristic UUID */
 #define BLE_SVC_SPP_CHR_UUID16                              0xABF1
+// #define BLE_SVC_SPP_CHR_UUID16                              0xFF11
 
 struct ble_hs_cfg;
 struct ble_gatt_register_ctxt;

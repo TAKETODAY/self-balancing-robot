@@ -58,7 +58,9 @@ void heart_rate_task(void* param) {
     uint8_t val = get_heart_rate();
     log_info("heart rate updated to %d", val);
 
-    serial1.write(val);
+    esp_err_t err = ble_spp_send_data(&val, 1);
+
+    ESP_ERROR_CHECK(err);
 
     /* Sleep */
     vTaskDelay(HEART_RATE_TASK_PERIOD);
@@ -79,9 +81,7 @@ void robot_init() {
   wifi_init();
   battery_init();
 
-  log_info("ble_init started!");
   ble_init();
-  log_info("ble_init end");
 
   xTaskCreate(heart_rate_task, "Heart Rate", 4 * 1024, nullptr, 5, nullptr);
 }

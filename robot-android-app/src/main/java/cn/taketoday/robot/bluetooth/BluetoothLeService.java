@@ -20,10 +20,10 @@ import cn.taketoday.robot.protocol.Frame;
 
 public class BluetoothLeService implements LoggingSupport {
 
-  public static final UUID UUID_PROTOCOL_FRAME = UUID.fromString("00002a37-0000-1000-8000-00805f9b34fb");
-
   // 服务UUID
-  public static final UUID UUID_PROTOCOL_SERVICE = UUID.fromString("0000180d-0000-1000-8000-00805f9b34fb");
+  public static final UUID UUID_PROTOCOL_SERVICE = UUID.fromString("0000ABF0-0000-1000-8000-00805f9b34fb");
+
+  public static final UUID UUID_PROTOCOL_FRAME = UUID.fromString("0000ABF1-0000-1000-8000-00805f9b34fb");
 
   // 客户端特征配置描述符UUID
   public static final UUID UUID_CLIENT_CHARACTERISTIC_CONFIG = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
@@ -77,10 +77,13 @@ public class BluetoothLeService implements LoggingSupport {
    * 使用自动重连模式连接
    */
   public boolean connectWithAutoReconnect(BluetoothDevice device) {
-    bluetoothGatt = device.connectGatt(context, true, gattCallback);
-    this.device = device;
-    connectionState = STATE_CONNECTING;
-    return true;
+    if (connectionState != STATE_CONNECTED) {
+      bluetoothGatt = device.connectGatt(context, true, gattCallback);
+      this.device = device;
+      connectionState = STATE_CONNECTING;
+      return true;
+    }
+    return false;
   }
 
   /**
@@ -127,7 +130,7 @@ public class BluetoothLeService implements LoggingSupport {
   }
 
   public void write(byte[] data) {
-    if (connectionState != STATE_CONNECTED) {
+    if (bluetoothGatt == null || connectionState != STATE_CONNECTED) {
       debug("not connected");
       return;
     }

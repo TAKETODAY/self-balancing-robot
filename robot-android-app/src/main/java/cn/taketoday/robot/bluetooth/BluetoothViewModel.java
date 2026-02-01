@@ -214,9 +214,9 @@ public class BluetoothViewModel extends AndroidViewModel implements ScanningList
 
   public void connect(View view, BluetoothItem item) {
     if (item.isPaired()) {
-      Snackbar.make(view, "连接中", Snackbar.LENGTH_SHORT).show();
-
-      bluetoothLeService.connectWithAutoReconnect(item.getDevice());
+      if (bluetoothLeService.connectWithAutoReconnect(item.getDevice())) {
+        Snackbar.make(view, "连接中", Snackbar.LENGTH_SHORT).show();
+      }
     }
     else {
       if (item.getDevice().createBond()) {
@@ -237,7 +237,6 @@ public class BluetoothViewModel extends AndroidViewModel implements ScanningList
 
   @Override
   public void onServicesDiscovered(BluetoothGatt gatt, BluetoothDevice device) {
-//    bluetoothLeService.setCharacteristicIndication(true);
     bluetoothLeService.setCharacteristicNotification(true);
 
     if (isDebugEnabled()) {
@@ -259,6 +258,13 @@ public class BluetoothViewModel extends AndroidViewModel implements ScanningList
       }
     }
 
+//    handler.postDelayed(() -> {
+//      bluetoothLeService.write(new byte[] { 0x01, 0x03 });
+//      bluetoothLeService.write(new byte[] { 0x02, 0x03 });
+//      bluetoothLeService.write(new byte[] { 0x01, 0x03 });
+//      bluetoothLeService.write(new byte[] { 0x01, 0x03 });
+//    }, 2000);
+
   }
 
   @Override
@@ -271,6 +277,8 @@ public class BluetoothViewModel extends AndroidViewModel implements ScanningList
     debug("onDataReceived: %s", Arrays.toString(data));
 //    Frame parse = Frame.parse(data);
 
+    bluetoothLeService.write(data);
+    debug("write: %s", Arrays.toString(data));
   }
 
   @Override

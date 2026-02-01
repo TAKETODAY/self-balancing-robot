@@ -20,15 +20,13 @@
 #include "nimble/nimble_port_freertos.h"
 #include "host/ble_hs.h"
 #include "host/util/util.h"
-#include "console/console.h"
 #include "services/gap/ble_svc_gap.h"
 #include "services/gatt/ble_svc_gatt.h"
 #include "ble/spp_server.h"
 #include "ble.h"
-#include "driver/uart.h"
 
-#define UART_PORT UART_NUM_1
-
+#define BLE_RX_QUEUE_LEN 10
+#define BLE_RX_ITEM_SIZE 128 // 根据你的协议最大长度调整
 
 static int ble_spp_server_gap_event(struct ble_gap_event* event, void* arg);
 static uint8_t own_addr_type;
@@ -71,8 +69,7 @@ static void ble_spp_server_print_conn_desc(struct ble_gap_conn_desc* desc) {
  */
 static void ble_spp_server_advertise(void) {
   struct ble_gap_adv_params adv_params;
-  struct ble_hs_adv_fields fields;
-  int rc;
+  struct ble_hs_adv_fields fields = { 0 };
 
   /**
    *  Set the advertisement data included in our advertisements:
@@ -82,14 +79,11 @@ static void ble_spp_server_advertise(void) {
    *     o 16-bit service UUIDs (alert notifications).
    */
 
-  memset(&fields, 0, sizeof fields);
-
   /* Advertise two flags:
    *     o Discoverability in forthcoming advertisement (general)
    *     o BLE-only (BR/EDR unsupported).
    */
-  fields.flags = BLE_HS_ADV_F_DISC_GEN |
-                 BLE_HS_ADV_F_BREDR_UNSUP;
+  fields.flags = BLE_HS_ADV_F_DISC_GEN | BLE_HS_ADV_F_BREDR_UNSUP;
 
   /* Indicate that the TX power level field should be included; have the
    * stack fill this value automatically.  This is done by assigning the
@@ -98,8 +92,7 @@ static void ble_spp_server_advertise(void) {
   fields.tx_pwr_lvl_is_present = 1;
   fields.tx_pwr_lvl = BLE_HS_ADV_TX_PWR_LVL_AUTO;
 
-  const char* name;
-  name = ble_svc_gap_device_name();
+  const char* name = ble_svc_gap_device_name();
   fields.name = (uint8_t*) name;
   fields.name_len = strlen(name);
   fields.name_is_complete = 1;
@@ -110,7 +103,9 @@ static void ble_spp_server_advertise(void) {
   fields.num_uuids16 = 1;
   fields.uuids16_is_complete = 1;
 
-  rc = ble_gap_adv_set_fields(&fields);
+  MODLOG_DFLT(INFO, "setting advertisement data; 0x%04X\n", BLE_SVC_SPP_UUID16);
+
+  int rc = ble_gap_adv_set_fields(&fields);
   if (rc != 0) {
     MODLOG_DFLT(ERROR, "error setting advertisement data; rc=%d\n", rc);
     return;
@@ -120,11 +115,9 @@ static void ble_spp_server_advertise(void) {
   memset(&adv_params, 0, sizeof adv_params);
   adv_params.conn_mode = BLE_GAP_CONN_MODE_UND;
   adv_params.disc_mode = BLE_GAP_DISC_MODE_GEN;
-  rc = ble_gap_adv_start(own_addr_type, NULL, BLE_HS_FOREVER,
-    &adv_params, ble_spp_server_gap_event, NULL);
+  rc = ble_gap_adv_start(own_addr_type, NULL, BLE_HS_FOREVER, &adv_params, ble_spp_server_gap_event, NULL);
   if (rc != 0) {
     MODLOG_DFLT(ERROR, "error enabling advertisement; rc=%d\n", rc);
-    return;
   }
 }
 
@@ -250,6 +243,10 @@ void ble_spp_server_host_task(void* param) {
   nimble_port_freertos_deinit();
 }
 
+typedef struct {
+
+} robot_control_frame_t;
+
 /* Callback function for custom service */
 static int ble_svc_gatt_handler(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt* ctxt, void* arg) {
   switch (ctxt->op) {
@@ -258,7 +255,21 @@ static int ble_svc_gatt_handler(uint16_t conn_handle, uint16_t attr_handle, stru
       break;
 
     case BLE_GATT_ACCESS_OP_WRITE_CHR:
-      MODLOG_DFLT(INFO, "Data received in write event,conn_handle = %x,attr_handle = %x", conn_handle, attr_handle);
+      // 1. 获取数据指针和长度
+      uint16_t om_len = OS_MBUF_PKTLEN(ctxt->om); // 数据总长度
+      uint8_t* om_data = ctxt->om->om_data; // 指向数据的指针
+
+      uint8_t rx_buffer[BLE_RX_ITEM_SIZE];
+      const size_t copy_len = om_len > BLE_RX_ITEM_SIZE ? BLE_RX_ITEM_SIZE : om_len;
+      memcpy(rx_buffer, om_data, copy_len);
+
+      if (xQueueSend(spp_common_uart_queue, rx_buffer, 0) != pdTRUE) {
+        MODLOG_DFLT(WARN, "BLE RX 队列已满，丢弃数据包！\n");
+      }
+      else {
+        MODLOG_DFLT(INFO, "数据包已放入队列等待处理。\n");
+      }
+
       break;
 
     default:
@@ -298,23 +309,18 @@ static void gatt_svr_register_cb(struct ble_gatt_register_ctxt* ctxt, void* arg)
 
   switch (ctxt->op) {
     case BLE_GATT_REGISTER_OP_SVC:
-      MODLOG_DFLT(DEBUG, "registered service %s with handle=%d\n",
-        ble_uuid_to_str(ctxt->svc.svc_def->uuid, buf),
-        ctxt->svc.handle);
+      MODLOG_DFLT(DEBUG, "registered service %s with handle=%d",
+        ble_uuid_to_str(ctxt->svc.svc_def->uuid, buf), ctxt->svc.handle);
       break;
 
     case BLE_GATT_REGISTER_OP_CHR:
-      MODLOG_DFLT(DEBUG, "registering characteristic %s with "
-        "def_handle=%d val_handle=%d\n",
-        ble_uuid_to_str(ctxt->chr.chr_def->uuid, buf),
-        ctxt->chr.def_handle,
-        ctxt->chr.val_handle);
+      MODLOG_DFLT(DEBUG, "registering characteristic %s with def_handle=%d val_handle=%d",
+        ble_uuid_to_str(ctxt->chr.chr_def->uuid, buf), ctxt->chr.def_handle, ctxt->chr.val_handle);
       break;
 
     case BLE_GATT_REGISTER_OP_DSC:
-      MODLOG_DFLT(DEBUG, "registering descriptor %s with handle=%d\n",
-        ble_uuid_to_str(ctxt->dsc.dsc_def->uuid, buf),
-        ctxt->dsc.handle);
+      MODLOG_DFLT(DEBUG, "registering descriptor %s with handle=%d",
+        ble_uuid_to_str(ctxt->dsc.dsc_def->uuid, buf), ctxt->dsc.handle);
       break;
 
     default:
@@ -342,65 +348,54 @@ int gatt_svr_init(void) {
   return 0;
 }
 
-
-void ble_server_uart_task(void* pvParameters) {
-  MODLOG_DFLT(INFO, "BLE server UART_task started\n");
-  uart_event_t event;
+/**
+ * @brief 通过BLE通知主动发送数据到已订阅的手机客户端
+ * @param data 要发送的数据指针
+ * @param len  数据长度（字节）
+ * @return esp_err_t 发送结果，ESP_OK表示成功
+ */
+esp_err_t ble_spp_send_data(const uint8_t* data, size_t len) {
   int rc = 0;
-  for (;;) {
-    //Waiting for UART event.
-    if (xQueueReceive(spp_common_uart_queue, &event, portMAX_DELAY)) {
-      switch (event.type) {
-        //Event of UART receiving data
-        case UART_DATA:
-          if (event.size) {
-            uint8_t* ntf = malloc(sizeof(uint8_t) * event.size);
-            memset(ntf, 0x00, event.size);
-            uart_read_bytes(UART_PORT, ntf, event.size, portMAX_DELAY);
+  if (data == NULL || len == 0) {
+    return ESP_ERR_INVALID_ARG;
+  }
 
-            for (int i = 0; i <= CONFIG_BT_NIMBLE_MAX_CONNECTIONS; i++) {
-              /* Check if client has subscribed to notifications */
-              if (conn_handle_subs[i]) {
-                struct os_mbuf* txom = ble_hs_mbuf_from_flat(ntf, event.size);
-                rc = ble_gatts_notify_custom(i, ble_spp_svc_gatt_read_val_handle, txom);
-                if (rc == 0) {
-                  MODLOG_DFLT(INFO, "Notification sent successfully");
-                }
-                else {
-                  MODLOG_DFLT(INFO, "Error in sending notification rc = %d", rc);
-                }
-              }
-            }
+  // 遍历所有连接，向已订阅的客户端发送数据
+  for (int conn_handle = 0; conn_handle <= CONFIG_BT_NIMBLE_MAX_CONNECTIONS; conn_handle++) {
+    if (conn_handle_subs[conn_handle]) {
+      // 检查该连接是否已订阅通知
+      // 将数据封装到协议栈的 mbuf 中
+      struct os_mbuf* txom = ble_hs_mbuf_from_flat(data, len);
+      if (txom == NULL) {
+        MODLOG_DFLT(ERROR, "Failed to allocate mbuf for sending");
+        continue;
+      }
 
-            free(ntf);
-          }
-          break;
-        default:
-          break;
+      // 关键调用：发送通知
+      rc = ble_gatts_notify_custom(conn_handle, ble_spp_svc_gatt_read_val_handle, txom);
+
+      if (rc == 0) {
+        MODLOG_DFLT(INFO, "Notification sent successfully to conn_handle=%d", conn_handle);
+      }
+      else {
+        MODLOG_DFLT(ERROR, "Failed to send notification to conn_handle=%d, rc=%d", conn_handle, rc);
+        // 释放分配失败时的 mbuf
+        os_mbuf_free_chain(txom);
       }
     }
   }
-  vTaskDelete(NULL);
+  return (rc == 0) ? ESP_OK : ESP_FAIL;
 }
 
-
-static void ble_spp_uart_init(void) {
-  const uart_config_t uart_config = {
-    .baud_rate = 115200,
-    .data_bits = UART_DATA_8_BITS,
-    .parity = UART_PARITY_DISABLE,
-    .stop_bits = UART_STOP_BITS_1,
-    .flow_ctrl = UART_HW_FLOWCTRL_RTS,
-    .rx_flow_ctrl_thresh = 122,
-    .source_clk = UART_SCLK_DEFAULT,
-  };
-  //Install UART driver, and get the queue.
-  uart_driver_install(UART_PORT, 4096, 8192, 10, &spp_common_uart_queue, 0);
-  //Set UART parameters
-  uart_param_config(UART_PORT, &uart_config);
-  //Set UART pins
-  uart_set_pin(UART_PORT, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
-  xTaskCreate(ble_server_uart_task, "uTask", 4096, (void*) UART_PORT, 8, NULL);
+void ble_server_uart_task(void* pvParameters) {
+  MODLOG_DFLT(INFO, "BLE server UART_task started\n");
+  uint8_t rx_buffer[BLE_RX_ITEM_SIZE];
+  for (;;) {
+    if (xQueueReceive(spp_common_uart_queue, &rx_buffer, portMAX_DELAY)) {
+      MODLOG_DFLT(INFO, "data: %d", rx_buffer[0]);
+    }
+  }
+  vTaskDelete(NULL);
 }
 
 
@@ -416,8 +411,12 @@ void ble_init(void) {
     conn_handle_subs[i] = false;
   }
 
-  /* Initialize uart driver and start uart task */
-  ble_spp_uart_init();
+  spp_common_uart_queue = xQueueCreate(BLE_RX_QUEUE_LEN, BLE_RX_ITEM_SIZE);
+  if (spp_common_uart_queue == NULL) {
+    MODLOG_DFLT(ERROR, "Failed to create BLE RX queue!\n");
+  }
+
+  xTaskCreate(ble_server_uart_task, "robot_ctrl", 4096, NULL, 8, NULL);
 
   /* Initialize the NimBLE host configuration. */
   ble_hs_cfg.reset_cb = ble_spp_server_on_reset;
@@ -448,12 +447,11 @@ void ble_init(void) {
   assert(rc == 0);
 
   /* Set the default device name. */
-  rc = ble_svc_gap_device_name_set("NimBLE_GATT");
+  rc = ble_svc_gap_device_name_set("ROBOT");
   assert(rc == 0);
 #endif
 
   /* XXX Need to have template for store */
   ble_store_config_init();
   nimble_port_freertos_init(ble_spp_server_host_task);
-  MODLOG_DFLT(INFO, "nimble_port_freertos_init", ret);
 }
