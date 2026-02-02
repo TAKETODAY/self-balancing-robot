@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 - 2025 the original author or authors.
+ * Copyright 2025 - 2026 the original author or authors.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -45,14 +45,14 @@ import cn.taketoday.robot.LoggingSupport;
  * @see ScanningListener
  * @see ConnectionListener
  */
-public class BluetoothListeners implements StatusListener, BindingStatusListener,
-        ScanningListener, ConnectionListener, LoggingSupport {
-
-  private static final BluetoothListeners instance = new BluetoothListeners();
+class BluetoothListeners implements StatusListener, BindingStatusListener, ScanningListener, ConnectionListener, LoggingSupport {
 
   private final List<StatusListener> statusListeners = new ArrayList<>(4);
+
   private final List<BindingStatusListener> bindingListeners = new ArrayList<>(4);
+
   private final List<ScanningListener> scanningListeners = new ArrayList<>(4);
+
   private final List<ConnectionListener> connectionListeners = new ArrayList<>(4);
 
   public void addBindingListener(BindingStatusListener... bindingListeners) {
@@ -145,9 +145,9 @@ public class BluetoothListeners implements StatusListener, BindingStatusListener
   }
 
   @Override
-  public void onDataReceived(BluetoothGatt device, byte[] data) {
-    for (ConnectionListener connectionListener : connectionListeners) {
-      connectionListener.onDataReceived(device, data);
+  public void onServicesDiscovered(BluetoothGatt gatt) {
+    for (ConnectionListener listener : connectionListeners) {
+      listener.onServicesDiscovered(gatt);
     }
   }
 
@@ -163,12 +163,6 @@ public class BluetoothListeners implements StatusListener, BindingStatusListener
     for (ConnectionListener connectionListener : connectionListeners) {
       connectionListener.onDisconnected(device);
     }
-  }
-
-  //
-
-  public static BluetoothListeners getInstance() {
-    return instance;
   }
 
 }

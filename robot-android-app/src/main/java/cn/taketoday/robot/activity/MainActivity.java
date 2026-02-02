@@ -20,6 +20,8 @@ package cn.taketoday.robot.activity;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -29,7 +31,10 @@ import org.jspecify.annotations.Nullable;
 
 import cn.taketoday.robot.LoggingSupport;
 import cn.taketoday.robot.R;
+import cn.taketoday.robot.bluetooth.BluetoothViewModel;
 import cn.taketoday.robot.databinding.ActivityMainBinding;
+import cn.taketoday.robot.model.DataHandler;
+import cn.taketoday.robot.model.RobotViewModel;
 import cn.taketoday.robot.util.PermissionUtils;
 
 /**
@@ -46,6 +51,8 @@ public class MainActivity extends AppCompatActivity implements LoggingSupport {
   @Override
   protected void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+    connectModel();
+
     PermissionUtils.requestPermissions(this);
     binding = ActivityMainBinding.inflate(getLayoutInflater());
     setContentView(binding.getRoot());
@@ -62,10 +69,34 @@ public class MainActivity extends AppCompatActivity implements LoggingSupport {
     NavigationUI.setupWithNavController(binding.navView, navController);
   }
 
+  private void connectModel() {
+    RobotViewModel robotModel = RobotViewModel.getInstance(this);
+    new ViewModelProvider(this, new BluetoothViewModelFactory(robotModel)).get(BluetoothViewModel.class);
+
+    BluetoothViewModel bluetoothModel = BluetoothViewModel.getInstance(this);
+    bluetoothModel.connected.observe(this, robotModel.connected::setValue);
+
+  }
+
   @Override
   public boolean onSupportNavigateUp() {
     return (navController != null && NavigationUI.navigateUp(navController, appBarConfiguration))
             || super.onSupportNavigateUp();
+  }
+
+  private class BluetoothViewModelFactory implements ViewModelProvider.Factory {
+
+    private final DataHandler handler;
+
+    BluetoothViewModelFactory(DataHandler handler) {
+      this.handler = handler;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T extends ViewModel> T create(Class<T> modelClass) {
+      return (T) new BluetoothViewModel(getApplication(), handler);
+    }
   }
 
 }

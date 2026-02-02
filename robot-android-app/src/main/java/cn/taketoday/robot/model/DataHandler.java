@@ -15,33 +15,15 @@
  * along with this program. If not, see [https://www.gnu.org/licenses/]
  */
 
-package cn.taketoday.robot.bluetooth;
-
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothGatt;
+package cn.taketoday.robot.model;
 
 /**
- * A listener for receiving notifications about the state of a Bluetooth connection.
- * Implement this interface to handle events such as connection, disconnection, data reception, and RSSI updates.
- *
  * @author <a href="https://github.com/TAKETODAY">海子 Yang</a>
- * @since 1.0 2025/12/28 15:19
+ * @since 1.0 2026/2/2 22:29
  */
-public interface ConnectionListener {
+public interface DataHandler {
 
-  void onConnected(BluetoothDevice device);
+  void handleIncomingData(byte[] data);
 
-  void onDisconnected(BluetoothDevice device);
-
-  default void onConnecting(BluetoothDevice device) {
-  }
-
-  default void onDisconnecting(BluetoothDevice device) {
-  }
-
-  default void onServicesDiscovered(BluetoothGatt gatt) {
-  }
-
-  void onRssiUpdated(BluetoothGatt device, int rssi);
-
+  void register(OutgoingChannel outgoingChannel);
 }

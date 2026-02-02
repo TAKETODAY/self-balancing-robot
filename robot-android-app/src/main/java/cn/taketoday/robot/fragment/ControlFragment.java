@@ -22,15 +22,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 
 import org.jspecify.annotations.Nullable;
 
 import cn.taketoday.robot.LoggingSupport;
 import cn.taketoday.robot.R;
-import cn.taketoday.robot.bluetooth.BluetoothViewModel;
 import cn.taketoday.robot.databinding.FragmentControlBinding;
+import cn.taketoday.robot.model.RobotViewModel;
 
 /**
  * A fragment for displaying and managing the robot's control interface.
@@ -48,8 +47,6 @@ import cn.taketoday.robot.databinding.FragmentControlBinding;
  */
 public class ControlFragment extends ViewBindingFragment<FragmentControlBinding> implements LoggingSupport {
 
-  private BluetoothViewModel viewModel;
-
   @Override
   protected FragmentControlBinding createBinding(LayoutInflater inflater, @Nullable ViewGroup container) {
     return FragmentControlBinding.inflate(inflater, container, false);
@@ -57,12 +54,10 @@ public class ControlFragment extends ViewBindingFragment<FragmentControlBinding>
 
   @Override
   public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-    viewModel = new ViewModelProvider(requireActivity()).get(BluetoothViewModel.class);
-    setConnectionStatus(Boolean.TRUE.equals(viewModel.connected.getValue()));
-    viewModel.connected.observe(getViewLifecycleOwner(), connected -> {
-      debug("connected: %s", connected);
-      setConnectionStatus(connected);
-    });
+    RobotViewModel robotModel = RobotViewModel.getInstance(requireActivity());
+
+    setConnectionStatus(robotModel.isConnected());
+    robotModel.connected.observe(getViewLifecycleOwner(), this::setConnectionStatus);
 
     NavHostFragment navHostFragment = (NavHostFragment) requireParentFragment();
     var navController = navHostFragment.getNavController();

@@ -1,3 +1,20 @@
+/*
+ * Copyright 2025 - 2026 the original author or authors.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see [https://www.gnu.org/licenses/]
+ */
+
 package cn.taketoday.robot.bluetooth;
 
 import android.bluetooth.BluetoothDevice;
@@ -12,13 +29,17 @@ import android.os.Build;
 
 import org.jspecify.annotations.Nullable;
 
+import java.nio.channels.ClosedChannelException;
 import java.util.List;
 import java.util.UUID;
 
 import cn.taketoday.robot.LoggingSupport;
-import cn.taketoday.robot.protocol.Frame;
+import cn.taketoday.robot.model.DataHandler;
+import cn.taketoday.robot.model.OutgoingChannel;
+import infra.lang.Assert;
+import infra.util.concurrent.Future;
 
-public class BluetoothLeService implements LoggingSupport {
+public class BluetoothLeService extends BluetoothListeners implements LoggingSupport, OutgoingChannel {
 
   // 服务UUID
   public static final UUID UUID_PROTOCOL_SERVICE = UUID.fromString("0000ABF0-0000-1000-8000-00805f9b34fb");
@@ -36,17 +57,22 @@ public class BluetoothLeService implements LoggingSupport {
 
   private final Context context;
 
-  private final ConnectionListener connectionListener;
+  private final BluetoothGattCallback gattCallback = new LiBluetoothGattCallback(this);
+
+  private final DataHandler dataHandler;
 
   private @Nullable BluetoothDevice device;
 
   private @Nullable BluetoothGatt bluetoothGatt;
 
+  private @Nullable BluetoothGattCharacteristic characteristic;
+
   private int connectionState = STATE_DISCONNECTED;
 
-  BluetoothLeService(Context context, ConnectionListener connectionListener) {
+  BluetoothLeService(Context context, DataHandler dataHandler) {
     this.context = context;
-    this.connectionListener = connectionListener;
+    this.dataHandler = dataHandler;
+    dataHandler.register(this);
   }
 
   /**
@@ -113,6 +139,10 @@ public class BluetoothLeService implements LoggingSupport {
     connectionState = STATE_DISCONNECTED;
   }
 
+  public boolean isRobot() {
+    return getCharacteristic(UUID_PROTOCOL_SERVICE, UUID_PROTOCOL_FRAME) != null;
+  }
+
   /**
    * 读取指定特征的值
    */
@@ -125,17 +155,14 @@ public class BluetoothLeService implements LoggingSupport {
     bluetoothGatt.readCharacteristic(characteristic);
   }
 
-  public void write(Frame frame) {
-    write(frame.toBytes());
-  }
-
-  public void write(byte[] data) {
+  @Override
+  public Future<Void> write(byte[] data) {
     if (bluetoothGatt == null || connectionState != STATE_CONNECTED) {
       debug("not connected");
-      return;
+      return Future.failed(new ClosedChannelException());
     }
 
-    BluetoothGattCharacteristic characteristic = getCharacteristic(UUID_PROTOCOL_SERVICE, UUID_PROTOCOL_FRAME);
+    BluetoothGattCharacteristic characteristic = getCharacteristic();
     if (characteristic != null) {
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         bluetoothGatt.writeCharacteristic(characteristic, data, BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
@@ -149,6 +176,7 @@ public class BluetoothLeService implements LoggingSupport {
     else {
       error("write failed, characteristic not found");
     }
+    return Future.ok();
   }
 
   /**
@@ -178,15 +206,16 @@ public class BluetoothLeService implements LoggingSupport {
     bluetoothGatt.writeCharacteristic(characteristic);
   }
 
-  public void setCharacteristicNotification(boolean enabled) {
-    BluetoothGattCharacteristic characteristic = getCharacteristic(UUID_PROTOCOL_SERVICE, UUID_PROTOCOL_FRAME);
+  public boolean setCharacteristicNotification(boolean enabled) {
+    BluetoothGattCharacteristic characteristic = getCharacteristic();
     if (characteristic != null) {
       setCharacteristicNotification(characteristic, enabled);
+      return true;
     }
     else {
       error("characteristic not found");
     }
-
+    return false;
   }
 
   /**
@@ -214,12 +243,8 @@ public class BluetoothLeService implements LoggingSupport {
     }
   }
 
-  public BluetoothGattCharacteristic getCharacteristic() {
-    return getCharacteristic(UUID_PROTOCOL_SERVICE, UUID_PROTOCOL_FRAME);
-  }
-
   public void setCharacteristicIndication(boolean enabled) {
-    BluetoothGattCharacteristic characteristic = getCharacteristic(UUID_PROTOCOL_SERVICE, UUID_PROTOCOL_FRAME);
+    BluetoothGattCharacteristic characteristic = getCharacteristic();
     if (characteristic != null) {
       setCharacteristicIndication(characteristic, enabled);
     }
@@ -324,6 +349,14 @@ public class BluetoothLeService implements LoggingSupport {
     return bluetoothGatt.getService(serviceUuid);
   }
 
+  private BluetoothGattCharacteristic getCharacteristic() {
+    if (characteristic == null) {
+      characteristic = getCharacteristic(UUID_PROTOCOL_SERVICE, UUID_PROTOCOL_FRAME);
+      Assert.state(characteristic != null, "characteristic not found");
+    }
+    return characteristic;
+  }
+
   /**
    * 根据服务UUID和特征UUID查找特征
    */
@@ -335,7 +368,28 @@ public class BluetoothLeService implements LoggingSupport {
     return service.getCharacteristic(characteristicUuid);
   }
 
-  private final BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
+  /**
+   * 发送带数据的广播更新
+   */
+  private void dataRead(BluetoothGattCharacteristic characteristic) {
+    if (UUID_PROTOCOL_FRAME.equals(characteristic.getUuid())) {
+      final byte[] data = characteristic.getValue();
+      if (data != null && data.length > 0) {
+        dataHandler.handleIncomingData(data);
+      }
+    }
+    else {
+      warn("unsupported characteristic %s", characteristic);
+    }
+  }
+
+  private final class LiBluetoothGattCallback extends BluetoothGattCallback {
+
+    private final BluetoothListeners listeners;
+
+    LiBluetoothGattCallback(BluetoothListeners listeners) {
+      this.listeners = listeners;
+    }
 
     @Override
     public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
@@ -345,21 +399,21 @@ public class BluetoothLeService implements LoggingSupport {
         info("Connected to GATT server");
         info("Attempting to start service discovery: %s", gatt.discoverServices());
 
-        connectionListener.onConnected(gatt.getDevice());
+        listeners.onConnected(gatt.getDevice());
       }
       else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
         info("Disconnected from GATT server");
         close();
         connectionState = STATE_DISCONNECTED;
-        connectionListener.onDisconnected(gatt.getDevice());
+        listeners.onDisconnected(gatt.getDevice());
       }
       else if (newState == BluetoothProfile.STATE_CONNECTING) {
         connectionState = STATE_CONNECTING;
-        connectionListener.onConnecting(gatt.getDevice());
+        listeners.onConnecting(gatt.getDevice());
       }
       else if (newState == BluetoothProfile.STATE_DISCONNECTING) {
         connectionState = STATE_DISCONNECTING;
-        connectionListener.onDisconnecting(gatt.getDevice());
+        onDisconnecting(gatt.getDevice());
       }
       else {
         warn("Unknown GATT connection state: %s", newState);
@@ -370,7 +424,7 @@ public class BluetoothLeService implements LoggingSupport {
     public void onServicesDiscovered(BluetoothGatt gatt, int status) {
       if (status == BluetoothGatt.GATT_SUCCESS) {
         info("Services discovered");
-        connectionListener.onServicesDiscovered(gatt, gatt.getDevice());
+        listeners.onServicesDiscovered(gatt);
       }
       else {
         debug("onServicesDiscovered received: %s", status);
@@ -380,7 +434,7 @@ public class BluetoothLeService implements LoggingSupport {
     @Override
     public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
       if (status == BluetoothGatt.GATT_SUCCESS) {
-        dataRead(gatt, characteristic);
+        dataRead(characteristic);
       }
     }
 
@@ -393,7 +447,7 @@ public class BluetoothLeService implements LoggingSupport {
 
     @Override
     public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-      dataRead(gatt, characteristic);
+      dataRead(characteristic);
     }
 
     @Override
@@ -418,7 +472,7 @@ public class BluetoothLeService implements LoggingSupport {
     public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status) {
       if (status == BluetoothGatt.GATT_SUCCESS) {
         debug("Remote RSSI: %s dBm", rssi);
-        connectionListener.onRssiUpdated(gatt, rssi);
+        listeners.onRssiUpdated(gatt, rssi);
       }
     }
 
@@ -442,20 +496,6 @@ public class BluetoothLeService implements LoggingSupport {
         debug("PHY read - TX: " + txPhy + ", RX: " + rxPhy);
       }
     }
-  };
-
-  /**
-   * 发送带数据的广播更新
-   */
-  private void dataRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-    if (UUID_PROTOCOL_FRAME.equals(characteristic.getUuid())) {
-      final byte[] data = characteristic.getValue();
-      if (data != null && data.length > 0) {
-        connectionListener.onDataReceived(gatt, data);
-      }
-    }
-    else {
-      warn("unsupported characteristic %s", characteristic);
-    }
   }
+
 }

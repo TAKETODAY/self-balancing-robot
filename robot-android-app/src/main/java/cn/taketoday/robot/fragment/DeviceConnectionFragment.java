@@ -25,7 +25,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CompoundButton;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
@@ -33,7 +32,6 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.google.android.material.snackbar.Snackbar;
@@ -43,11 +41,9 @@ import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 
 import cn.taketoday.robot.LoggingSupport;
-import cn.taketoday.robot.bluetooth.BluetoothItem;
 import cn.taketoday.robot.bluetooth.BluetoothViewModel;
 import cn.taketoday.robot.databinding.FragmentDeviceConnectionBinding;
 import cn.taketoday.robot.model.BluetoothDeviceListAdapter;
-import cn.taketoday.robot.model.BluetoothItemClickListener;
 
 import static cn.taketoday.robot.util.RobotUtils.showDialog;
 
@@ -74,11 +70,7 @@ import static cn.taketoday.robot.util.RobotUtils.showDialog;
  * @since 1.0 2025/12/20 16:46
  */
 public class DeviceConnectionFragment extends ViewBindingFragment<FragmentDeviceConnectionBinding>
-        implements CompoundButton.OnCheckedChangeListener, BluetoothItemClickListener, LoggingSupport, ActivityResultCallback<ActivityResult> {
-
-  private BluetoothDeviceListAdapter bluetoothAdapter;
-
-  private BluetoothViewModel viewModel;
+        implements LoggingSupport, ActivityResultCallback<ActivityResult> {
 
   private ActivityResultLauncher<Intent> enableBluetoothLauncher;
 
@@ -95,16 +87,44 @@ public class DeviceConnectionFragment extends ViewBindingFragment<FragmentDevice
   @Override
   public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
     debug("onViewCreated");
-    viewModel = new ViewModelProvider(requireActivity()).get(BluetoothViewModel.class);
+    BluetoothViewModel viewModel = BluetoothViewModel.getInstance(requireActivity());
 
     binding.swipeRefresh.setOnRefreshListener(viewModel::startScan);
 
-    binding.switchBluetooth.setOnCheckedChangeListener(this);
+    binding.switchBluetooth.setOnCheckedChangeListener((buttonView, enabled) -> {
+      if (enabled) {
+        Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+        enableBluetoothLauncher.launch(enableBtIntent);
+      }
+      else {
+        if (!viewModel.disableBluetooth()) {
+          binding.switchBluetooth.setChecked(true);
+          showDialog(requireContext(), "错误", "关闭蓝牙失败");
+        }
+      }
+    });
 
     binding.bluetoothList.setNestedScrollingEnabled(true);
     binding.bluetoothList.setLayoutManager(new LinearLayoutManager(requireContext()));
 
-    bluetoothAdapter = new BluetoothDeviceListAdapter(this);
+    BluetoothDeviceListAdapter bluetoothAdapter = new BluetoothDeviceListAdapter((view1, item) -> {
+      debug("列表点击了：%s", item.getName());
+
+      if (item.isPaired()) {
+        if (viewModel.connect(item.getDevice())) {
+          Snackbar.make(view1, "连接中", Snackbar.LENGTH_SHORT).show();
+        }
+      }
+      else {
+        if (item.getDevice().createBond()) {
+          Snackbar.make(view1, "正在配对中", Snackbar.LENGTH_SHORT).show();
+        }
+        else {
+          Snackbar.make(view1, "配对失败，请稍候重试", Snackbar.LENGTH_LONG).show();
+        }
+      }
+    });
+
     binding.bluetoothList.setAdapter(bluetoothAdapter);
 
     viewModel.devices.observe(getViewLifecycleOwner(), bluetoothAdapter::submitList);
@@ -141,26 +161,6 @@ public class DeviceConnectionFragment extends ViewBindingFragment<FragmentDevice
     });
 
     debug("create end");
-  }
-
-  @Override
-  public void onCheckedChanged(CompoundButton buttonView, boolean enabled) {
-    if (enabled) {
-      Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-      enableBluetoothLauncher.launch(enableBtIntent);
-    }
-    else {
-      if (!viewModel.disableBluetooth()) {
-        binding.switchBluetooth.setChecked(true);
-        showDialog(requireContext(), "错误", "关闭蓝牙失败");
-      }
-    }
-  }
-
-  @Override
-  public void onBluetoothItemClickListener(View view, BluetoothItem item) {
-    debug("列表点击了：%s", item.getName());
-    viewModel.connect(view, item);
   }
 
   //

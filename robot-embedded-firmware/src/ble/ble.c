@@ -1,4 +1,4 @@
-// Copyright 2025 the original author or authors.
+// Copyright 2025 -2026 the original author or authors.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -249,8 +249,8 @@ static int ble_svc_gatt_handler(uint16_t conn_handle, uint16_t attr_handle, stru
 
     case BLE_GATT_ACCESS_OP_WRITE_CHR:
       // 1. 获取数据指针和长度
-      uint16_t om_len = OS_MBUF_PKTLEN(ctxt->om); // 数据总长度
-      uint8_t* om_data = ctxt->om->om_data; // 指向数据的指针
+      uint16_t om_len = OS_MBUF_PKTLEN(ctxt->om);
+      uint8_t* om_data = ctxt->om->om_data;
 
       uint8_t rx_buffer[BLE_RX_ITEM_SIZE];
       const size_t copy_len = om_len > BLE_RX_ITEM_SIZE ? BLE_RX_ITEM_SIZE : om_len;

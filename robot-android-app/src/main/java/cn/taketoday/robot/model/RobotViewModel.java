@@ -19,17 +19,50 @@ package cn.taketoday.robot.model;
 
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.ViewModelStoreOwner;
+
+import java.util.Arrays;
+
+import cn.taketoday.robot.LoggingSupport;
 
 /**
  * @author <a href="https://github.com/TAKETODAY">海子 Yang</a>
  * @since 1.0 2025/12/20 14:54
  */
-public class RobotViewModel extends ViewModel {
+public class RobotViewModel extends ViewModel implements DataHandler, LoggingSupport {
 
-  public final MutableLiveData<String> connectionStatus = new MutableLiveData<>("未连接");
+  public final MutableLiveData<Boolean> connected = new MutableLiveData<>(false);
 
   public final MutableLiveData<Integer> batteryLevel = new MutableLiveData<>(100);
 
-  public final MutableLiveData<String> latestCommand = new MutableLiveData<>("");
+  private OutgoingChannel outgoingChannel;
+
+  public boolean isConnected() {
+    return Boolean.TRUE.equals(connected.getValue());
+  }
+
+  @Override
+  public void handleIncomingData(byte[] data) {
+    debug("onDataReceived: %s", Arrays.toString(data));
+
+//    Frame parse = Frame.parse(data);
+
+    sendData(data);
+  }
+
+  @Override
+  public void register(OutgoingChannel outgoingChannel) {
+    this.outgoingChannel = outgoingChannel;
+  }
+
+  public void sendData(byte[] data) {
+    outgoingChannel.write(data);
+    debug("write: %s", Arrays.toString(data));
+  }
+
+  public static RobotViewModel getInstance(ViewModelStoreOwner store) {
+    return new ViewModelProvider(store).get(RobotViewModel.class);
+  }
 
 }
