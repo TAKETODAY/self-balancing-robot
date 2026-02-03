@@ -25,17 +25,29 @@
 #include "ble/spp_server.h"
 #include "ble.h"
 
-#define BLE_RX_QUEUE_LEN 10
-#define BLE_RX_ITEM_SIZE 128 // 根据你的协议最大长度调整
+#define BLE_RX_QUEUE_LEN 100
 
 static int ble_server_gap_event(struct ble_gap_event* event, void* arg);
 static uint8_t own_addr_type;
 int gatt_svr_register(void);
-QueueHandle_t spp_common_uart_queue = NULL;
+
 static bool conn_handle_subs[CONFIG_BT_NIMBLE_MAX_CONNECTIONS + 1];
 static uint16_t ble_svc_gatt_read_val_handle;
 
+QueueHandle_t buffer_queue = NULL;
+
 void ble_store_config_init(void);
+
+
+typedef struct {
+
+} robot_control_frame_t;
+
+typedef struct {
+  uint8_t* data;
+  uint16_t length;
+} buffer_t;
+
 
 static void print_addr(const void* addr) {
   const uint8_t* u8p = addr;
@@ -220,6 +232,7 @@ static void ble_server_on_sync(void) {
   /* Printing ADDR */
   uint8_t addr_val[6] = { 0 };
   rc = ble_hs_id_copy_addr(own_addr_type, addr_val, NULL);
+  assert(rc == 0);
 
   MODLOG_DFLT(INFO, "Device Address: ");
   print_addr(addr_val);
@@ -236,10 +249,6 @@ void ble_server_host_task(void* param) {
   nimble_port_freertos_deinit();
 }
 
-typedef struct {
-
-} robot_control_frame_t;
-
 /* Callback function for custom service */
 static int ble_svc_gatt_handler(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt* ctxt, void* arg) {
   switch (ctxt->op) {
@@ -248,23 +257,24 @@ static int ble_svc_gatt_handler(uint16_t conn_handle, uint16_t attr_handle, stru
       break;
 
     case BLE_GATT_ACCESS_OP_WRITE_CHR:
-      // 1. 获取数据指针和长度
       uint16_t om_len = OS_MBUF_PKTLEN(ctxt->om);
-      uint8_t* om_data = ctxt->om->om_data;
+      uint8_t* rx_buffer = malloc(om_len);
+      if (rx_buffer == NULL) {
+        MODLOG_DFLT(ERROR, "内存分配失败，无法处理%d字节的数据包！", om_len);
+        return -1;
+      }
 
-      uint8_t rx_buffer[BLE_RX_ITEM_SIZE];
-      const size_t copy_len = om_len > BLE_RX_ITEM_SIZE ? BLE_RX_ITEM_SIZE : om_len;
-      memcpy(rx_buffer, om_data, copy_len);
+      os_mbuf_copydata(ctxt->om, 0, om_len, rx_buffer);
 
-      if (xQueueSend(spp_common_uart_queue, rx_buffer, 0) != pdTRUE) {
-        MODLOG_DFLT(WARN, "BLE RX 队列已满，丢弃数据包！\n");
+      const buffer_t buffer = { .data = rx_buffer, .length = om_len };
+      if (xQueueSend(buffer_queue, &buffer, 0) != pdTRUE) {
+        MODLOG_DFLT(WARN, "BLE RX 队列已满，丢弃数据包");
       }
       else {
-        MODLOG_DFLT(INFO, "数据包已放入队列等待处理。\n");
+        MODLOG_DFLT(DEBUG, "数据包已放入队列等待处理");
       }
 
       break;
-
     default:
       MODLOG_DFLT(INFO, "\nDefault Callback");
       break;
@@ -380,12 +390,22 @@ esp_err_t ble_send(const uint8_t* data, size_t len) {
   return (rc == 0) ? ESP_OK : ESP_FAIL;
 }
 
-void ble_server_uart_task(void* pvParameters) {
+static void robot_control_frame_parsing_task(void* pvParameters) {
   MODLOG_DFLT(INFO, "BLE server UART_task started\n");
-  uint8_t rx_buffer[BLE_RX_ITEM_SIZE];
+  buffer_t buffer;
   for (;;) {
-    if (xQueueReceive(spp_common_uart_queue, &rx_buffer, portMAX_DELAY)) {
-      MODLOG_DFLT(INFO, "data: %d", rx_buffer[0]);
+    if (xQueueReceive(buffer_queue, &buffer, portMAX_DELAY)) {
+      MODLOG_DFLT(INFO, "收到数据包，长度: %d 字节, 数据地址: %p", buffer.length, buffer.data);
+
+#ifdef DEBUG_PRINT_DATA
+      ESP_LOG_BUFFER_HEX("BLE_RX", buffer.data, buffer.length);
+#endif
+
+      free(buffer.data);
+    }
+    else {
+      // 正常情况下，portMAX_DELAY 会导致任务阻塞，不会走到这里。
+      MODLOG_DFLT(ERROR, "从队列接收数据失败（不应发生）。\n");
     }
   }
   vTaskDelete(NULL);
@@ -404,12 +424,12 @@ void ble_init(void) {
     conn_handle_subs[i] = false;
   }
 
-  spp_common_uart_queue = xQueueCreate(BLE_RX_QUEUE_LEN, BLE_RX_ITEM_SIZE);
-  if (spp_common_uart_queue == NULL) {
+  buffer_queue = xQueueCreate(BLE_RX_QUEUE_LEN, sizeof(buffer_t));
+  if (buffer_queue == NULL) {
     MODLOG_DFLT(ERROR, "Failed to create BLE RX queue!\n");
   }
 
-  xTaskCreate(ble_server_uart_task, "robot_ctrl", 4096, NULL, 8, NULL);
+  xTaskCreate(robot_control_frame_parsing_task, "robot_ctrl", 4096, NULL, 8, NULL);
 
   /* Initialize the NimBLE host configuration. */
   ble_hs_cfg.reset_cb = ble_server_on_reset;

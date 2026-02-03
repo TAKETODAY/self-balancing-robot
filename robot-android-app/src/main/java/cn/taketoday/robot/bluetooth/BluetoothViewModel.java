@@ -238,6 +238,7 @@ public class BluetoothViewModel extends AndroidViewModel implements ScanningList
   @Override
   public void onDisconnected(BluetoothDevice device) {
     connected.postValue(false);
+    robotConnected.postValue(false);
   }
 
   @Override
