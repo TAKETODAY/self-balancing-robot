@@ -23,7 +23,7 @@ import infra.util.concurrent.Future;
  * @author <a href="https://github.com/TAKETODAY">海子 Yang</a>
  * @since 1.0 2026/2/2 22:55
  */
-public interface OutgoingChannel {
+public interface WritableChannel {
 
   Future<Void> write(byte[] data);
 }

@@ -36,7 +36,7 @@ public class RobotViewModel extends ViewModel implements DataHandler, LoggingSup
 
   public final MutableLiveData<Integer> batteryLevel = new MutableLiveData<>(100);
 
-  private OutgoingChannel outgoingChannel;
+  private WritableChannel writableChannel;
 
   public boolean isConnected() {
     return Boolean.TRUE.equals(connected.getValue());
@@ -52,12 +52,12 @@ public class RobotViewModel extends ViewModel implements DataHandler, LoggingSup
   }
 
   @Override
-  public void register(OutgoingChannel outgoingChannel) {
-    this.outgoingChannel = outgoingChannel;
+  public void register(WritableChannel writableChannel) {
+    this.writableChannel = writableChannel;
   }
 
   public void sendData(byte[] data) {
-    outgoingChannel.write(data);
+    writableChannel.write(data);
     debug("write: %s", Arrays.toString(data));
   }
 

@@ -25,5 +25,5 @@ public interface DataHandler {
 
   void handleIncomingData(byte[] data);
 
-  void register(OutgoingChannel outgoingChannel);
+  void register(WritableChannel writableChannel);
 }

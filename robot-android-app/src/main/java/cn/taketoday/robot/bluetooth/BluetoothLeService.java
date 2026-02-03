@@ -35,11 +35,12 @@ import java.util.UUID;
 
 import cn.taketoday.robot.LoggingSupport;
 import cn.taketoday.robot.model.DataHandler;
-import cn.taketoday.robot.model.OutgoingChannel;
+import cn.taketoday.robot.model.WritableChannel;
 import infra.lang.Assert;
 import infra.util.concurrent.Future;
+import infra.util.concurrent.Promise;
 
-public class BluetoothLeService extends BluetoothListeners implements LoggingSupport, OutgoingChannel {
+public class BluetoothLeService extends BluetoothListeners implements LoggingSupport, WritableChannel {
 
   // 服务UUID
   public static final UUID UUID_PROTOCOL_SERVICE = UUID.fromString("0000ABF0-0000-1000-8000-00805f9b34fb");
@@ -162,7 +163,9 @@ public class BluetoothLeService extends BluetoothListeners implements LoggingSup
       return Future.failed(new ClosedChannelException());
     }
 
-    BluetoothGattCharacteristic characteristic = getCharacteristic();
+    Promise<Void> promise = Future.forPromise();
+
+    var characteristic = new FutureBluetoothGattCharacteristic(UUID_PROTOCOL_FRAME, promise);
     if (characteristic != null) {
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         bluetoothGatt.writeCharacteristic(characteristic, data, BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
@@ -176,7 +179,7 @@ public class BluetoothLeService extends BluetoothListeners implements LoggingSup
     else {
       error("write failed, characteristic not found");
     }
-    return Future.ok();
+    return promise;
   }
 
   /**
@@ -442,6 +445,15 @@ public class BluetoothLeService extends BluetoothListeners implements LoggingSup
     public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
       if (status == BluetoothGatt.GATT_SUCCESS) {
         debug("Characteristic write successful: %s", characteristic.getUuid().toString());
+        if (characteristic instanceof FutureBluetoothGattCharacteristic futureCharacteristic) {
+          futureCharacteristic.promise.trySuccess(null);
+        }
+      }
+      else {
+        if (characteristic instanceof FutureBluetoothGattCharacteristic futureCharacteristic) {
+          // todo Exception
+          futureCharacteristic.promise.tryFailure(new IllegalStateException("data write failed: " + status));
+        }
       }
     }
 
@@ -496,6 +508,17 @@ public class BluetoothLeService extends BluetoothListeners implements LoggingSup
         debug("PHY read - TX: " + txPhy + ", RX: " + rxPhy);
       }
     }
+  }
+
+  static class FutureBluetoothGattCharacteristic extends BluetoothGattCharacteristic {
+
+    public final Promise<Void> promise;
+
+    public FutureBluetoothGattCharacteristic(UUID uuid, Promise<Void> promise) {
+      super(uuid, 0, 0);
+      this.promise = promise;
+    }
+
   }
 
 }
