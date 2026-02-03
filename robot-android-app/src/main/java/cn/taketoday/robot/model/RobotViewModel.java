@@ -36,6 +36,7 @@ public class RobotViewModel extends ViewModel implements DataHandler, LoggingSup
 
   public final MutableLiveData<Integer> batteryLevel = new MutableLiveData<>(100);
 
+  @SuppressWarnings("NullAway.Init")
   private WritableChannel writableChannel;
 
   public boolean isConnected() {

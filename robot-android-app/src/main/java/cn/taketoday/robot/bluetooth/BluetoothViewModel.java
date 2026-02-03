@@ -56,9 +56,9 @@ public class BluetoothViewModel extends AndroidViewModel implements ScanningList
 
   public final MutableLiveData<Boolean> connected = new MutableLiveData<>(false);
 
-  public final MutableLiveData<Boolean> bluetoothEnabled = new MutableLiveData<>(false);
+  public final MutableLiveData<Boolean> robotConnected = new MutableLiveData<>(false);
 
-  public final MutableLiveData<byte[]> outgoingCommand = new MutableLiveData<>();
+  public final MutableLiveData<Boolean> bluetoothEnabled = new MutableLiveData<>(false);
 
   private final Map<String, BluetoothItem> deviceMap = new HashMap<>();
 
@@ -201,18 +201,18 @@ public class BluetoothViewModel extends AndroidViewModel implements ScanningList
 
   @Override
   public void onConnected(BluetoothDevice device) {
-    if (bluetoothLeService.isRobot()) {
-      connected.postValue(true);
-      bluetoothLeService.readRemoteRssi();
-    }
-    else {
-      warn("连接的不是机器人");
-    }
+    connected.postValue(true);
+    bluetoothLeService.readRemoteRssi();
   }
 
   @Override
   public void onServicesDiscovered(BluetoothGatt gatt) {
     bluetoothLeService.setCharacteristicNotification(true);
+    boolean robot = bluetoothLeService.isRobot();
+    robotConnected.postValue(robot);
+    if (!robot) {
+      warn("连接的不是机器人");
+    }
 
     if (isDebugEnabled()) {
       List<BluetoothGattService> services = gatt.getServices();

@@ -25,5 +25,5 @@ import infra.util.concurrent.Future;
  */
 public interface WritableChannel {
 
-  Future<Void> write(byte[] data);
+  void write(byte[] data);
 }

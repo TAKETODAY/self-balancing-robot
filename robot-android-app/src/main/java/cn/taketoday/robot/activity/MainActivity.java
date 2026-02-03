@@ -74,8 +74,7 @@ public class MainActivity extends AppCompatActivity implements LoggingSupport {
     new ViewModelProvider(this, new BluetoothViewModelFactory(robotModel)).get(BluetoothViewModel.class);
 
     BluetoothViewModel bluetoothModel = BluetoothViewModel.getInstance(this);
-    bluetoothModel.connected.observe(this, robotModel.connected::setValue);
-
+    bluetoothModel.robotConnected.observe(this, robotModel.connected::setValue);
   }
 
   @Override
