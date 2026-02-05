@@ -29,7 +29,6 @@
 
 static int ble_server_gap_event(struct ble_gap_event* event, void* arg);
 static uint8_t own_addr_type;
-int gatt_svr_register(void);
 
 static bool conn_handle_subs[CONFIG_BT_NIMBLE_MAX_CONNECTIONS + 1];
 static uint16_t ble_svc_gatt_read_val_handle;
@@ -37,17 +36,6 @@ static uint16_t ble_svc_gatt_read_val_handle;
 QueueHandle_t buffer_queue = NULL;
 
 void ble_store_config_init(void);
-
-
-typedef struct {
-
-} robot_control_frame_t;
-
-typedef struct {
-  uint8_t* data;
-  uint16_t length;
-} buffer_t;
-
 
 static void print_addr(const void* addr) {
   const uint8_t* u8p = addr;
@@ -266,7 +254,7 @@ static int ble_svc_gatt_handler(uint16_t conn_handle, uint16_t attr_handle, stru
 
       os_mbuf_copydata(ctxt->om, 0, om_len, rx_buffer);
 
-      const buffer_t buffer = { .data = rx_buffer, .length = om_len };
+      const buffer_t buffer = { .data = rx_buffer, .pos = om_len };
       if (xQueueSend(buffer_queue, &buffer, 0) != pdTRUE) {
         MODLOG_DFLT(WARN, "BLE RX 队列已满，丢弃数据包");
       }
@@ -351,51 +339,12 @@ int gatt_svr_init(void) {
   return 0;
 }
 
-/**
- * @brief 通过BLE通知主动发送数据到已订阅的手机客户端
- * @param data 要发送的数据指针
- * @param len  数据长度（字节）
- * @return esp_err_t 发送结果，ESP_OK表示成功
- */
-esp_err_t ble_send(const uint8_t* data, size_t len) {
-  int rc = 0;
-  if (data == NULL || len == 0) {
-    return ESP_ERR_INVALID_ARG;
-  }
-
-  // 遍历所有连接，向已订阅的客户端发送数据
-  for (int conn_handle = 0; conn_handle <= CONFIG_BT_NIMBLE_MAX_CONNECTIONS; conn_handle++) {
-    if (conn_handle_subs[conn_handle]) {
-      // 检查该连接是否已订阅通知
-      // 将数据封装到协议栈的 mbuf 中
-      struct os_mbuf* txom = ble_hs_mbuf_from_flat(data, len);
-      if (txom == NULL) {
-        MODLOG_DFLT(ERROR, "Failed to allocate mbuf for sending");
-        continue;
-      }
-
-      // 关键调用：发送通知
-      rc = ble_gatts_notify_custom(conn_handle, ble_svc_gatt_read_val_handle, txom);
-
-      if (rc == 0) {
-        MODLOG_DFLT(INFO, "Notification sent successfully to conn_handle=%d", conn_handle);
-      }
-      else {
-        MODLOG_DFLT(ERROR, "Failed to send notification to conn_handle=%d, rc=%d", conn_handle, rc);
-        // 释放分配失败时的 mbuf
-        os_mbuf_free_chain(txom);
-      }
-    }
-  }
-  return (rc == 0) ? ESP_OK : ESP_FAIL;
-}
-
 static void robot_control_frame_parsing_task(void* pvParameters) {
-  MODLOG_DFLT(INFO, "BLE server UART_task started\n");
+  MODLOG_DFLT(INFO, "BLE server started");
   buffer_t buffer;
   for (;;) {
     if (xQueueReceive(buffer_queue, &buffer, portMAX_DELAY)) {
-      MODLOG_DFLT(INFO, "收到数据包，长度: %d 字节, 数据地址: %p", buffer.length, buffer.data);
+      MODLOG_DFLT(INFO, "收到数据包，长度: %d 字节, 数据地址: %p", buffer.pos, buffer.data);
 
 #ifdef DEBUG_PRINT_DATA
       ESP_LOG_BUFFER_HEX("BLE_RX", buffer.data, buffer.length);
@@ -467,4 +416,43 @@ void ble_init(void) {
   /* XXX Need to have template for store */
   ble_store_config_init();
   nimble_port_freertos_init(ble_server_host_task);
+}
+
+/**
+ * @param buffer buffer
+ * @return esp_err_t 发送结果，ESP_OK表示成功
+ */
+esp_err_t ble_send(const uint8_t* buffer, size_t length) {
+  if (buffer == NULL || length == 0) {
+    return ESP_ERR_INVALID_ARG;
+  }
+
+  int rc = 0;
+
+  // 遍历所有连接，向已订阅的客户端发送数据
+  for (int conn_handle = 0; conn_handle <= CONFIG_BT_NIMBLE_MAX_CONNECTIONS; conn_handle++) {
+    if (conn_handle_subs[conn_handle]) {
+      // 检查该连接是否已订阅通知
+      // 将数据封装到协议栈的 mbuf 中
+      struct os_mbuf* txom = ble_hs_mbuf_from_flat(buffer, length);
+      if (txom == NULL) {
+        MODLOG_DFLT(ERROR, "Failed to allocate mbuf for sending");
+        continue;
+      }
+
+      // 关键调用：发送通知
+      rc = ble_gatts_notify_custom(conn_handle, ble_svc_gatt_read_val_handle, txom);
+
+      if (rc == 0) {
+        MODLOG_DFLT(INFO, "Notification sent successfully to conn_handle=%d", conn_handle);
+      }
+      else {
+        MODLOG_DFLT(ERROR, "Failed to send notification to conn_handle=%d, rc=%d", conn_handle, rc);
+        // 释放分配失败时的 mbuf
+        os_mbuf_free_chain(txom);
+      }
+    }
+  }
+
+  return rc == 0 ? ESP_OK : ESP_FAIL;
 }

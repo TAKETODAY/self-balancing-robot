@@ -13,22 +13,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see [https://www.gnu.org/licenses/]
 
+#pragma once
 
-#ifndef BLE_H
-#define BLE_H
+#include <stdint.h>
+#include <stddef.h>
+#include <stdbool.h>
+#include <string.h>
 
-#include <protocol/frame.h>
+#include "frame.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-void ble_init();
-
-esp_err_t ble_send(const uint8_t* buffer, size_t length);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif //BLE_H
+#include <netinet/in.h>

@@ -1,4 +1,4 @@
-// Copyright 2025 the original author or authors.
+// Copyright 2025 -2026 the original author or authors.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -82,4 +82,9 @@ void robot_init() {
   ble_init();
 
   xTaskCreate(heart_rate_task, "Heart Rate", 4 * 1024, nullptr, 5, nullptr);
+}
+
+void on_report_timer_callback(TimerHandle_t xTimer) {
+  sensor_data_t sensors;
+
 }
