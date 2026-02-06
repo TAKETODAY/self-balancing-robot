@@ -37,7 +37,8 @@ idf_component_register(SRCS
     mpu6050.c
     robot.cpp
 
-    ble/ble.c
+    ble/server.c
+    ble/ble_err.c
     ble/heart_rate_mock.c
 
     esp/io.cpp
@@ -45,6 +46,9 @@ idf_component_register(SRCS
     esp/gpio.cpp
     esp/misc.cpp
     esp/serial.cpp
+
+    robot/error.c
+    robot/error_string.c
 
     protocol/format.c
 

@@ -1,4 +1,4 @@
-// Copyright 2025 -2026 the original author or authors.
+// Copyright 2025 - 2026 the original author or authors.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -30,10 +30,19 @@
 static int ble_server_gap_event(struct ble_gap_event* event, void* arg);
 static uint8_t own_addr_type;
 
-static bool conn_handle_subs[CONFIG_BT_NIMBLE_MAX_CONNECTIONS + 1];
 static uint16_t ble_svc_gatt_read_val_handle;
+static int conn_handle;
 
 QueueHandle_t buffer_queue = NULL;
+
+typedef struct {
+
+  ble_data_callback_t callback;
+} handle_t;
+
+static handle_t this = {
+  .callback = nullptr
+};
 
 void ble_store_config_init(void);
 
@@ -157,7 +166,7 @@ static int ble_server_gap_event(struct ble_gap_event* event, void* arg) {
       ble_server_print_conn_desc(&event->disconnect.conn);
       MODLOG_DFLT(INFO, "\n");
 
-      conn_handle_subs[event->disconnect.conn.conn_handle] = false;
+      conn_handle = -1;
 
       /* Connection terminated; resume advertising. */
       ble_server_advertise();
@@ -185,16 +194,11 @@ static int ble_server_gap_event(struct ble_gap_event* event, void* arg) {
       return 0;
 
     case BLE_GAP_EVENT_SUBSCRIBE:
-      MODLOG_DFLT(INFO, "subscribe event; conn_handle=%d attr_handle=%d "
-        "reason=%d prevn=%d curn=%d previ=%d curi=%d\n",
-        event->subscribe.conn_handle,
-        event->subscribe.attr_handle,
-        event->subscribe.reason,
-        event->subscribe.prev_notify,
-        event->subscribe.cur_notify,
-        event->subscribe.prev_indicate,
+      MODLOG_DFLT(INFO, "subscribe event; conn_handle=%d attr_handle=%d reason=%d prevn=%d curn=%d previ=%d curi=%d\n",
+        event->subscribe.conn_handle, event->subscribe.attr_handle, event->subscribe.reason,
+        event->subscribe.prev_notify, event->subscribe.cur_notify, event->subscribe.prev_indicate,
         event->subscribe.cur_indicate);
-      conn_handle_subs[event->subscribe.conn_handle] = true;
+      conn_handle = event->subscribe.conn_handle;
       return 0;
 
     default:
@@ -252,15 +256,15 @@ static int ble_svc_gatt_handler(uint16_t conn_handle, uint16_t attr_handle, stru
         return -1;
       }
 
-      os_mbuf_copydata(ctxt->om, 0, om_len, rx_buffer);
-
-      const buffer_t buffer = { .data = rx_buffer, .pos = om_len };
-      if (xQueueSend(buffer_queue, &buffer, 0) != pdTRUE) {
-        MODLOG_DFLT(WARN, "BLE RX 队列已满，丢弃数据包");
+      if (this.callback) {
+        this.callback(rx_buffer, om_len);
       }
       else {
-        MODLOG_DFLT(DEBUG, "数据包已放入队列等待处理");
+        return BLE_NOT_INITIALIZED;
       }
+
+      os_mbuf_copydata(ctxt->om, 0, om_len, rx_buffer);
+
 
       break;
     default:
@@ -339,46 +343,20 @@ int gatt_svr_init(void) {
   return 0;
 }
 
-static void robot_control_frame_parsing_task(void* pvParameters) {
-  MODLOG_DFLT(INFO, "BLE server started");
-  buffer_t buffer;
-  for (;;) {
-    if (xQueueReceive(buffer_queue, &buffer, portMAX_DELAY)) {
-      MODLOG_DFLT(INFO, "收到数据包，长度: %d 字节, 数据地址: %p", buffer.pos, buffer.data);
-
-#ifdef DEBUG_PRINT_DATA
-      ESP_LOG_BUFFER_HEX("BLE_RX", buffer.data, buffer.length);
-#endif
-
-      free(buffer.data);
-    }
-    else {
-      // 正常情况下，portMAX_DELAY 会导致任务阻塞，不会走到这里。
-      MODLOG_DFLT(ERROR, "从队列接收数据失败（不应发生）。\n");
-    }
-  }
-  vTaskDelete(NULL);
-}
-
-
-void ble_init(void) {
+void ble_init(ble_data_callback_t callback) {
   esp_err_t ret = nimble_port_init();
   if (ret != ESP_OK) {
     MODLOG_DFLT(ERROR, "Failed to init nimble %d \n", ret);
     return;
   }
 
-  /* Initialize connection_handle array */
-  for (int i = 0; i <= CONFIG_BT_NIMBLE_MAX_CONNECTIONS; i++) {
-    conn_handle_subs[i] = false;
-  }
+  this.callback = callback;
+  conn_handle = -1;
 
   buffer_queue = xQueueCreate(BLE_RX_QUEUE_LEN, sizeof(buffer_t));
   if (buffer_queue == NULL) {
     MODLOG_DFLT(ERROR, "Failed to create BLE RX queue!\n");
   }
-
-  xTaskCreate(robot_control_frame_parsing_task, "robot_ctrl", 4096, NULL, 8, NULL);
 
   /* Initialize the NimBLE host configuration. */
   ble_hs_cfg.reset_cb = ble_server_on_reset;
@@ -420,39 +398,36 @@ void ble_init(void) {
 
 /**
  * @param buffer buffer
- * @return esp_err_t 发送结果，ESP_OK表示成功
+ * @param length length
+ * @see ble_error_t
  */
-esp_err_t ble_send(const uint8_t* buffer, size_t length) {
+ble_error_t ble_send(const uint8_t* buffer, const size_t length) {
   if (buffer == NULL || length == 0) {
-    return ESP_ERR_INVALID_ARG;
+    return BLE_INVALID_PARAM;
   }
 
-  int rc = 0;
-
-  // 遍历所有连接，向已订阅的客户端发送数据
-  for (int conn_handle = 0; conn_handle <= CONFIG_BT_NIMBLE_MAX_CONNECTIONS; conn_handle++) {
-    if (conn_handle_subs[conn_handle]) {
-      // 检查该连接是否已订阅通知
-      // 将数据封装到协议栈的 mbuf 中
-      struct os_mbuf* txom = ble_hs_mbuf_from_flat(buffer, length);
-      if (txom == NULL) {
-        MODLOG_DFLT(ERROR, "Failed to allocate mbuf for sending");
-        continue;
-      }
-
-      // 关键调用：发送通知
-      rc = ble_gatts_notify_custom(conn_handle, ble_svc_gatt_read_val_handle, txom);
-
-      if (rc == 0) {
-        MODLOG_DFLT(INFO, "Notification sent successfully to conn_handle=%d", conn_handle);
-      }
-      else {
-        MODLOG_DFLT(ERROR, "Failed to send notification to conn_handle=%d, rc=%d", conn_handle, rc);
-        // 释放分配失败时的 mbuf
-        os_mbuf_free_chain(txom);
-      }
+  if (conn_handle != -1) {
+    struct os_mbuf* txom = ble_hs_mbuf_from_flat(buffer, length);
+    if (txom == NULL) {
+      return BLE_BUFFER_ALLOCATE_FAILED;
     }
-  }
 
-  return rc == 0 ? ESP_OK : ESP_FAIL;
+    int rc = ble_gatts_notify_custom(conn_handle, ble_svc_gatt_read_val_handle, txom);
+    if (rc == 0) {
+      return BLE_OK;
+    }
+    else if (rc == BLE_HS_ENOMEM) {
+      return BLE_OUT_OF_MEMORY;
+    }
+    else if (rc == BLE_HS_EMSGSIZE) {
+      return BLE_DATA_TOO_LONG;
+    }
+    else if (rc == BLE_HS_ENOTCONN) {
+      return BLE_NOT_CONNECTED;
+    }
+    MODLOG_DFLT(ERROR, "Failed to send notification to conn_handle=%d, rc=%d", conn_handle, rc);
+    os_mbuf_free_chain(txom);
+    return BLE_WRITE_FAILED;
+  }
+  return BLE_NOT_CONNECTED;
 }

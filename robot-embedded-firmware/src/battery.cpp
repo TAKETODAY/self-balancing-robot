@@ -1,4 +1,4 @@
-// Copyright 2025 the original author or authors.
+// Copyright 2025 - 2026 the original author or authors.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -139,5 +139,5 @@ float battery_voltage_read() {
   else {
     voltage = adc_raw;
   }
-  return (float) voltage * 3.97f / 1000.0f;
+  return static_cast<float>(voltage) * 3.97f / 1000.0f;
 }

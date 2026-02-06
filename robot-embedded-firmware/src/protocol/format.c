@@ -1,4 +1,4 @@
-// Copyright 2025 -2026 the original author or authors.
+// Copyright 2025 the original author or authors.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -116,10 +116,6 @@ bool deserialize_robot_message(robot_message_t* msg, buffer_t* buf) {
         sizeof(msg->body.config.str_value))) {
         goto rollback;
       }
-      break;
-
-    case MESSAGE_STATUS:
-      // 无载荷
       break;
 
     default:
