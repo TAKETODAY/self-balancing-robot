@@ -21,7 +21,6 @@
 extern "C" {
 
 
-
 #endif
 
 typedef enum : uint8_t {
@@ -33,8 +32,8 @@ typedef enum : uint8_t {
   BUFFER_INVALID_ARG = 0x02,
 
   // 缓冲区操作错误 (0x10-0x1F)
-  BUFFER_OVERFLOW = 0x10, // 缓冲区溢出
-  BUFFER_UNDERFLOW = 0x11, // 缓冲区下溢
+  BUFFER_OVERFLOW = 0x10,
+  BUFFER_EOF = 0x11,
   BUFFER_INSUFFICIENT_SPACE = 0x12, // 空间不足
   BUFFER_OUT_OF_BOUNDS = 0x13, // 访问越界
 

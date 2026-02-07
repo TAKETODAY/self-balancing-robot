@@ -122,7 +122,7 @@ inline bool buffer_is_full(const buffer_t* buf) {
 bool buffer_write_raw(buffer_t* buf, const void* data, const size_t size) {
   buffer_assert(buf && buf->data, buf, BUFFER_NULL_POINTER);
   buffer_assert(data || size == 0, buf, BUFFER_NULL_POINTER);
-  buffer_assert(buf->pos + size <= buf->capacity, buf, BUFFER_OVERFLOW);
+  buffer_assert(buf->pos + size <= buf->capacity, buf, BUFFER_EOF);
 
   memcpy(&buf->data[buf->pos], data, size);
   buf->pos += size;
@@ -131,8 +131,8 @@ bool buffer_write_raw(buffer_t* buf, const void* data, const size_t size) {
 
 bool buffer_read_raw(buffer_t* buf, void* data, const size_t size) {
   buffer_assert(buf && buf->data, buf, BUFFER_NULL_POINTER);
-  buffer_assert(!data && size > 0, buf, BUFFER_NULL_POINTER);
-  buffer_assert(buf->pos + size <= buf->capacity, buf, BUFFER_OVERFLOW);
+  buffer_assert(data && size > 0, buf, BUFFER_NULL_POINTER);
+  buffer_assert(buf->pos + size <= buf->capacity, buf, BUFFER_EOF);
 
   memcpy(data, &buf->data[buf->pos], size);
   buf->pos += size;
@@ -141,7 +141,7 @@ bool buffer_read_raw(buffer_t* buf, void* data, const size_t size) {
 
 bool buffer_write_u8(buffer_t* buf, const uint8_t value) {
   buffer_assert(buf && buf->data, buf, BUFFER_NULL_POINTER);
-  buffer_assert(buf->pos + 1 <= buf->capacity, buf, BUFFER_OVERFLOW);
+  buffer_assert(buf->pos + 1 <= buf->capacity, buf, BUFFER_EOF);
 
   buf->data[buf->pos++] = value;
   return true;
@@ -185,7 +185,7 @@ inline bool buffer_write_bool(buffer_t* buf, const bool value) {
 
 inline bool buffer_read_u8(buffer_t* buf, uint8_t* value) {
   buffer_assert(buf && buf->data, buf, BUFFER_NULL_POINTER);
-  buffer_assert(buf->pos + 1 <= buf->capacity, buf, BUFFER_OVERFLOW);
+  buffer_assert(buf->pos + 1 <= buf->capacity, buf, BUFFER_EOF);
 
   *value = buf->data[buf->pos++];
   return true;
@@ -278,7 +278,7 @@ bool buffer_read_string(buffer_t* buf, char* str) {
 
 bool buffer_skip(buffer_t* buf, size_t size) {
   buffer_assert(buf && buf->data, buf, BUFFER_NULL_POINTER);
-  buffer_assert(buf->pos + size <= buf->capacity, buf, BUFFER_OVERFLOW);
+  buffer_assert(buf->pos + size <= buf->capacity, buf, BUFFER_EOF);
 
   buf->pos += size;
   return true;

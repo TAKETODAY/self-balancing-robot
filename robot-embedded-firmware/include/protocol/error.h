@@ -29,7 +29,11 @@ buffer_error_t buffer_clear_error(buffer_t* buf);
 
 const char* buffer_error_to_string(buffer_error_t error);
 
-void buffer_print_error(const buffer_t* buf, const char* prefix);
+#define BUFFER_PRINT_ERROR(buf, format, ...) \
+  do { \
+      ESP_LOGE("BUFFER", "ERROR: 0x%02X: %s | %s:%d | " format, \
+            buf.last_error.code, buffer_error_to_string(buf.last_error.code), buf.last_error.file, buf.last_error.line, ##__VA_ARGS__); \
+  } while(0)
 
 #ifdef __cplusplus
 }

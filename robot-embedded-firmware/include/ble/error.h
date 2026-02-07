@@ -75,18 +75,6 @@ const char* ble_error_to_string(ble_error_t err);
         ESP_LOGE("BLE", "错误 0x%02X: %s", err, ble_error_to_string(err))
 #endif
 
-/**
- * @brief 检查错误并记录（链式操作常用）
- */
-#define BLE_CHECK_AND_LOG(result, fallback) \
-    do { \
-        ble_error_t __err = (result); \
-        if (__err != BLE_OK) { \
-            BLE_LOG_ERROR(__err, ""); \
-            return (fallback); \
-        } \
-    } while(0)
-
 
 #ifdef __cplusplus
 }
