@@ -29,13 +29,13 @@ set(FOC_FILES
 
 idf_component_register(SRCS
     main.cpp
-    servos.cpp
     battery.cpp
     AttitudeSensor.cpp
     STSServoDriver.cpp
     LQRController.cpp
     mpu6050.c
     robot.cpp
+    stack_monitor.cpp
 
     ble/server.c
     ble/error.c
@@ -47,6 +47,7 @@ idf_component_register(SRCS
     esp/misc.cpp
     esp/serial.cpp
 
+    robot/leg.cpp
     robot/error.c
     robot/error_string.c
 

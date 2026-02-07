@@ -13,30 +13,18 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see [https://www.gnu.org/licenses/]
 
+#pragma once
 
-// #include "esp_log.h"
-// #include "nvs_flash.h"
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
 
-#include "nvs_flash.h"
-#include "sdkconfig.h"
+typedef struct {
+  TaskHandle_t task_handle;
+  const char* task_name;
+  UBaseType_t min_stack_free; // 最低的栈空闲量
+  UBaseType_t initial_stack; // 初始栈大小
+} task_stack_info_t;
 
-#include "robot.hpp"
-
-/**
- * Declare the symbol pointing to the former implementation of esp_restart function
- */
-// extern void __real_esp_restart(void);
-
-/**
- * Redefine esp_restart function to print a message before actually restarting
- */
-// void __wrap_esp_restart(void) {
-//   printf("Restarting in progress...\n");
-//   /* Call the former implementation to actually restart the board */
-//   __real_esp_restart();
-// }
-
-
-extern "C" void app_main(void) {
-  robot_init();
-}
+void init_stack_monitor();
+void register_task_for_monitoring(TaskHandle_t task, const char* name);
+void print_stack_usage();

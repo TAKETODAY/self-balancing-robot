@@ -68,9 +68,9 @@ typedef enum : uint8_t {
 
 
 typedef struct {
-  int16_t left_wheel_speed;
-  int16_t right_wheel_speed;
-  uint8_t leg_height;
+  uint16_t left_wheel_speed;
+  uint16_t right_wheel_speed;
+  uint8_t leg_height_percentage;
 } control_message_t;
 
 typedef struct {
@@ -97,7 +97,44 @@ typedef struct {
 
 } config_message_t;
 
-typedef struct __attribute__((packed)) {
+typedef struct {
+  config_type_t type;
+} config_get_message_t;
+
+typedef struct {
+  config_type_t type;
+
+  union {
+    config_pid_message_t pid;
+    int32_t i32;
+    int16_t i16;
+    int8_t i8;
+
+    float f;
+    double d;
+  } data;
+
+} config_response_message_t;
+
+typedef struct {
+  config_type_t type;
+
+  union {
+    config_pid_message_t pid;
+
+    int32_t i32;
+    int16_t i16;
+    int8_t i8;
+
+    // char str_value[32];
+
+    float f;
+    double d;
+  } data;
+
+} config_set_message_t;
+
+typedef struct {
   uint16_t sequence;
   message_type_t type;
   uint8_t flags;
@@ -105,6 +142,7 @@ typedef struct __attribute__((packed)) {
   union {
     control_message_t control;
     config_message_t config;
+    config_set_message_t set_config;
   } body;
 
 } robot_message_t;

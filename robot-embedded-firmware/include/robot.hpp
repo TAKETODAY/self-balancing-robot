@@ -1,4 +1,4 @@
-// Copyright 2025 the original author or authors.
+// Copyright 2025 - 2026 the original author or authors.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -16,16 +16,13 @@
 #pragma once
 
 #include "event.hpp"
+#include "robot/leg.h"
+
 #include "foc/BLDCMotor.h"
 
-#define SERVO0_MIN  2050 // 舵机1最低位置
-#define SERVO1_MIN  2050 // 舵机2最低位置
-#define SERVO0_MAX (2047 + 12 + 8.4 * (35 + 10)) // 2438 舵机1最高 2600
-#define SERVO1_MAX (2047 - 12 - 8.4 * (35 + 10)) // 1658 舵机2最高 1490
-#define SERVO0_ACC 100 // 舵机1加速度，不能太快，否则影响其他动作平衡
-#define SERVO1_ACC 100 // 舵机2加速度
-#define SERVO0_SPEED 400 // 舵机1速度，不能太快，否则影响其他动作平衡
-#define SERVO1_SPEED 400 // 舵机2速度
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
 typedef enum {
@@ -55,7 +52,6 @@ typedef enum {
   STATE_EMERGENCY_STOP,
 } RobotState;
 
-
 typedef struct {
   int height = 38;
   int roll;
@@ -68,11 +64,22 @@ typedef struct {
   int joyx;
   int joyx_last;
   bool go;
-  int acc0 = SERVO0_ACC; // 舵机1加速度
-  int acc1 = SERVO1_ACC; // 舵机2加速度
-  int speed0 = SERVO0_SPEED; // 舵机1速度
-  int speed1 = SERVO1_SPEED; // 舵机2速度
 } Wrobot;
+
+// typedef struct {
+//   int joyx; // 左右转向（-100~100），正面看，正数：向左转，负数，向右转
+//   int joyy; // 前后移动（-100~100）
+//   int jump; // 跳跃标记（0=不跳，1=跳）
+//   float roll_adjust; // 左右平衡调整（-5~5），基数0，正面看，正数：向右摆动；负数：向左摆动
+//   float leg_height_base; // 腿部基准高度（20~60，核心高度控制参数）,基数20，变小升高，变大降低
+//   unsigned long stepDuration; // 步骤持续时间（毫秒）
+//   unsigned long pauseDuration; // 步骤执行后的停顿时间（毫秒）
+//   // 舵机参数：无需默认值，动作集定义时按需填写，不填则用结构体默认值（或省略）
+//   int acc0; // 舵机1加速度 0-250
+//   int acc1; // 舵机2加速度 0-250
+//   int speed0; // 舵机1速度 0-500
+//   int speed1; // 舵机2速度 0-500
+// } ActionStep;
 
 extern Wrobot wrobot;
 
@@ -87,3 +94,9 @@ typedef enum {
 } QR_State_t;
 
 void robot_init();
+
+void robot_set_leg_height(uint8_t percentage);
+
+#ifdef __cplusplus
+}
+#endif

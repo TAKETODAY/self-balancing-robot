@@ -22,7 +22,6 @@
 #include "AttitudeSensor.hpp"
 #include "LQRController.hpp"
 #include "nvs_flash.h"
-#include "servos.hpp"
 
 #include "esp/serial.hpp"
 #include "ble/gatt_svc.h"
@@ -42,7 +41,7 @@ LQRController lqr_controller;
 #define MAX_BLE_PACKET_SIZE    512
 #define RX_QUEUE_LEN 100
 
-static QueueHandle_t buffer_queue = xQueueCreate(RX_QUEUE_LEN, sizeof(robot_message_t));
+static QueueHandle_t buffer_queue = nullptr;
 
 static ble_error_t onDataReceived(uint8_t* rx_buffer, uint16_t len);
 
@@ -81,35 +80,14 @@ void heart_rate_task(void* param) {
 
 static void handle_robot_message(robot_message_t* message) {
   switch (message->type) {
-    case MESSAGE_CONTROL:
-
+    case MESSAGE_CONTROL: {
+      const auto control = message->body.control;
+      robot_set_leg_height(control.leg_height_percentage);
       break;
-    case MESSAGE_EMERGENCY_STOP:
-      break;
-    case MESSAGE_CONFIG_SET:
-      break;
-    case MESSAGE_CONFIG_GET:
-      break;
-    case MESSAGE_FIRMWARE_INFO:
-
-      break;
-    case MESSAGE_STATUS_REPORT:
-
-      break;
-    case MESSAGE_ACTION_PLAY:
-      break;
-    case MESSAGE_ACK:
-      break;
-    case MESSAGE_ERROR:
-      break;
-    case MESSAGE_SENSOR_DATA:
-      break;
-
+    }
     default:
-
       break;
   }
-
 }
 
 static void robot_message_parsing_task(void* pvParameters) {
@@ -130,10 +108,12 @@ static void robot_message_parsing_task(void* pvParameters) {
 }
 
 void robot_init() {
+  buffer_queue = xQueueCreate(RX_QUEUE_LEN, sizeof(robot_message_t));
+
   nvs_init();
 
   serial.begin(115200);
-  servos_init();
+  robot_leg_init();
 
   lqr_controller.begin();
 
@@ -141,12 +121,13 @@ void robot_init() {
 
   ble_server_init(onDataReceived, MAX_BLE_PACKET_SIZE);
 
-  xTaskCreate(heart_rate_task, "status_report", 1024, nullptr, 5, nullptr);
+  xTaskCreate(heart_rate_task, "status_report", 4096, nullptr, 5, nullptr);
   xTaskCreate(robot_message_parsing_task, "robot_ctrl", 4096, nullptr, 8, nullptr);
 }
 
 static ble_error_t onDataReceived(uint8_t* rx_buffer, uint16_t len) {
-  robot_message_t message;
+  log_info("onDataReceived: %u", len);
+  robot_message_t message{};
   auto buffer = buffer_create(rx_buffer, len);
 
   if (robot_message_deserialize(&message, &buffer)) {
@@ -164,4 +145,8 @@ static ble_error_t onDataReceived(uint8_t* rx_buffer, uint16_t len) {
 void on_report_timer_callback(TimerHandle_t xTimer) {
   sensor_data_t sensors;
 
+}
+
+void robot_set_leg_height(const uint8_t percentage) {
+  robot_leg_set_height_percentage(percentage);
 }

@@ -13,30 +13,26 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see [https://www.gnu.org/licenses/]
 
+#pragma once
 
-// #include "esp_log.h"
-// #include "nvs_flash.h"
+#include "defs.h"
 
-#include "nvs_flash.h"
-#include "sdkconfig.h"
+// @formatter:off
+#ifdef __cplusplus
+extern "C" {
+#endif
+//@formatter:on
 
-#include "robot.hpp"
+void robot_leg_init();
 
-/**
- * Declare the symbol pointing to the former implementation of esp_restart function
- */
-// extern void __real_esp_restart(void);
+void robot_leg_set_acceleration(uint8_t acceleration);
 
-/**
- * Redefine esp_restart function to print a message before actually restarting
- */
-// void __wrap_esp_restart(void) {
-//   printf("Restarting in progress...\n");
-//   /* Call the former implementation to actually restart the board */
-//   __real_esp_restart();
-// }
+void robot_leg_set_speed(int left_speed, int right_speed);
+
+//
+void robot_leg_set_height_percentage(uint8_t percentage);
 
 
-extern "C" void app_main(void) {
-  robot_init();
+#ifdef __cplusplus
 }
+#endif
