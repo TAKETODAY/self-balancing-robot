@@ -1,4 +1,4 @@
-// Copyright 2025 the original author or authors.
+// Copyright 2025 - 2026 the original author or authors.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -13,45 +13,36 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see [https://www.gnu.org/licenses/]
 
-#ifndef COMMON_H
-#define COMMON_H
+#pragma once
 
-/* STD APIs */
-#include <assert.h>
 #include <stdbool.h>
-#include <stdio.h>
-#include <string.h>
-
-/* ESP APIs */
-#include "esp_log.h"
-#include "nvs_flash.h"
-#include "sdkconfig.h"
-
-/* FreeRTOS APIs */
-#include <freertos/FreeRTOS.h>
-#include <freertos/task.h>
-
-/* NimBLE stack APIs */
-#include "host/ble_hs.h"
-#include "host/ble_uuid.h"
-#include "host/util/util.h"
 #include "nimble/ble.h"
-#include "nimble/nimble_port.h"
-#include "nimble/nimble_port_freertos.h"
+#include "error.h"
 
-/* Defines */
-#define TAG "NimBLE_GATT_Server"
-#define DEVICE_NAME "NimBLE_GATT"
-
+// @formatter:off
 #ifdef __cplusplus
 extern "C" {
-
 #endif
+//@formatter:on
 
-// void ble_init();
+// 16 Bit SPP Service UUID
+#define BLE_SVC_SPP_UUID16           0xABF0
+
+// 16 Bit SPP Service Characteristic UUID
+#define BLE_SVC_SPP_CHR_UUID16       0xABF1
+
+// Callback function type for handling received BLE data
+typedef void (*ble_data_callback_t)(uint8_t* data, size_t len);
+
+// Initialize the BLE server with a callback function for data reception
+void ble_server_init(ble_data_callback_t callback);
+
+// Send data over BLE connection
+ble_error_t ble_server_send(uint8_t* buffer, size_t length);
+
+// Check if BLE client is currently connected
+bool ble_server_is_connected();
 
 #ifdef __cplusplus
 }
 #endif
-
-#endif // COMMON_H

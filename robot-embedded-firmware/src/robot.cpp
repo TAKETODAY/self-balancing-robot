@@ -20,7 +20,6 @@
 #include "battery.hpp"
 #include "esp_log.h"
 #include "AttitudeSensor.hpp"
-#include "ble.h"
 #include "LQRController.hpp"
 #include "nvs_flash.h"
 #include "servos.hpp"
@@ -29,15 +28,20 @@
 #include "ble/gatt_svc.h"
 #include "ble/heart_rate.h"
 
+#include "protocol.h"
+#include "ble.h"
+
 // Wrobot wrobot;
 
-static const char* TAG = "default";
+static auto TAG = "default";
 
 Wrobot wrobot;
 
 LQRController lqr_controller;
 
-QueueHandle_t buffer_queue = NULL;
+QueueHandle_t buffer_queue = nullptr;
+
+#define RX_QUEUE_LEN 100
 
 static void onDataReceived(uint8_t* data, size_t len);
 
@@ -62,8 +66,8 @@ void heart_rate_task(void* param) {
     uint8_t val = get_heart_rate();
     log_info("heart rate updated to %d", val);
 
-    if (auto err = ble_send(&val, 1); err) {
-      log_warn("ble send failed: %s", ble_error_to_string(err));
+    if (auto err = ble_server_send(&val, 1); err) {
+      BLE_LOG_ERROR(err, "ble send failed");
     }
 
     /* Sleep */
@@ -93,7 +97,7 @@ static void robot_control_frame_parsing_task(void* pvParameters) {
       MODLOG_DFLT(ERROR, "从队列接收数据失败（不应发生）。\n");
     }
   }
-  vTaskDelete(NULL);
+  vTaskDelete(nullptr);
 }
 
 void robot_init() {
@@ -106,9 +110,14 @@ void robot_init() {
 
   battery_init();
 
-  ble_init(onDataReceived);
+  ble_server_init(onDataReceived);
 
-  xTaskCreate(heart_rate_task, "Heart Rate", 4 * 1024, nullptr, 5, nullptr);
+  buffer_queue = xQueueCreate(RX_QUEUE_LEN, sizeof(buffer_t));
+  if (buffer_queue == nullptr) {
+    log_error("Failed to create RX queue!");
+  }
+
+  xTaskCreate(heart_rate_task, "status_report", 4 * 1024, nullptr, 5, nullptr);
   xTaskCreate(robot_control_frame_parsing_task, "robot_ctrl", 4096, nullptr, 8, nullptr);
 }
 
@@ -118,7 +127,6 @@ static void onDataReceived(uint8_t* const data, const size_t len) {
     .capacity = len,
     .pos = len,
     .last_error = {},
-    .error_count = 0
   };
 
   if (xQueueSend(buffer_queue, &buffer, 0) != pdTRUE) {

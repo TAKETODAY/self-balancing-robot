@@ -1,4 +1,4 @@
-// Copyright 2025 -2026 the original author or authors.
+// Copyright 2025 - 2026 the original author or authors.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,14 +15,12 @@
 
 #pragma once
 
-#include <stdint.h>
-#include <inttypes.h>
+#include "defs.h"
 #include "buffer.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
 
 #define FLAG_DIRECTION    (1 << 0)  // 位0: 方向
 #define FLAG_NEED_ACK     (1 << 1)  // 位1: 需要ACK
@@ -32,7 +30,6 @@ extern "C" {
 #define FLAG_COMPRESSED   (1 << 5)  // 位5: 压缩
 #define FLAG_URGENT       (1 << 6)  // 位6: 紧急
 #define FLAG_RESERVED     (1 << 7)  // 位7: 保留
-
 
 
 typedef enum : uint8_t {
@@ -100,8 +97,7 @@ typedef struct {
 
 } config_message_t;
 
-
-typedef struct {
+typedef struct __attribute__((packed)) {
   uint16_t sequence;
   message_type_t type;
   uint8_t flags;
@@ -111,7 +107,6 @@ typedef struct {
     config_message_t config;
   } body;
 
-  uint8_t checksum;
 } robot_message_t;
 
 
@@ -134,6 +129,8 @@ void message_frame(const robot_message_t* message) {
   }
 }
 
+bool robot_message_serialize(robot_message_t* msg, buffer_t* buf);
+bool robot_message_deserialize(robot_message_t* msg, buffer_t* buf);
 
 #ifdef __cplusplus
 }

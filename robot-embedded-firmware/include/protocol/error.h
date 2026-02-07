@@ -1,4 +1,4 @@
-// Copyright 2025 the original author or authors.
+// Copyright 2025 - 2026 the original author or authors.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -13,31 +13,24 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see [https://www.gnu.org/licenses/]
 
-#ifndef H_BLESPPSERVER_
-#define H_BLESPPSERVER_
+#pragma once
 
-#include <stdbool.h>
-#include "nimble/ble.h"
-#include "modlog/modlog.h"
-// #include "esp_peripheral.h"
+#include "buffer_def.h"
+
 #ifdef __cplusplus
 extern "C" {
-
 #endif
 
-/* 16 Bit SPP Service UUID */
-#define BLE_SVC_SPP_UUID16                                  0xABF0
-// #define BLE_SVC_SPP_UUID16                                  0xFF10
+bool buffer_has_error(const buffer_t* buf);
 
-/* 16 Bit SPP Service Characteristic UUID */
-#define BLE_SVC_SPP_CHR_UUID16                              0xABF1
-// #define BLE_SVC_SPP_CHR_UUID16                              0xFF11
+error_info_t buffer_get_last_error(const buffer_t* buf);
 
-struct ble_hs_cfg;
-struct ble_gatt_register_ctxt;
+buffer_error_t buffer_clear_error(buffer_t* buf);
+
+const char* buffer_error_to_string(buffer_error_t error);
+
+void buffer_print_error(const buffer_t* buf, const char* prefix);
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

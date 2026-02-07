@@ -1,4 +1,4 @@
-// Copyright 2025 -2026 the original author or authors.
+// Copyright 2025 - 2026 the original author or authors.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,6 +15,6 @@
 
 #pragma once
 
-#include "protocol/frame.h"
-#include "protocol/format.h"
+#include "protocol/message.h"
 #include "protocol/buffer.h"
+#include "protocol/error.h"

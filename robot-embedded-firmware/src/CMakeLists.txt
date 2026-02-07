@@ -38,7 +38,7 @@ idf_component_register(SRCS
     robot.cpp
 
     ble/server.c
-    ble/ble_err.c
+    ble/error.c
     ble/heart_rate_mock.c
 
     esp/io.cpp
@@ -50,7 +50,9 @@ idf_component_register(SRCS
     robot/error.c
     robot/error_string.c
 
-    protocol/format.c
+    protocol/message.c
+    protocol/buffer.c
+    protocol/error.c
 
     ${FOC_FILES}
 

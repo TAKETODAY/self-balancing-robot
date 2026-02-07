@@ -22,10 +22,9 @@
 #include "host/util/util.h"
 #include "services/gap/ble_svc_gap.h"
 #include "services/gatt/ble_svc_gatt.h"
-#include "ble/spp_server.h"
-#include "ble.h"
 
-#define BLE_RX_QUEUE_LEN 100
+#include "ble/server.h"
+
 
 static int ble_server_gap_event(struct ble_gap_event* event, void* arg);
 static uint8_t own_addr_type;
@@ -33,7 +32,8 @@ static uint8_t own_addr_type;
 static uint16_t ble_svc_gatt_read_val_handle;
 static int conn_handle;
 
-QueueHandle_t buffer_queue = NULL;
+struct ble_hs_cfg;
+struct ble_gatt_register_ctxt;
 
 typedef struct {
 
@@ -343,7 +343,7 @@ int gatt_svr_init(void) {
   return 0;
 }
 
-void ble_init(ble_data_callback_t callback) {
+void ble_server_init(ble_data_callback_t callback) {
   esp_err_t ret = nimble_port_init();
   if (ret != ESP_OK) {
     MODLOG_DFLT(ERROR, "Failed to init nimble %d \n", ret);
@@ -352,11 +352,6 @@ void ble_init(ble_data_callback_t callback) {
 
   this.callback = callback;
   conn_handle = -1;
-
-  buffer_queue = xQueueCreate(BLE_RX_QUEUE_LEN, sizeof(buffer_t));
-  if (buffer_queue == NULL) {
-    MODLOG_DFLT(ERROR, "Failed to create BLE RX queue!\n");
-  }
 
   /* Initialize the NimBLE host configuration. */
   ble_hs_cfg.reset_cb = ble_server_on_reset;
@@ -401,7 +396,7 @@ void ble_init(ble_data_callback_t callback) {
  * @param length length
  * @see ble_error_t
  */
-ble_error_t ble_send(const uint8_t* buffer, const size_t length) {
+ble_error_t ble_server_send(uint8_t* const buffer, const size_t length) {
   if (buffer == NULL || length == 0) {
     return BLE_INVALID_PARAM;
   }
@@ -412,22 +407,21 @@ ble_error_t ble_send(const uint8_t* buffer, const size_t length) {
       return BLE_BUFFER_ALLOCATE_FAILED;
     }
 
-    int rc = ble_gatts_notify_custom(conn_handle, ble_svc_gatt_read_val_handle, txom);
-    if (rc == 0) {
-      return BLE_OK;
+    const int rc = ble_gatts_notify_custom(conn_handle, ble_svc_gatt_read_val_handle, txom);
+    switch (rc) {
+      case 0: return BLE_OK;
+      case BLE_HS_ENOMEM: return BLE_OUT_OF_MEMORY;
+      case BLE_HS_EMSGSIZE: return BLE_DATA_TOO_LONG;
+      case BLE_HS_ENOTCONN: return BLE_NOT_CONNECTED;
+      default:
+        MODLOG_DFLT(ERROR, "Failed to send notification to conn_handle=%d, rc=%d", conn_handle, rc);
+        os_mbuf_free_chain(txom);
+        return BLE_WRITE_FAILED;
     }
-    else if (rc == BLE_HS_ENOMEM) {
-      return BLE_OUT_OF_MEMORY;
-    }
-    else if (rc == BLE_HS_EMSGSIZE) {
-      return BLE_DATA_TOO_LONG;
-    }
-    else if (rc == BLE_HS_ENOTCONN) {
-      return BLE_NOT_CONNECTED;
-    }
-    MODLOG_DFLT(ERROR, "Failed to send notification to conn_handle=%d, rc=%d", conn_handle, rc);
-    os_mbuf_free_chain(txom);
-    return BLE_WRITE_FAILED;
   }
   return BLE_NOT_CONNECTED;
+}
+
+bool ble_server_is_connected() {
+  return conn_handle != -1;
 }
