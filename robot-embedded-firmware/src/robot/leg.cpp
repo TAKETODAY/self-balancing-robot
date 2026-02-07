@@ -60,6 +60,11 @@ static struct {
 
 };
 
+constexpr static byte ID[2] = { 1, 2 };
+
+static int positions[2];
+static int speeds[2];
+
 static void servosLoop(void* pvParameters) {
   ESP_LOGI(TAG, "servos looping");
 
@@ -89,8 +94,9 @@ void robot_leg_init() {
     servos.setMode(LEFT, STSMode::POSITION);
     servos.setMode(RIGHT, STSMode::POSITION);
 
-    // robot_leg_set_acceleration(SERVO1_ACC);
-    // robot_leg_set_height_percentage(50);
+    robot_leg_set_speed(SERVO0_SPEED, SERVO1_SPEED);
+    robot_leg_set_acceleration(SERVO1_ACC);
+    robot_leg_set_height_percentage(50);
 
     xTaskCreate(servosLoop, "servosLoop", 4096, nullptr, tskIDLE_PRIORITY, nullptr);
   }
@@ -110,6 +116,8 @@ void robot_leg_set_acceleration(const uint8_t acceleration) {
 void robot_leg_set_speed(const int left_speed, const int right_speed) {
   handle.left_speed = left_speed;
   handle.right_speed = right_speed;
+  speeds[0] = left_speed;
+  speeds[1] = right_speed;
   servos.setTargetVelocity(LEFT, left_speed);
   servos.setTargetVelocity(RIGHT, right_speed);
 }
@@ -127,6 +135,8 @@ void robot_leg_set_height_percentage(uint8_t percentage) {
   handle.left_position = SERVO0_MAX - left_pos;
   handle.right_position = SERVO1_MAX - right_pos;
 
-  servos.setTargetPosition(LEFT, handle.left_position);
-  servos.setTargetPosition(RIGHT, handle.right_position);
+  positions[0] = handle.left_position;
+  positions[1] = handle.right_position;
+
+  servos.setTargetPositions(2, ID, positions, speeds);
 }
