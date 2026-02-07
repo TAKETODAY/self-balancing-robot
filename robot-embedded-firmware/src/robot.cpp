@@ -93,7 +93,7 @@ static void robot_message_parsing_task(void* pvParameters) {
   for (;;) {
     robot_message_t message;
     if (xQueueReceive(buffer_queue, &message, portMAX_DELAY)) {
-      MODLOG_DFLT(INFO, "收到指令，type: %u, sequence: %u", message.type, message.sequence);
+      MODLOG_DFLT(INFO, "收到指令，type: %s, sequence: %u", message_type_to_string(message.type), message.sequence);
 
       handle_robot_message(&message);
     }
@@ -123,7 +123,6 @@ void robot_init() {
 }
 
 static ble_error_t onDataReceived(uint8_t* rx_buffer, uint16_t len) {
-  log_info("onDataReceived: %u", len);
   robot_message_t message{};
   auto buffer = buffer_create(rx_buffer, len);
 

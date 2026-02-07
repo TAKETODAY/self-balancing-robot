@@ -94,6 +94,23 @@ bool robot_message_deserialize(robot_message_t* msg, buffer_t* buf) {
          && deserialize_body(msg, buf);
 }
 
+
+const char* message_type_to_string(const message_type_t type) {
+  switch (type) {
+    case MESSAGE_CONTROL: return "CONTROL";
+    case MESSAGE_EMERGENCY_STOP: return "EMERGENCY_STOP";
+    case MESSAGE_CONFIG_SET: return "CONFIG_SET";
+    case MESSAGE_CONFIG_GET: return "CONFIG_GET";
+    case MESSAGE_FIRMWARE_INFO: return "FIRMWARE_INFO";
+    case MESSAGE_STATUS_REPORT: return "STATUS_REPORT";
+    case MESSAGE_ACTION_PLAY: return "ACTION_PLAY";
+    case MESSAGE_ACK: return "ACK";
+    case MESSAGE_ERROR: return "ERROR";
+    case MESSAGE_SENSOR_DATA: return "SENSOR_DATA";
+    default: return "UNKNOWN";
+  }
+}
+
 void test() {
   uint8_t data[32];
   buffer_t buf = buffer_create(data, 32);

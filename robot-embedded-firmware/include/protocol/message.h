@@ -20,6 +20,9 @@
 
 #ifdef __cplusplus
 extern "C" {
+
+
+
 #endif
 
 #define FLAG_DIRECTION    (1 << 0)  // 位0: 方向
@@ -155,6 +158,8 @@ typedef struct {
 
 bool robot_message_serialize(robot_message_t* msg, buffer_t* buf);
 bool robot_message_deserialize(robot_message_t* msg, buffer_t* buf);
+
+const char* message_type_to_string(message_type_t type);
 
 #ifdef __cplusplus
 }
