@@ -35,12 +35,12 @@ static int conn_handle;
 struct ble_hs_cfg;
 struct ble_gatt_register_ctxt;
 
-typedef struct {
+static struct {
 
+  uint16_t mtu;
   ble_data_callback_t callback;
-} handle_t;
-
-static handle_t this = {
+} this = {
+  .mtu = 0,
   .callback = nullptr
 };
 
@@ -122,7 +122,7 @@ static void ble_server_advertise(void) {
   memset(&adv_params, 0, sizeof adv_params);
   adv_params.conn_mode = BLE_GAP_CONN_MODE_UND;
   adv_params.disc_mode = BLE_GAP_DISC_MODE_GEN;
-  rc = ble_gap_adv_start(own_addr_type, NULL, BLE_HS_FOREVER, &adv_params, ble_server_gap_event, NULL);
+  rc = ble_gap_adv_start(own_addr_type, nullptr, BLE_HS_FOREVER, &adv_params, ble_server_gap_event, nullptr);
   if (rc != 0) {
     MODLOG_DFLT(ERROR, "error enabling advertisement; rc=%d\n", rc);
   }
@@ -221,9 +221,15 @@ static void ble_server_on_sync(void) {
     return;
   }
 
+  rc = ble_att_set_preferred_mtu(this.mtu);
+  if (rc != 0) {
+    MODLOG_DFLT(ERROR, "Failed to set MTU: %d\n", rc);
+    return;
+  }
+
   /* Printing ADDR */
   uint8_t addr_val[6] = { 0 };
-  rc = ble_hs_id_copy_addr(own_addr_type, addr_val, NULL);
+  rc = ble_hs_id_copy_addr(own_addr_type, addr_val, nullptr);
   assert(rc == 0);
 
   MODLOG_DFLT(INFO, "Device Address: ");
@@ -249,24 +255,15 @@ static int ble_svc_gatt_handler(uint16_t conn_handle, uint16_t attr_handle, stru
       break;
 
     case BLE_GATT_ACCESS_OP_WRITE_CHR:
-      uint16_t om_len = OS_MBUF_PKTLEN(ctxt->om);
-      uint8_t* rx_buffer = malloc(om_len);
-      if (rx_buffer == NULL) {
-        MODLOG_DFLT(ERROR, "内存分配失败，无法处理%d字节的数据包！", om_len);
-        return -1;
-      }
-
       if (this.callback) {
-        this.callback(rx_buffer, om_len);
+        const uint16_t len = OS_MBUF_PKTLEN(ctxt->om);
+        uint8_t rx_buffer[len];
+        if (os_mbuf_copydata(ctxt->om, 0, len, rx_buffer) != 0) {
+          return BLE_READ_FAILED;
+        }
+        return this.callback(rx_buffer, len);
       }
-      else {
-        return BLE_NOT_INITIALIZED;
-      }
-
-      os_mbuf_copydata(ctxt->om, 0, om_len, rx_buffer);
-
-
-      break;
+      return BLE_NOT_INITIALIZED;
     default:
       MODLOG_DFLT(INFO, "\nDefault Callback");
       break;
@@ -343,13 +340,14 @@ int gatt_svr_init(void) {
   return 0;
 }
 
-void ble_server_init(ble_data_callback_t callback) {
+void ble_server_init(const ble_data_callback_t callback, const uint16_t mtu) {
   esp_err_t ret = nimble_port_init();
   if (ret != ESP_OK) {
     MODLOG_DFLT(ERROR, "Failed to init nimble %d \n", ret);
     return;
   }
 
+  this.mtu = mtu;
   this.callback = callback;
   conn_handle = -1;
 
@@ -397,13 +395,13 @@ void ble_server_init(ble_data_callback_t callback) {
  * @see ble_error_t
  */
 ble_error_t ble_server_send(uint8_t* const buffer, const size_t length) {
-  if (buffer == NULL || length == 0) {
+  if (buffer == nullptr || length == 0) {
     return BLE_INVALID_PARAM;
   }
 
   if (conn_handle != -1) {
     struct os_mbuf* txom = ble_hs_mbuf_from_flat(buffer, length);
-    if (txom == NULL) {
+    if (txom == nullptr) {
       return BLE_BUFFER_ALLOCATE_FAILED;
     }
 

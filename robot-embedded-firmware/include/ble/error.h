@@ -45,6 +45,7 @@ typedef enum : uint8_t {
   BLE_NOTIFICATION_NOT_ENABLED = 0x35, // 通知未启用
   BLE_INDICATION_NOT_ENABLED = 0x36, // 指示未启用
   BLE_BUFFER_ALLOCATE_FAILED = 0x37, // 缓冲区分配失败
+  BLE_QUEUE_FULL = 0x38,
 
 
   BLE_NOT_INITIALIZED = 0xF0, // BLE未初始化

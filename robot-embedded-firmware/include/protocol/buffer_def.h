@@ -49,7 +49,7 @@ typedef struct {
   const char* file;
   uint16_t line;
   const char* function;
-  const char* extra_info;
+  const char* message;
 } error_info_t;
 
 typedef struct {
@@ -57,7 +57,6 @@ typedef struct {
   size_t capacity;
 
   size_t pos;
-  size_t size;
 
   error_info_t last_error;
 } buffer_t;

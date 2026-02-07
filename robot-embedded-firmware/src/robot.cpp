@@ -39,11 +39,12 @@ Wrobot wrobot;
 
 LQRController lqr_controller;
 
-QueueHandle_t buffer_queue = nullptr;
-
+#define MAX_BLE_PACKET_SIZE    512
 #define RX_QUEUE_LEN 100
 
-static void onDataReceived(uint8_t* data, size_t len);
+static QueueHandle_t buffer_queue = xQueueCreate(RX_QUEUE_LEN, sizeof(robot_message_t));
+
+static ble_error_t onDataReceived(uint8_t* rx_buffer, uint16_t len);
 
 void nvs_init() {
   //Initialize NVS
@@ -78,19 +79,47 @@ void heart_rate_task(void* param) {
   vTaskDelete(nullptr);
 }
 
+static void handle_robot_message(robot_message_t* message) {
+  switch (message->type) {
+    case MESSAGE_CONTROL:
 
-static void robot_control_frame_parsing_task(void* pvParameters) {
+      break;
+    case MESSAGE_EMERGENCY_STOP:
+      break;
+    case MESSAGE_CONFIG_SET:
+      break;
+    case MESSAGE_CONFIG_GET:
+      break;
+    case MESSAGE_FIRMWARE_INFO:
+
+      break;
+    case MESSAGE_STATUS_REPORT:
+
+      break;
+    case MESSAGE_ACTION_PLAY:
+      break;
+    case MESSAGE_ACK:
+      break;
+    case MESSAGE_ERROR:
+      break;
+    case MESSAGE_SENSOR_DATA:
+      break;
+
+    default:
+
+      break;
+  }
+
+}
+
+static void robot_message_parsing_task(void* pvParameters) {
   MODLOG_DFLT(INFO, "BLE server started");
-  buffer_t buffer;
   for (;;) {
-    if (xQueueReceive(buffer_queue, &buffer, portMAX_DELAY)) {
-      MODLOG_DFLT(INFO, "收到数据包，长度: %d 字节, 数据地址: %p", buffer.pos, buffer.data);
+    robot_message_t message;
+    if (xQueueReceive(buffer_queue, &message, portMAX_DELAY)) {
+      MODLOG_DFLT(INFO, "收到指令，type: %u, sequence: %u", message.type, message.sequence);
 
-#ifdef DEBUG_PRINT_DATA
-      ESP_LOG_BUFFER_HEX("BLE_RX", buffer.data, buffer.length);
-#endif
-
-      free(buffer.data);
+      handle_robot_message(&message);
     }
     else {
       // 正常情况下，portMAX_DELAY 会导致任务阻塞，不会走到这里。
@@ -110,34 +139,27 @@ void robot_init() {
 
   battery_init();
 
-  ble_server_init(onDataReceived);
+  ble_server_init(onDataReceived, MAX_BLE_PACKET_SIZE);
 
-  buffer_queue = xQueueCreate(RX_QUEUE_LEN, sizeof(buffer_t));
-  if (buffer_queue == nullptr) {
-    log_error("Failed to create RX queue!");
-  }
-
-  xTaskCreate(heart_rate_task, "status_report", 4 * 1024, nullptr, 5, nullptr);
-  xTaskCreate(robot_control_frame_parsing_task, "robot_ctrl", 4096, nullptr, 8, nullptr);
+  xTaskCreate(heart_rate_task, "status_report", 1024, nullptr, 5, nullptr);
+  xTaskCreate(robot_message_parsing_task, "robot_ctrl", 4096, nullptr, 8, nullptr);
 }
 
-static void onDataReceived(uint8_t* const data, const size_t len) {
-  const buffer_t buffer = {
-    .data = data,
-    .capacity = len,
-    .pos = len,
-    .last_error = {},
-  };
+static ble_error_t onDataReceived(uint8_t* rx_buffer, uint16_t len) {
+  robot_message_t message;
+  auto buffer = buffer_create(rx_buffer, len);
 
-  if (xQueueSend(buffer_queue, &buffer, 0) != pdTRUE) {
+  if (robot_message_deserialize(&message, &buffer)) {
+    if (xQueueSend(buffer_queue, &message, 0) == pdTRUE) {
+      MODLOG_DFLT(DEBUG, "数据包已放入队列等待处理");
+      return BLE_OK;
+    }
     MODLOG_DFLT(WARN, "BLE RX 队列已满，丢弃数据包");
   }
-  else {
-    MODLOG_DFLT(DEBUG, "数据包已放入队列等待处理");
-  }
 
+  buffer_print_error(&buffer, "BLE message serialize failed");
+  return BLE_READ_FAILED;
 }
-
 
 void on_report_timer_callback(TimerHandle_t xTimer) {
   sensor_data_t sensors;

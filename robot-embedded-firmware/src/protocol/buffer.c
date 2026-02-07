@@ -14,17 +14,9 @@
 // along with this program. If not, see [https://www.gnu.org/licenses/]
 
 #include <string.h>
-#include <stdio.h>
 #include <arpa/inet.h>
 
 #include "protocol/buffer.h"
-
-#define CHECK_BUFFER(buf) \
-    do { \
-        if (!(buf) || !(buf)->data) { \
-            return BUFFER_NULL_POINTER; \
-        } \
-    } while(0)
 
 #ifdef NDEBUG
 #define buffer_assert(condition, buf, error) \
@@ -32,7 +24,7 @@
         if (!(condition)) { \
             if (buf) { \
               buf->last_error.code = error; \
-              buf->last_error.extra_info = ""; \
+              buf->last_error.message = ""; \
             } \
             return false; \
         } \
@@ -46,39 +38,13 @@
               buf->last_error.file = __FILE__; \
               buf->last_error.function = __func__; \
               buf->last_error.line = __LINE__; \
-              buf->last_error.extra_info = ""; \
+              buf->last_error.message = ""; \
             } \
             return false; \
         } \
     } while(0)
 #endif
 
-#define SET_ERROR(buf, code_, extra) \
-    do { \
-        if (buf) { \
-            buf->last_error.code = code_; \
-            buf->last_error.function = __func__; \
-            buf->last_error.line = __LINE__; \
-            buf->last_error.extra_info = (size_t)(extra); \
-        } \
-    } while(0)
-
-#define CHECK_WRITE_SPACE(buf, need) \
-    do { \
-        if (buffer_available_write(buf) < (need)) { \
-            SET_ERROR(buf, BUFFER_OVERFLOW, "Buffer overflow"); \
-            return BUFFER_OVERFLOW; \
-        } \
-    } while(0)
-
-// 检查读取空间
-#define CHECK_READ_SPACE(buf, need) \
-    do { \
-        if (buffer_available_read(buf) < (need)) { \
-            SET_ERROR(buf, BUFFER_UNDERFLOW, "Buffer underflow"); \
-            return BUFFER_UNDERFLOW; \
-        } \
-    } while(0)
 
 buffer_t* buffer_create_ptr(const size_t capacity) {
   buffer_t* buffer = malloc(sizeof(buffer_t));
@@ -131,8 +97,6 @@ buffer_error_t buffer_deinit(buffer_t* buf) {
 bool buffer_reset(buffer_t* buf) {
   if (buf) {
     buf->pos = 0;
-    buf->pos = 0;
-    buf->size = 0;
   }
   return buffer_clear_error(buf);
 }
@@ -141,25 +105,18 @@ bool buffer_clear(buffer_t* buf) {
   return buffer_reset(buf);
 }
 
-// ========== 状态查询 ==========
-size_t buffer_available_read(const buffer_t* buf) {
+size_t buffer_available(const buffer_t* buf) {
   if (!buf || !buf->data)
     return 0;
-  return buf->size;
-}
-
-size_t buffer_available_write(const buffer_t* buf) {
-  if (!buf || !buf->data)
-    return 0;
-  return buf->capacity - buf->size;
+  return buf->capacity - buf->pos;
 }
 
 inline bool buffer_is_empty(const buffer_t* buf) {
-  return buffer_available_read(buf) == 0;
+  return buffer_available(buf) == buf->capacity;
 }
 
 inline bool buffer_is_full(const buffer_t* buf) {
-  return buffer_available_write(buf) == 0;
+  return buffer_available(buf) == 0;
 }
 
 bool buffer_write_raw(buffer_t* buf, const void* data, const size_t size) {
@@ -272,11 +229,11 @@ inline bool buffer_read_u32(buffer_t* buf, uint32_t* value) {
 
 bool buffer_read_i32(buffer_t* buf, int32_t* value) {
   uint32_t temp;
-  const bool err = buffer_read_u32(buf, &temp);
-  if (err == true) {
+  const bool ok = buffer_read_u32(buf, &temp);
+  if (ok) {
     *value = (int32_t) temp;
   }
-  return err;
+  return ok;
 }
 
 bool buffer_read_f32(buffer_t* buf, float* value) {
@@ -296,11 +253,11 @@ bool buffer_read_f32(buffer_t* buf, float* value) {
 
 bool buffer_read_bool(buffer_t* buf, bool* value) {
   uint8_t temp;
-  const bool err = buffer_read_u8(buf, &temp);
-  if (err == true) {
+  const bool ok = buffer_read_u8(buf, &temp);
+  if (ok) {
     *value = temp != 0;
   }
-  return err;
+  return ok;
 }
 
 bool buffer_write_string(buffer_t* buf, const char* str) {

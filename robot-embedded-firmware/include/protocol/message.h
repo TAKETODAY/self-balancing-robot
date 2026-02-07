@@ -115,20 +115,6 @@ typedef struct {
 } sensor_data_t;
 
 
-void message_frame(const robot_message_t* message) {
-  // 处理紧急消息
-  if (message->flags & FLAG_URGENT) {
-  }
-
-  // 处理需要应答的消息
-  if (message->flags & FLAG_NEED_ACK) {
-  }
-
-  // 处理响应消息
-  if (message->flags & FLAG_IS_RESPONSE) {
-  }
-}
-
 bool robot_message_serialize(robot_message_t* msg, buffer_t* buf);
 bool robot_message_deserialize(robot_message_t* msg, buffer_t* buf);
 

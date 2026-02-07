@@ -27,6 +27,10 @@ bool robot_message_serialize(robot_message_t* msg, buffer_t* buf) {
          && buffer_write_u8(buf, msg->flags);
 }
 
+bool robot_message_deserialize(robot_message_t* msg, buffer_t* buf) {
+
+  return true;
+}
 
 void test() {
   uint8_t data[32];
@@ -49,5 +53,19 @@ void test() {
     printf("错误码: 0x%02X\n", err.code);
     printf("错误描述: %s\n", buffer_error_to_string(err.code));
     printf("发生位置: %s:%d\n", err.function, err.line);
+  }
+}
+
+void message_frame(const robot_message_t* message) {
+  // 处理紧急消息
+  if (message->flags & FLAG_URGENT) {
+  }
+
+  // 处理需要应答的消息
+  if (message->flags & FLAG_NEED_ACK) {
+  }
+
+  // 处理响应消息
+  if (message->flags & FLAG_IS_RESPONSE) {
   }
 }

@@ -32,10 +32,10 @@ extern "C" {
 #define BLE_SVC_SPP_CHR_UUID16       0xABF1
 
 // Callback function type for handling received BLE data
-typedef void (*ble_data_callback_t)(uint8_t* data, size_t len);
+typedef ble_error_t (*ble_data_callback_t)(uint8_t* rx_buffer, uint16_t len);
 
 // Initialize the BLE server with a callback function for data reception
-void ble_server_init(ble_data_callback_t callback);
+void ble_server_init(ble_data_callback_t callback, uint16_t mtu);
 
 // Send data over BLE connection
 ble_error_t ble_server_send(uint8_t* buffer, size_t length);
