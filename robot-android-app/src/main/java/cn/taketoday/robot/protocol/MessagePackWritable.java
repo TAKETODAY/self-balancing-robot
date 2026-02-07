@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 - 2024 the original author or authors.
+ * Copyright 2025 - 2026 the original author or authors.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see [http://www.gnu.org/licenses/]
+ * along with this program. If not, see [https://www.gnu.org/licenses/]
  */
 
 package cn.taketoday.robot.protocol;
@@ -61,7 +61,7 @@ import static cn.taketoday.robot.protocol.format.MessagePackCode.UINT64;
 import static cn.taketoday.robot.protocol.format.MessagePackCode.UINT8;
 
 /**
- * An {@link Output} implementation that serializes data into the MessagePack format.
+ * An {@link Writable} implementation that serializes data into the MessagePack format.
  * <p>
  * This class provides methods to write various Java primitive types, Strings, arrays, maps,
  * and other complex objects to an underlying {@link ByteBuf}. It handles
@@ -87,18 +87,18 @@ import static cn.taketoday.robot.protocol.format.MessagePackCode.UINT8;
  * of {@code MessagePackOutput}.
  *
  * @author <a href="https://github.com/TAKETODAY">海子 Yang</a>
- * @see MessagePackInput
- * @see Output
+ * @see MessagePackReadable
+ * @see Writable
  * @see <a href="https://msgpack.org/index.html">MessagePack Specification</a>
  * @since 1.0
  */
-public class MessagePackOutput implements Output {
+public class MessagePackWritable implements Writable {
 
   private static final long NANOS_PER_SECOND = 1000000000L;
 
   private final ByteBuf buffer;
 
-  public MessagePackOutput(ByteBuf buffer) {
+  public MessagePackWritable(ByteBuf buffer) {
     this.buffer = buffer;
   }
 
@@ -322,7 +322,7 @@ public class MessagePackOutput implements Output {
   }
 
   @Override
-  public <V> void writeNullable(@Nullable V v, BiConsumer<Output, V> valueMapper) {
+  public <V> void writeNullable(@Nullable V v, BiConsumer<Writable, V> valueMapper) {
     if (v == null) {
       writeNull();
     }
@@ -365,7 +365,7 @@ public class MessagePackOutput implements Output {
   }
 
   @Override
-  public <T> void write(T[] v, BiConsumer<Output, T> mapper) {
+  public <T> void write(T[] v, BiConsumer<Writable, T> mapper) {
     writeArrayHeader(v.length);
     for (T t : v) {
       mapper.accept(this, t);
@@ -382,7 +382,7 @@ public class MessagePackOutput implements Output {
   }
 
   @Override
-  public <T> void write(List<T> v, BiConsumer<Output, T> mapper) {
+  public <T> void write(List<T> v, BiConsumer<Writable, T> mapper) {
     int size = v.size();
     writeArrayHeader(size);
     for (T t : v) {
@@ -391,7 +391,7 @@ public class MessagePackOutput implements Output {
   }
 
   @Override
-  public <K, V> void write(Map<K, V> v, BiConsumer<Output, K> keyMapper, BiConsumer<Output, V> valueMapper) {
+  public <K, V> void write(Map<K, V> v, BiConsumer<Writable, K> keyMapper, BiConsumer<Writable, V> valueMapper) {
     int size = v.size();
     writeMapHeader(size);
     for (Map.Entry<K, V> entry : v.entrySet()) {

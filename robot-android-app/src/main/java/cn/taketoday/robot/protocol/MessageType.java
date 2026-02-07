@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 - 2025 the original author or authors.
+ * Copyright 2025 - 2026 the original author or authors.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,23 +23,34 @@ import infra.lang.Enumerable;
  * @author <a href="https://github.com/TAKETODAY">海子 Yang</a>
  * @since 1.0 2025/12/20 14:40
  */
-public enum FrameType implements Enumerable<Integer> {
+public enum MessageType implements Message, Enumerable<Integer> {
+  CONTROL(0x01),
+  EMERGENCY_STOP(0x02),
 
-  CONTROL(1),
+  CONFIG_SET(0x10),
+  CONFIG_GET(0x11),
+  FIRMWARE_INFO(0x12),
+  STATUS_REPORT(0x13),
+  ACTION_PLAY(0x20),
 
-  CONFIG_SET(2),
+  ACK(0x80),
+  ERROR(0x81),
+  SENSOR_DATA(0x82);
 
-  CONFIG_GET(3);
+  public final int value;
 
-  private final int value;
-
-  FrameType(int value) {
+  MessageType(int value) {
     this.value = value;
   }
 
   @Override
   public Integer getValue() {
     return value;
+  }
+
+  @Override
+  public void writeTo(Writable writable) {
+    writable.write((byte) value);
   }
 
 }

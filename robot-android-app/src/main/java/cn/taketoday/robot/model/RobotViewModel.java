@@ -25,6 +25,7 @@ import androidx.lifecycle.ViewModelStoreOwner;
 import java.util.Arrays;
 
 import cn.taketoday.robot.LoggingSupport;
+import cn.taketoday.robot.protocol.RobotMessage;
 
 /**
  * @author <a href="https://github.com/TAKETODAY">海子 Yang</a>
@@ -47,9 +48,8 @@ public class RobotViewModel extends ViewModel implements DataHandler, LoggingSup
   public void handleIncomingData(byte[] data) {
     debug("onDataReceived: %s", Arrays.toString(data));
 
-//    Frame parse = Frame.parse(data);
-
-    sendData(data);
+    RobotMessage robotMessage = RobotMessage.forControl(1, 1, data[0]);
+    sendData(robotMessage.toByteArray());
   }
 
   @Override

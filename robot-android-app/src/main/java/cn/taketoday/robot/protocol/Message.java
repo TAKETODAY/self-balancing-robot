@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 - 2024 the original author or authors.
+ * Copyright 2025 - 2026 the original author or authors.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -12,10 +12,13 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see [http://www.gnu.org/licenses/]
+ * along with this program. If not, see [https://www.gnu.org/licenses/]
  */
 
 package cn.taketoday.robot.protocol;
+
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 
 /**
  * Only the identity of the class of a Message instance is
@@ -36,18 +39,18 @@ public interface Message {
 
   /**
    * The object implements the writeTo method to save its contents
-   * by calling the methods of {@link Output} for its primitive values or
+   * by calling the methods of {@link Writable} for its primitive values or
    * calling the write method of Output for objects, strings,
    * and arrays.
    *
-   * @param output the stream to write the object to
+   * @param writable the stream to write the object to
    * @throws SerializationException Serialization occur
    */
-  void writeTo(Output output);
+  void writeTo(Writable writable);
 
   /**
    * The object implements the readFrom method to restore its
-   * contents by calling the methods of {@link Input} for primitive
+   * contents by calling the methods of {@link Readable} for primitive
    * types and read for objects, strings and arrays.  The
    * readFrom method must read the values in the same sequence
    * and with the same types as were written by writeTo.
@@ -55,7 +58,22 @@ public interface Message {
    * @param input the source to read data from in order to restore the object
    * @throws SerializationException Serialization occur
    */
-  default void readFrom(Input input) {
+  default void readFrom(Readable input) {
+  }
+
+  /**
+   * Serializes the message into a byte array.
+   * <p>
+   * This method writes the message content using the {@link #writeTo(Writable)} method
+   * into a {@link ByteArrayOutputStream}, which is then converted to a byte array.
+   *
+   * @return a byte array containing the serialized form of the message
+   * @throws SerializationException if an error occurs during serialization
+   */
+  default byte[] toByteArray() {
+    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+    writeTo(new DefaultWritable(new DataOutputStream(stream)));
+    return stream.toByteArray();
   }
 
   interface Factory<M> {
@@ -69,7 +87,7 @@ public interface Message {
      * @return Returns a new instance of the Message class.
      * @throws SerializationException Serialization occur
      */
-    M create(Input source);
+    M create(Readable source);
 
     /**
      * Create a new array of the Parcelable class.

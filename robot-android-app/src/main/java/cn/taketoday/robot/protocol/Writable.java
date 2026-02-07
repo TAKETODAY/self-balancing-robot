@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 - 2024 the original author or authors.
+ * Copyright 2025 - 2026 the original author or authors.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see [http://www.gnu.org/licenses/]
+ * along with this program. If not, see [https://www.gnu.org/licenses/]
  */
 
 package cn.taketoday.robot.protocol;
@@ -32,7 +32,7 @@ import infra.lang.Enumerable;
  * @see java.io.DataOutput
  * @since 1.0 2025/8/16 16:58
  */
-public interface Output {
+public interface Writable {
 
   /**
    * Writes a byte array object to the output.
@@ -173,7 +173,7 @@ public interface Output {
    * @param v the value to be written.
    * @throws SerializationException if a serialization error occurs.
    */
-  <V> void writeNullable(@Nullable V v, BiConsumer<Output, V> valueMapper);
+  <V> void writeNullable(@Nullable V v, BiConsumer<Writable, V> valueMapper);
 
   /**
    * Writes a {@code array} value.
@@ -189,7 +189,7 @@ public interface Output {
    * @param v the array value to be written.
    * @throws SerializationException if a serialization error occurs.
    */
-  <T> void write(T[] v, BiConsumer<Output, T> mapper);
+  <T> void write(T[] v, BiConsumer<Writable, T> mapper);
 
   /**
    * Writes a {@code List} value.
@@ -205,7 +205,7 @@ public interface Output {
    * @param v the List value to be written.
    * @throws SerializationException if a serialization error occurs.
    */
-  <T> void write(List<T> v, BiConsumer<Output, T> mapper);
+  <T> void write(List<T> v, BiConsumer<Writable, T> mapper);
 
   /**
    * Writes a {@code Map} value.
@@ -221,6 +221,6 @@ public interface Output {
    * @param v the Map value to be written.
    * @throws SerializationException if a serialization error occurs.
    */
-  <K, V> void write(Map<K, V> v, BiConsumer<Output, K> keyMapper, BiConsumer<Output, V> valueMapper);
+  <K, V> void write(Map<K, V> v, BiConsumer<Writable, K> keyMapper, BiConsumer<Writable, V> valueMapper);
 
 }

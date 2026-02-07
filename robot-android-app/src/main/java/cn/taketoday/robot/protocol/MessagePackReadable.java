@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 - 2024 the original author or authors.
+ * Copyright 2025 - 2026 the original author or authors.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see [http://www.gnu.org/licenses/]
+ * along with this program. If not, see [https://www.gnu.org/licenses/]
  */
 
 package cn.taketoday.robot.protocol;
@@ -50,7 +50,7 @@ import io.netty.buffer.ByteBufUtil;
 import static cn.taketoday.robot.protocol.format.MessagePackCode.EXT_TIMESTAMP;
 
 /**
- * An {@link Input} implementation that decodes data from a {@link ByteBuf}
+ * An {@link Readable} implementation that decodes data from a {@link ByteBuf}
  * according to the MessagePack specification. This class provides methods to read
  * various data types, such as integers, floats, strings, arrays, maps, and binary data,
  * directly from the underlying byte buffer.
@@ -64,12 +64,12 @@ import static cn.taketoday.robot.protocol.format.MessagePackCode.EXT_TIMESTAMP;
  * of the underlying {@code ByteBuf}.
  *
  * @author <a href="https://github.com/TAKETODAY">海子 Yang</a>
- * @see Input
- * @see MessagePackOutput
+ * @see Readable
+ * @see MessagePackWritable
  * @see <a href="https://msgpack.org/index.html">MessagePack Specification</a>
  * @since 1.0
  */
-public class MessagePackInput implements Input {
+public class MessagePackReadable implements Readable {
 
   private static final int stringSizeLimit = Integer.MAX_VALUE / 2;
 
@@ -77,7 +77,7 @@ public class MessagePackInput implements Input {
 
   private final ByteBuf buffer;
 
-  public MessagePackInput(ByteBuf buffer) {
+  public MessagePackReadable(ByteBuf buffer) {
     this.buffer = buffer;
   }
 
@@ -116,7 +116,7 @@ public class MessagePackInput implements Input {
 
   @Nullable
   @Override
-  public <V> V readNullable(Function<Input, V> valueMapper) {
+  public <V> V readNullable(Function<Readable, V> valueMapper) {
     if (tryReadNull()) {
       return null;
     }
@@ -404,7 +404,7 @@ public class MessagePackInput implements Input {
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T> T[] read(Class<T> type, Function<Input, T> mapper) {
+  public <T> T[] read(Class<T> type, Function<Readable, T> mapper) {
     int size = readArrayHeader();
     T[] array = (T[]) Array.newInstance(type, size);
     for (int i = 0; i < size; i++) {
@@ -425,7 +425,7 @@ public class MessagePackInput implements Input {
   }
 
   @Override
-  public <T> List<T> read(Function<Input, T> mapper) {
+  public <T> List<T> read(Function<Readable, T> mapper) {
     int size = readArrayHeader();
     ArrayList<T> result = new ArrayList<>(size);
     for (int i = 0; i < size; i++) {
@@ -445,7 +445,7 @@ public class MessagePackInput implements Input {
   }
 
   @Override
-  public <K, V> Map<K, V> read(Function<Input, K> keyMapper, Function<Input, V> valueMapper) {
+  public <K, V> Map<K, V> read(Function<Readable, K> keyMapper, Function<Readable, V> valueMapper) {
     int size = readMapHeader();
     LinkedHashMap<K, V> result = CollectionUtils.newLinkedHashMap(size);
     for (int i = 0; i < size; i++) {
