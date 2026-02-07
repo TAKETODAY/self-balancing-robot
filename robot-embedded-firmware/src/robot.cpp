@@ -30,8 +30,6 @@
 #include "protocol.h"
 #include "ble.h"
 
-// Wrobot wrobot;
-
 static auto TAG = "default";
 
 Wrobot wrobot;
@@ -41,7 +39,7 @@ LQRController lqr_controller;
 #define MAX_BLE_PACKET_SIZE    512
 #define RX_QUEUE_LEN 100
 
-static QueueHandle_t buffer_queue = nullptr;
+static QueueHandle_t buffer_queue = xQueueCreate(RX_QUEUE_LEN, sizeof(robot_message_t));
 
 static ble_error_t onDataReceived(uint8_t* rx_buffer, uint16_t len);
 
@@ -108,7 +106,6 @@ static void robot_message_parsing_task(void* pvParameters) {
 }
 
 void robot_init() {
-  buffer_queue = xQueueCreate(RX_QUEUE_LEN, sizeof(robot_message_t));
 
   nvs_init();
 

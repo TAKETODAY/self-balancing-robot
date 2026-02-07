@@ -14,7 +14,6 @@
 // along with this program. If not, see [https://www.gnu.org/licenses/]
 
 #include "esp_log.h"
-#include "nvs_flash.h"
 /* BLE */
 #include "nimble/nimble_port.h"
 #include "nimble/nimble_port_freertos.h"
@@ -25,22 +24,20 @@
 
 #include "ble/server.h"
 
-
 static int ble_server_gap_event(struct ble_gap_event* event, void* arg);
-static uint8_t own_addr_type;
 
-static uint16_t ble_svc_gatt_read_val_handle;
-static int conn_handle;
-
-struct ble_hs_cfg;
-struct ble_gatt_register_ctxt;
 
 static struct {
-
   uint16_t mtu;
+
+  int conn_handle;
+  uint16_t chr_val_handle;
+  uint8_t own_addr_type;
+
   ble_data_callback_t callback;
 } this = {
   .mtu = 0,
+  .conn_handle = -1,
   .callback = nullptr
 };
 
@@ -122,7 +119,7 @@ static void ble_server_advertise(void) {
   memset(&adv_params, 0, sizeof adv_params);
   adv_params.conn_mode = BLE_GAP_CONN_MODE_UND;
   adv_params.disc_mode = BLE_GAP_DISC_MODE_GEN;
-  rc = ble_gap_adv_start(own_addr_type, nullptr, BLE_HS_FOREVER, &adv_params, ble_server_gap_event, nullptr);
+  rc = ble_gap_adv_start(this.own_addr_type, nullptr, BLE_HS_FOREVER, &adv_params, ble_server_gap_event, nullptr);
   if (rc != 0) {
     MODLOG_DFLT(ERROR, "error enabling advertisement; rc=%d\n", rc);
   }
@@ -166,7 +163,7 @@ static int ble_server_gap_event(struct ble_gap_event* event, void* arg) {
       ble_server_print_conn_desc(&event->disconnect.conn);
       MODLOG_DFLT(INFO, "\n");
 
-      conn_handle = -1;
+      this.conn_handle = -1;
 
       /* Connection terminated; resume advertising. */
       ble_server_advertise();
@@ -198,7 +195,7 @@ static int ble_server_gap_event(struct ble_gap_event* event, void* arg) {
         event->subscribe.conn_handle, event->subscribe.attr_handle, event->subscribe.reason,
         event->subscribe.prev_notify, event->subscribe.cur_notify, event->subscribe.prev_indicate,
         event->subscribe.cur_indicate);
-      conn_handle = event->subscribe.conn_handle;
+      this.conn_handle = event->subscribe.conn_handle;
       return 0;
 
     default:
@@ -215,7 +212,7 @@ static void ble_server_on_sync(void) {
   assert(rc == 0);
 
   /* Figure out address to use while advertising (no privacy for now) */
-  rc = ble_hs_id_infer_auto(0, &own_addr_type);
+  rc = ble_hs_id_infer_auto(0, &this.own_addr_type);
   if (rc != 0) {
     MODLOG_DFLT(ERROR, "error determining address type; rc=%d\n", rc);
     return;
@@ -229,7 +226,7 @@ static void ble_server_on_sync(void) {
 
   /* Printing ADDR */
   uint8_t addr_val[6] = { 0 };
-  rc = ble_hs_id_copy_addr(own_addr_type, addr_val, nullptr);
+  rc = ble_hs_id_copy_addr(this.own_addr_type, addr_val, nullptr);
   assert(rc == 0);
 
   MODLOG_DFLT(INFO, "Device Address: ");
@@ -283,7 +280,7 @@ static const struct ble_gatt_svc_def new_ble_svc_gatt_defs[] = {
         /* Support SPP service */
         .uuid = BLE_UUID16_DECLARE(BLE_SVC_SPP_CHR_UUID16),
         .access_cb = ble_svc_gatt_handler,
-        .val_handle = &ble_svc_gatt_read_val_handle,
+        .val_handle = &this.chr_val_handle,
         .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_WRITE | BLE_GATT_CHR_F_NOTIFY,
       },
       {
@@ -349,7 +346,7 @@ void ble_server_init(const ble_data_callback_t callback, const uint16_t mtu) {
 
   this.mtu = mtu;
   this.callback = callback;
-  conn_handle = -1;
+  this.conn_handle = -1;
 
   /* Initialize the NimBLE host configuration. */
   ble_hs_cfg.reset_cb = ble_server_on_reset;
@@ -399,20 +396,20 @@ ble_error_t ble_server_send(uint8_t* const buffer, const size_t length) {
     return BLE_INVALID_PARAM;
   }
 
-  if (conn_handle != -1) {
+  if (this.conn_handle != -1) {
     struct os_mbuf* txom = ble_hs_mbuf_from_flat(buffer, length);
     if (txom == nullptr) {
       return BLE_BUFFER_ALLOCATE_FAILED;
     }
 
-    const int rc = ble_gatts_notify_custom(conn_handle, ble_svc_gatt_read_val_handle, txom);
+    const int rc = ble_gatts_notify_custom(this.conn_handle, this.chr_val_handle, txom);
     switch (rc) {
       case 0: return BLE_OK;
       case BLE_HS_ENOMEM: return BLE_OUT_OF_MEMORY;
       case BLE_HS_EMSGSIZE: return BLE_DATA_TOO_LONG;
       case BLE_HS_ENOTCONN: return BLE_NOT_CONNECTED;
       default:
-        MODLOG_DFLT(ERROR, "Failed to send notification to conn_handle=%d, rc=%d", conn_handle, rc);
+        MODLOG_DFLT(ERROR, "Failed to send notification to conn_handle=%d, rc=%d", this.conn_handle, rc);
         os_mbuf_free_chain(txom);
         return BLE_WRITE_FAILED;
     }
@@ -421,5 +418,5 @@ ble_error_t ble_server_send(uint8_t* const buffer, const size_t length) {
 }
 
 bool ble_server_is_connected() {
-  return conn_handle != -1;
+  return this.conn_handle != -1;
 }

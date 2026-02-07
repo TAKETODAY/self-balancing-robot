@@ -49,21 +49,10 @@ const char* ble_error_to_string(const ble_error_t error) {
 
 #else
 
-// Release模式：最小化字符串存储
 const char* ble_error_to_string(ble_error_t err) {
   static char error_buf[16];
-  switch (err) {
-    case BLE_OK: return "OK";
-    case BLE_NOT_CONNECTED: return "未连接";
-    case BLE_INVALID_PARAM: return "参数错误";
-    case BLE_BUFFER_TOO_SMALL: return "缓冲区小";
-    case BLE_DATA_TOO_LONG: return "数据太长";
-    case BLE_UNKNOWN: return "未知错误";
-
-    default:
-      snprintf(error_buf, sizeof(error_buf), "错误0x%02X", err);
-      return error_buf;
-  }
+  snprintf(error_buf, sizeof(error_buf), "ERROR: 0x%02X", err);
+  return error_buf;
 }
 
 #endif // NDEBUG

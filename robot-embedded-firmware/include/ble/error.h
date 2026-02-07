@@ -65,13 +65,10 @@ const char* ble_error_to_string(ble_error_t err);
  */
 #if !defined(NDEBUG)
 #define BLE_LOG_ERROR(err, format, ...) \
-        do { \
-            ESP_LOGE("BLE", "错误 0x%02X: %s", err, ble_error_to_string(err)); \
-            ESP_LOGE("BLE", "位置: %s:%d", __FILE__, __LINE__); \
-            if (format[0] != '\0') { \
-                ESP_LOGE("BLE", "详情: " format, ##__VA_ARGS__); \
-            } \
-        } while(0)
+  do { \
+      ESP_LOGE("BLE", "ERROR: 0x%02X: %s | %s:%d | " format, \
+              err, ble_error_to_string(err), __FILE__, __LINE__, ##__VA_ARGS__); \
+  } while(0)
 #else
 // Release模式：只记录错误码和简短消息
 #define BLE_LOG_ERROR(err, format, ...) \
