@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 - 2025 the original author or authors.
+ * Copyright 2025 - 2026 the original author or authors.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,6 +17,8 @@
 
 package infra.util.function;
 
+import org.jspecify.annotations.Nullable;
+
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -32,7 +34,7 @@ import java.util.function.Function;
  * @since 4.0
  */
 @FunctionalInterface
-public interface ThrowingFunction<T, R> extends Function<T, R> {
+public interface ThrowingFunction<T extends @Nullable Object, R extends @Nullable Object> extends Function<T, R> {
 
   /**
    * Applies this function to the given argument, possibly throwing a checked
