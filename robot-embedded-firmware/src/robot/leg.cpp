@@ -18,7 +18,6 @@
 #include "esp_log.h"
 #include "robot.hpp"
 #include "STSServoDriver.hpp"
-#include "esp/gpio.hpp"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
@@ -47,6 +46,9 @@ static struct {
   int left_position;
   int right_position;
 
+  uint8_t left_position_percentage;
+  uint8_t right_position_percentage;
+
   int left_speed;
   int right_speed;
 
@@ -55,15 +57,13 @@ static struct {
   .right_acceleration = SERVO1_ACC,
   .left_position = 2300,
   .right_position = 2300,
+  .left_position_percentage = 50,
+  .right_position_percentage = 50,
   .left_speed = SERVO0_SPEED,
   .right_speed = SERVO1_SPEED
-
 };
 
 constexpr static byte ID[2] = { 1, 2 };
-
-static int positions[2];
-static int speeds[2];
 
 static void servosLoop(void* pvParameters) {
   ESP_LOGI(TAG, "servos looping");
@@ -116,27 +116,56 @@ void robot_leg_set_acceleration(const uint8_t acceleration) {
 void robot_leg_set_speed(const int left_speed, const int right_speed) {
   handle.left_speed = left_speed;
   handle.right_speed = right_speed;
-  speeds[0] = left_speed;
-  speeds[1] = right_speed;
+
   servos.setTargetVelocity(LEFT, left_speed);
   servos.setTargetVelocity(RIGHT, right_speed);
 }
 
-void robot_leg_set_height_percentage(uint8_t percentage) {
-  if (percentage > 100)
-    percentage = 100;
+constexpr static int16_t left_range = SERVO0_MAX - SERVO0_MIN;
+constexpr static int16_t right_range = SERVO1_MAX - SERVO1_MIN;
 
-  constexpr static int16_t left_range = SERVO0_MAX - SERVO0_MIN;
-  constexpr static int16_t right_range = SERVO1_MAX - SERVO1_MIN;
+void robot_leg_set_height_percentage(uint8_t percentage) {
+  if (percentage > 100) {
+    percentage = 100;
+  }
 
   const int32_t left_pos = left_range * percentage / 100;
   const int32_t right_pos = right_range * percentage / 100;
 
   handle.left_position = SERVO0_MAX - left_pos;
   handle.right_position = SERVO1_MAX - right_pos;
+  handle.left_position_percentage = percentage;
+  handle.right_position_percentage = percentage;
 
-  positions[0] = handle.left_position;
-  positions[1] = handle.right_position;
+  const int positions[2] = {
+    handle.left_position,
+    handle.right_position
+  };
+
+  const int speeds[2] = {
+    handle.left_position,
+    handle.right_position
+  };
 
   servos.setTargetPositions(2, ID, positions, speeds);
+}
+
+void robot_leg_set_left_height_percentage(uint8_t percentage) {
+  if (percentage > 100) {
+    percentage = 100;
+  }
+  const int32_t left_pos = left_range * percentage / 100;
+  handle.left_position = SERVO0_MAX - left_pos;
+  handle.left_position_percentage = percentage;
+  servos.setTargetPosition(LEFT, handle.left_position);
+}
+
+void robot_leg_set_right_height_percentage(uint8_t percentage) {
+  if (percentage > 100) {
+    percentage = 100;
+  }
+  const int32_t right_pos = right_range * percentage / 100;
+  handle.right_position = SERVO1_MAX - right_pos;
+  handle.right_position_percentage = percentage;
+  servos.setTargetPosition(RIGHT, handle.right_position);
 }

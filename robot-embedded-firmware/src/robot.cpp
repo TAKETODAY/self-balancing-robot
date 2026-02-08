@@ -80,8 +80,13 @@ static void handle_robot_message(robot_message_t* message) {
   switch (message->type) {
     case MESSAGE_CONTROL: {
       const auto control = message->body.control;
-      robot_set_leg_height(control.leg_height_percentage);
+      robot_set_speed(control.left_wheel_speed, control.right_wheel_speed);
       break;
+    }
+    case MESSAGE_CONTROL_LEG: {
+      const auto control_leg = message->body.control_leg;
+      robot_leg_set_left_height_percentage(control_leg.left_percentage);
+      robot_leg_set_right_height_percentage(control_leg.right_percentage);
     }
     default:
       break;
@@ -145,4 +150,8 @@ void on_report_timer_callback(TimerHandle_t xTimer) {
 
 void robot_set_leg_height(const uint8_t percentage) {
   robot_leg_set_height_percentage(percentage);
+}
+
+void robot_set_speed(uint16_t left_wheel_speed, uint16_t right_wheel_speed) {
+
 }

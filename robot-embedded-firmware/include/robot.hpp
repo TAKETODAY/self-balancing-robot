@@ -97,6 +97,8 @@ void robot_init();
 
 void robot_set_leg_height(uint8_t percentage);
 
+void robot_set_speed(uint16_t left_wheel_speed, uint16_t right_wheel_speed);
+
 #ifdef __cplusplus
 }
 #endif

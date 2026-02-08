@@ -32,6 +32,10 @@ void robot_leg_set_speed(int left_speed, int right_speed);
 //
 void robot_leg_set_height_percentage(uint8_t percentage);
 
+void robot_leg_set_left_height_percentage(uint8_t percentage);
+
+void robot_leg_set_right_height_percentage(uint8_t percentage);
+
 
 #ifdef __cplusplus
 }

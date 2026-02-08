@@ -20,9 +20,6 @@
 
 #ifdef __cplusplus
 extern "C" {
-
-
-
 #endif
 
 #define FLAG_DIRECTION    (1 << 0)  // 位0: 方向
@@ -36,10 +33,10 @@ extern "C" {
 
 
 typedef enum : uint8_t {
-  MESSAGE_CONTROL = 0x01,
-  MESSAGE_EMERGENCY_STOP = 0x02, // 紧急停止
+  MESSAGE_CONTROL = 1,
+  MESSAGE_CONTROL_LEG = 2,
+  MESSAGE_EMERGENCY_STOP = 3,
 
-  // 配置与查询类 (需要应答)
   MESSAGE_CONFIG_SET = 0x10, // 设置参数
   MESSAGE_CONFIG_GET = 0x11, // 获取参数
   MESSAGE_FIRMWARE_INFO = 0x12, // 获取固件信息
@@ -73,8 +70,12 @@ typedef enum : uint8_t {
 typedef struct {
   uint16_t left_wheel_speed;
   uint16_t right_wheel_speed;
-  uint8_t leg_height_percentage;
 } control_message_t;
+
+typedef struct {
+  uint8_t left_percentage;
+  uint8_t right_percentage;
+} control_leg_message_t;
 
 typedef struct {
   float P;
@@ -144,6 +145,7 @@ typedef struct {
 
   union {
     control_message_t control;
+    control_leg_message_t control_leg;
     config_message_t config;
     config_set_message_t set_config;
   } body;
