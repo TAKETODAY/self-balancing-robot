@@ -14,6 +14,7 @@
 // along with this program. If not, see [https://www.gnu.org/licenses/]
 
 #include "battery.hpp"
+#include "logging.hpp"
 #include "esp/gpio.hpp"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -25,16 +26,32 @@
 #include "esp_adc/adc_oneshot.h"
 #include "esp_adc/adc_cali_scheme.h"
 
-#include "adc_battery_estimation.h"
-
-
-static constexpr adc_channel_t channel = ADC_CHANNEL_7;
+#define LED_BATTERY_PIN gpio_num_t::GPIO_NUM_13
+#define BAT_PIN gpio_num_t::GPIO_NUM_35
 
 static auto TAG = "battery";
+static constexpr adc_channel_t channel = ADC_CHANNEL_7;
+
+adc_oneshot_unit_handle_t adc1_handle;
+
+bool do_calibration1_chan0 = false;
+
+adc_cali_handle_t adc_cali_handle = nullptr;
+
+static struct {
+  float full;
+  float empty;
+  float low;
+  float critical;
+} profile = {
+  .full = 8.40f,
+  .empty = 6.00f,
+  .low = 6.60f,
+  .critical = 6.20f
+};
 
 static bool _adc_calibration_init(adc_unit_t unit, adc_channel_t channel, adc_atten_t atten, adc_cali_handle_t* out_handle) {
-
-  adc_cali_handle_t handle = NULL;
+  adc_cali_handle_t handle = nullptr;
   esp_err_t ret = ESP_FAIL;
   bool calibrated = false;
 
@@ -83,36 +100,76 @@ static bool _adc_calibration_init(adc_unit_t unit, adc_channel_t channel, adc_at
   return calibrated;
 }
 
-adc_oneshot_unit_handle_t adc1_handle;
+// 根据电压计算电量百分比
+float battery_calculate_percentage(const float voltage) {
+  // 边界检查
+  if (voltage >= profile.full) {
+    return 100.0f;
+  }
 
-bool do_calibration1_chan0 = false;
+  if (voltage <= profile.empty) {
+    return 0.0f;
+  }
 
-adc_cali_handle_t adc_cali_handle = NULL;
+  // 线性插值计算百分比
+  float percentage = 100.0f * (voltage - profile.empty) / (profile.full - profile.empty);
+
+  // 锂电池
+  // 锂电池放电曲线：高电压段下降快，中间平缓，低电压段下降快
+  if (voltage > profile.low) {
+    // 高电压段：稍微调整曲线
+    percentage = percentage * 0.95f + 5.0f;
+  }
+  else if (voltage < profile.low) {
+    // 低电压段：快速下降
+    const float low_range_percentage = 100.0f * (voltage - profile.empty) / (profile.low - profile.empty);
+    percentage = low_range_percentage * 0.7f;
+  }
+
+  // 限制在0-100范围内
+  if (percentage > 100.0f) {
+    percentage = 100.0f;
+  }
+  if (percentage < 0.0f) {
+    percentage = 0.0f;
+  }
+  return percentage;
+}
+
 
 void showBatteryLED(void* pvParameters) {
   for (;;) {
-    const double battery = battery_voltage_read();
-    ESP_LOGV("Battery", "%.2fV", battery);
+    const float voltage = battery_voltage_read();
+    log_info("%.2fV", voltage);
+
+    const float percentage = battery_calculate_percentage(voltage);
+    log_info("%.2f", percentage);
 
     // 电量显示
-    if (battery > 7.0f) {
+    if (voltage > 7.0f) {
       digitalWrite(LED_BATTERY_PIN, HIGH);
     }
     else {
       digitalWrite(LED_BATTERY_PIN, LOW);
     }
-    sleep(1);
+    vTaskDelay(pdMS_TO_TICKS(1000));
+
+    static int count = 0;
+    if (++count % 10 == 0) {
+      UBaseType_t stack_remain = uxTaskGetStackHighWaterMark(nullptr);
+      ESP_LOGW(TAG, "栈空间剩余: %d 字节", stack_remain);
+    }
   }
 }
 
 
 void battery_init() {
-  const adc_oneshot_unit_init_cfg_t init_config1 = {
+  constexpr adc_oneshot_unit_init_cfg_t init_config1 = {
     .unit_id = ADC_UNIT_1,
   };
   ESP_ERROR_CHECK(adc_oneshot_new_unit(&init_config1, &adc1_handle));
 
-  const adc_oneshot_chan_cfg_t config = {
+  constexpr adc_oneshot_chan_cfg_t config = {
     .atten = ADC_ATTEN_DB_12,
     .bitwidth = ADC_BITWIDTH_DEFAULT,
   };
@@ -124,9 +181,13 @@ void battery_init() {
   pinMode(LED_BATTERY_PIN, OUTPUT);
   digitalWrite(LED_BATTERY_PIN, LOW);
 
-  xTaskCreate(showBatteryLED, "showBatteryLED", 2048, NULL, tskIDLE_PRIORITY, NULL);
+  xTaskCreate(showBatteryLED, "bat-loop", 3000, nullptr, tskIDLE_PRIORITY, nullptr);
 }
 
+float battery_capacity_read() {
+  const float voltage = battery_voltage_read();
+  return battery_calculate_percentage(voltage);
+}
 
 float battery_voltage_read() {
   int adc_raw;
@@ -143,37 +204,4 @@ float battery_voltage_read() {
     voltage = adc_raw;
   }
   return static_cast<float>(voltage) * 3.97f / 1000.0f;
-}
-
-
-#define TEST_ADC_UNIT (ADC_UNIT_1)
-#define TEST_ADC_BITWIDTH (ADC_BITWIDTH_DEFAULT)
-#define TEST_ADC_ATTEN (ADC_ATTEN_DB_12)
-#define TEST_ADC_CHANNEL (ADC_CHANNEL_1)
-#define TEST_RESISTOR_UPPER (460)
-#define TEST_RESISTOR_LOWER (460)
-#define TEST_ESTIMATION_TIME (50)
-
-void app_main1(void) {
-  adc_battery_estimation_t config = {
-    .internal = {
-      .adc_unit = TEST_ADC_UNIT,
-      .adc_bitwidth = TEST_ADC_BITWIDTH,
-      .adc_atten = TEST_ADC_ATTEN,
-    },
-    .adc_channel = TEST_ADC_CHANNEL,
-    .lower_resistor = TEST_RESISTOR_LOWER,
-    .upper_resistor = TEST_RESISTOR_UPPER,
-  };
-
-  adc_battery_estimation_handle_t adc_battery_estimation_handle = adc_battery_estimation_create(&config);
-
-  for (int i = 0; i < TEST_ESTIMATION_TIME; i++) {
-    float capacity = 0;
-    adc_battery_estimation_get_capacity(adc_battery_estimation_handle, &capacity);
-    printf("Battery capacity: %.1f%%\n", capacity);
-    vTaskDelay(pdMS_TO_TICKS(500));
-  }
-
-  adc_battery_estimation_destroy(adc_battery_estimation_handle);
 }

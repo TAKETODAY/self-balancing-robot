@@ -11,8 +11,6 @@ dependencies:
   espp/i2c:
     version: '^1.0.31'
 
-  espressif/adc_battery_estimation: 0.2.1
-
 #  espressif/led_strip: "^2.4.1"
 
 #  nimble_peripheral_utils:
