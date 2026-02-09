@@ -10,8 +10,8 @@ dependencies:
 #    version: '^3.3.3'
   espp/i2c:
     version: '^1.0.31'
-#  esp-idf-lib/mpu6050:
-#    version: '^2.1.8'
+
+  espressif/adc_battery_estimation: 0.2.1
 
 #  espressif/led_strip: "^2.4.1"
 

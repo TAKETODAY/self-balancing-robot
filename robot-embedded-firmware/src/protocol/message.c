@@ -13,12 +13,15 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see [https://www.gnu.org/licenses/]
 
-
-#include "protocol/message.h"
-
 #include <stdio.h>
 
+#include "protocol/message.h"
 #include "protocol/buffer.h"
+
+static uint16_t get_next_sequence() {
+  static uint16_t sequence = 0;
+  return sequence++;
+}
 
 static bool serialize_control_message(control_message_t* control, buffer_t* buf) {
   return buffer_write_u16(buf, control->left_wheel_speed)
@@ -53,7 +56,6 @@ static bool deserialize_control_leg_message(control_leg_message_t* control, buff
   return buffer_read_u8(buf, &control->left_percentage)
          && buffer_read_u8(buf, &control->right_percentage);
 }
-
 
 static bool deserialize_config_pid(config_pid_message_t* pid, buffer_t* buf) {
   return buffer_read_f32(buf, &pid->P)
@@ -122,7 +124,7 @@ void test() {
   buffer_t buf = buffer_create(data, 32);
 
   robot_message_t msg = {
-    .sequence = 100,
+    .sequence = get_next_sequence(),
     .type = MESSAGE_CONFIG_GET,
     .flags = 0b00001111,
     .body.config = {

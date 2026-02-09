@@ -25,7 +25,10 @@
 #include "esp_adc/adc_oneshot.h"
 #include "esp_adc/adc_cali_scheme.h"
 
-static const adc_channel_t channel = ADC_CHANNEL_7;
+#include "adc_battery_estimation.h"
+
+
+static constexpr adc_channel_t channel = ADC_CHANNEL_7;
 
 static auto TAG = "battery";
 
@@ -140,4 +143,37 @@ float battery_voltage_read() {
     voltage = adc_raw;
   }
   return static_cast<float>(voltage) * 3.97f / 1000.0f;
+}
+
+
+#define TEST_ADC_UNIT (ADC_UNIT_1)
+#define TEST_ADC_BITWIDTH (ADC_BITWIDTH_DEFAULT)
+#define TEST_ADC_ATTEN (ADC_ATTEN_DB_12)
+#define TEST_ADC_CHANNEL (ADC_CHANNEL_1)
+#define TEST_RESISTOR_UPPER (460)
+#define TEST_RESISTOR_LOWER (460)
+#define TEST_ESTIMATION_TIME (50)
+
+void app_main1(void) {
+  adc_battery_estimation_t config = {
+    .internal = {
+      .adc_unit = TEST_ADC_UNIT,
+      .adc_bitwidth = TEST_ADC_BITWIDTH,
+      .adc_atten = TEST_ADC_ATTEN,
+    },
+    .adc_channel = TEST_ADC_CHANNEL,
+    .lower_resistor = TEST_RESISTOR_LOWER,
+    .upper_resistor = TEST_RESISTOR_UPPER,
+  };
+
+  adc_battery_estimation_handle_t adc_battery_estimation_handle = adc_battery_estimation_create(&config);
+
+  for (int i = 0; i < TEST_ESTIMATION_TIME; i++) {
+    float capacity = 0;
+    adc_battery_estimation_get_capacity(adc_battery_estimation_handle, &capacity);
+    printf("Battery capacity: %.1f%%\n", capacity);
+    vTaskDelay(pdMS_TO_TICKS(500));
+  }
+
+  adc_battery_estimation_destroy(adc_battery_estimation_handle);
 }
