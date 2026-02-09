@@ -27,31 +27,16 @@ public class ControlMessage implements Message {
 
   public final short rightWheelSpeed;
 
-  public final byte legHeightPercentage;
-
-  public ControlMessage(int leftWheelSpeed, int rightWheelSpeed, int legHeightPercentage) {
+  public ControlMessage(int leftWheelSpeed, int rightWheelSpeed) {
     this.leftWheelSpeed = (short) leftWheelSpeed;
     this.rightWheelSpeed = (short) rightWheelSpeed;
-    this.legHeightPercentage = percentage(legHeightPercentage);
+
   }
 
   @Override
   public void writeTo(Writable writable) {
     writable.write(leftWheelSpeed);
     writable.write(rightWheelSpeed);
-    writable.write(legHeightPercentage);
-  }
-
-  private static byte percentage(int legHeightPercentage) {
-    if (legHeightPercentage > 100) {
-      return 100;
-    }
-
-    if (legHeightPercentage < 0) {
-      legHeightPercentage = 10;
-    }
-
-    return (byte) legHeightPercentage;
   }
 
 }

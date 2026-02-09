@@ -37,6 +37,8 @@ public class RobotViewModel extends ViewModel implements DataHandler, LoggingSup
 
   public final MutableLiveData<Integer> batteryLevel = new MutableLiveData<>(100);
 
+  public final MutableLiveData<Integer> legHeightPercentage = new MutableLiveData<>(50);
+
   @SuppressWarnings("NullAway.Init")
   private WritableChannel writableChannel;
 
@@ -48,8 +50,6 @@ public class RobotViewModel extends ViewModel implements DataHandler, LoggingSup
   public void handleIncomingData(byte[] data) {
     debug("onDataReceived: %s", Arrays.toString(data));
 
-    RobotMessage robotMessage = RobotMessage.forControl(1, 1, data[0]);
-    sendData(robotMessage.toByteArray());
   }
 
   @Override
@@ -60,6 +60,11 @@ public class RobotViewModel extends ViewModel implements DataHandler, LoggingSup
   public void sendData(byte[] data) {
     writableChannel.write(data);
     debug("write: %s", Arrays.toString(data));
+  }
+
+  public void setHeightPercentage(int percentage) {
+    RobotMessage robotMessage = RobotMessage.forControlLeg(percentage, percentage);
+    sendData(robotMessage.toByteArray());
   }
 
   public static RobotViewModel getInstance(ViewModelStoreOwner store) {

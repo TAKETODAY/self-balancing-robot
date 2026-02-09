@@ -21,6 +21,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.SeekBar;
 
 import androidx.navigation.fragment.NavHostFragment;
 
@@ -69,6 +70,24 @@ public class ControlFragment extends ViewBindingFragment<FragmentControlBinding>
     binding.joystick.setOnMoveListener((angle, strength) -> {
 //      binding.textViewAngleLeft.setText(angle + "°");
 //      binding.textViewStrengthLeft.setText(strength + "%");
+    });
+
+    binding.legControl.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+
+      @Override
+      public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+        robotModel.setHeightPercentage(progress);
+      }
+
+      @Override
+      public void onStartTrackingTouch(SeekBar seekBar) {
+
+      }
+
+      @Override
+      public void onStopTrackingTouch(SeekBar seekBar) {
+
+      }
     });
 
   }

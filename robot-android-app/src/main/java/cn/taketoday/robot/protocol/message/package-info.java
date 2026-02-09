@@ -15,43 +15,7 @@
  * along with this program. If not, see [https://www.gnu.org/licenses/]
  */
 
-package cn.taketoday.robot.protocol;
+@NullMarked
+package cn.taketoday.robot.protocol.message;
 
-import infra.lang.Enumerable;
-
-/**
- * @author <a href="https://github.com/TAKETODAY">海子 Yang</a>
- * @since 1.0 2025/12/20 14:40
- */
-public enum MessageType implements Message, Enumerable<Integer> {
-  CONTROL(1),
-  CONTROL_LEG(2),
-  EMERGENCY_STOP(3),
-
-  CONFIG_SET(0x10),
-  CONFIG_GET(0x11),
-  FIRMWARE_INFO(0x12),
-  STATUS_REPORT(0x13),
-  ACTION_PLAY(0x20),
-
-  ACK(0x80),
-  ERROR(0x81),
-  SENSOR_DATA(0x82);
-
-  public final int value;
-
-  MessageType(int value) {
-    this.value = value;
-  }
-
-  @Override
-  public Integer getValue() {
-    return value;
-  }
-
-  @Override
-  public void writeTo(Writable writable) {
-    writable.write((byte) value);
-  }
-
-}
+import org.jspecify.annotations.NullMarked;

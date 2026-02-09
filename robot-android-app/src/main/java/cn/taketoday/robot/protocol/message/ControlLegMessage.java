@@ -15,43 +15,41 @@
  * along with this program. If not, see [https://www.gnu.org/licenses/]
  */
 
-package cn.taketoday.robot.protocol;
+package cn.taketoday.robot.protocol.message;
 
-import infra.lang.Enumerable;
+import cn.taketoday.robot.protocol.Message;
+import cn.taketoday.robot.protocol.Writable;
 
 /**
  * @author <a href="https://github.com/TAKETODAY">海子 Yang</a>
- * @since 1.0 2025/12/20 14:40
+ * @since 1.0 2026/2/9 21:44
  */
-public enum MessageType implements Message, Enumerable<Integer> {
-  CONTROL(1),
-  CONTROL_LEG(2),
-  EMERGENCY_STOP(3),
+public class ControlLegMessage implements Message {
 
-  CONFIG_SET(0x10),
-  CONFIG_GET(0x11),
-  FIRMWARE_INFO(0x12),
-  STATUS_REPORT(0x13),
-  ACTION_PLAY(0x20),
+  public final byte leftPercentage;
 
-  ACK(0x80),
-  ERROR(0x81),
-  SENSOR_DATA(0x82);
+  public final byte rightPercentage;
 
-  public final int value;
-
-  MessageType(int value) {
-    this.value = value;
-  }
-
-  @Override
-  public Integer getValue() {
-    return value;
+  public ControlLegMessage(int leftPercentage, int rightPercentage) {
+    this.leftPercentage = percentage(leftPercentage);
+    this.rightPercentage = percentage(rightPercentage);
   }
 
   @Override
   public void writeTo(Writable writable) {
-    writable.write((byte) value);
+    writable.write(leftPercentage);
+    writable.write(rightPercentage);
   }
 
+  private static byte percentage(int percentage) {
+    if (percentage > 100) {
+      return 100;
+    }
+
+    if (percentage < 0) {
+      percentage = 10;
+    }
+
+    return (byte) percentage;
+  }
 }

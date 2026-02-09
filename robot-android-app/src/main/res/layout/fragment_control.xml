@@ -68,14 +68,15 @@
   </LinearLayout>
 
   <LinearLayout
+    android:id="@+id/linearLayout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="108dp"
+    android:layout_marginTop="48dp"
     android:gravity="center_horizontal"
     android:orientation="horizontal"
     android:paddingTop="12dp"
     app:layout_constraintTop_toTopOf="parent"
-    tools:layout_editor_absoluteX="8dp">
+    tools:layout_editor_absoluteX="16dp">
 
     <!-- 倾角 X -->
     <androidx.cardview.widget.CardView
@@ -159,7 +160,7 @@
     android:id="@+id/joystick"
     android:layout_width="200sp"
     android:layout_height="200sp"
-    android:layout_marginBottom="164sp"
+    android:layout_marginBottom="92dp"
     app:backgroundColor="@color/colorPrimaryDark"
     app:borderColor="#00796B"
     app:borderWidth="2dp"
@@ -218,6 +219,20 @@
     android:textStyle="bold"
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintEnd_toEndOf="parent" />
+
+  <SeekBar
+    android:id="@+id/leg_control"
+    android:layout_width="261dp"
+    android:layout_height="17dp"
+    android:max="100"
+    android:min="0"
+    android:rotation="-90"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent"
+    app:layout_constraintVertical_bias="0.37" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

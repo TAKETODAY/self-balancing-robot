@@ -98,7 +98,7 @@ void robot_leg_init() {
     robot_leg_set_acceleration(SERVO1_ACC);
     robot_leg_set_height_percentage(50);
 
-    xTaskCreate(servosLoop, "servosLoop", 4096, nullptr, tskIDLE_PRIORITY, nullptr);
+    // xTaskCreate(servosLoop, "servosLoop", 4096, nullptr, tskIDLE_PRIORITY, nullptr);
   }
 
   log_info("uart0 installed %d", uart_is_driver_installed(uart_port_t::UART_NUM_0));
