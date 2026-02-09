@@ -9,14 +9,14 @@ set(FOC_FILES
     foc/common/base_classes/FOCMotor.cpp
     foc/communication/Commander.cpp
     foc/communication/SimpleFOCDebug.cpp
-#    foc/current_sense/GenericCurrentSense.cpp
-#    foc/current_sense/LowsideCurrentSense.cpp
+    #    foc/current_sense/GenericCurrentSense.cpp
+    #    foc/current_sense/LowsideCurrentSense.cpp
     foc/current_sense/hardware_specific/esp32/esp32_mcu.cpp
     foc/current_sense/hardware_specific/esp32/esp32_mcpwm_mcu.cpp
     foc/current_sense/hardware_specific/esp32/esp32_adc_driver.cpp
-#    foc/sensors/GenericSensor.cpp
-#    foc/sensors/Encoder.cpp
-#    foc/sensors/HallSensor.cpp
+    #    foc/sensors/GenericSensor.cpp
+    #    foc/sensors/Encoder.cpp
+    #    foc/sensors/HallSensor.cpp
     foc/sensors/MagneticSensorI2C.cpp
     foc/drivers/BLDCDriver3PWM.cpp
     foc/drivers/hardware_specific/esp32/esp32_mcpwm_mcu.cpp
@@ -50,6 +50,9 @@ idf_component_register(SRCS
     robot/leg.cpp
     robot/error.c
     robot/error_string.c
+    robot/airborne_detector.c
+    robot/motor_airborne_detector.c
+    robot/fused_airborne_detector.c
 
     protocol/message.c
     protocol/buffer.c
