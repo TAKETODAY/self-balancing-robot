@@ -23,7 +23,7 @@ static uint16_t get_next_sequence() {
   return sequence++;
 }
 
-static bool serialize_control_message(control_message_t* control, buffer_t* buf) {
+static bool serialize_control_message(const control_message_t* control, buffer_t* buf) {
   return buffer_write_u16(buf, control->left_wheel_speed)
          && buffer_write_u16(buf, control->right_wheel_speed);
 }

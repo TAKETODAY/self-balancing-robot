@@ -37,8 +37,8 @@ typedef enum : uint8_t {
   MESSAGE_CONTROL_LEG = 2,
   MESSAGE_EMERGENCY_STOP = 3,
 
-  MESSAGE_CONFIG_SET = 0x10, // 设置参数
-  MESSAGE_CONFIG_GET = 0x11, // 获取参数
+  MESSAGE_CONFIG_SET = 0x10,    // 设置参数
+  MESSAGE_CONFIG_GET = 0x11,    // 获取参数
   MESSAGE_FIRMWARE_INFO = 0x12, // 获取固件信息
   MESSAGE_STATUS_REPORT = 0x13,
 
@@ -87,8 +87,6 @@ typedef struct {
   config_type_t type;
 
   union {
-    config_pid_message_t pid;
-
     int32_t i32;
     int16_t i16;
     int8_t i8;
@@ -97,6 +95,7 @@ typedef struct {
 
     float f;
     double d;
+    config_pid_message_t pid;
   } data;
 
 } config_message_t;
