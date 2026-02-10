@@ -35,7 +35,7 @@ void multi_sensor_detector_init(multi_sensor_detector_t* detector) {
   detector->weights.pressure_weight = 0.05f;
 
   // 初始化校准状态
-  detector->calibration.ground_current = 1.0f; // 默认1A地面电流
+  detector->calibration.ground_current = 1.0f;   // 默认1A地面电流
   detector->calibration.ground_vibration = 0.5f; // 默认振动水平
   detector->calibration.ground_distance = 0.05f; // 默认5cm地面距离
 }
@@ -283,7 +283,7 @@ void multi_sensor_print_status(const multi_sensor_detector_t* detector) {
   printf("=== 多传感器悬空检测状态 ===\n");
   printf("融合状态: %s\n", suspended_state_to_string(detector->fused_state));
   printf("融合置信度: %.1f%%\n", detector->fused_confidence * 100);
-  printf("悬空持续时间: %u ms\n", suspended_detector_get_duration(&detector->imu_detector));
+  printf("悬空持续时间: %lu ms\n", suspended_detector_get_duration(&detector->imu_detector));
 
   printf("\n传感器状态:\n");
   printf("  IMU: %s\n", suspended_state_to_string(detector->imu_detector.state));
@@ -294,9 +294,9 @@ void multi_sensor_print_status(const multi_sensor_detector_t* detector) {
   printf("  压力: %s\n", detector->sensor_states.pressure_off_ground ? "离地" : "接地");
 
   printf("\n检测统计:\n");
-  printf("  总检测次数: %u\n", detector->detection_count);
-  printf("  正确检测: %u\n", detector->correct_detections);
-  printf("  错误检测: %u\n", detector->false_detections);
+  printf("  总检测次数: %lu\n", detector->detection_count);
+  printf("  正确检测: %lu\n", detector->correct_detections);
+  printf("  错误检测: %lu\n", detector->false_detections);
   printf("  准确率: %.1f%%\n",
     detector->detection_count > 0 ? (float) detector->correct_detections / detector->detection_count * 100 : 0);
   printf("============================\n\n");

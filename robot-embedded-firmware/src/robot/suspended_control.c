@@ -14,7 +14,8 @@
 // along with this program. If not, see [https://www.gnu.org/licenses/]
 
 // suspended_control.c
-#include "suspended_control.h"
+
+#include "robot/suspended_control.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -35,8 +36,8 @@ void suspended_controller_init(suspended_controller_t* controller) {
   controller->params.emergency_stop_time = 10000; // 10秒
 
   // 设置安全限制
-  controller->safety.max_safe_time = 30000; // 30秒
-  controller->safety.max_tilt_angle = 30.0f; // 30度
+  controller->safety.max_safe_time = 30000;    // 30秒
+  controller->safety.max_tilt_angle = 30.0f;   // 30度
   controller->safety.max_descent_speed = 0.5f; // 0.5m/s
   controller->safety.enable_auto_shutdown = true;
 
@@ -89,7 +90,7 @@ void suspended_controller_update(suspended_controller_t* controller,
         controller->mode = SUSPENDED_CTRL_RECOVER;
         controller->status.mode_start_time = current_time;
         controller->status.recovery_attempts++;
-        printf("进入恢复尝试模式 (尝试#%u)\n", controller->status.recovery_attempts);
+        printf("进入恢复尝试模式 (尝试#%lu)\n", controller->status.recovery_attempts);
       }
       // 检查是否恢复接地
       else if (state == SUSPENDED_NONE) {
@@ -149,8 +150,7 @@ suspended_control_mode_t suspended_controller_get_mode(const suspended_controlle
 
 // 计算控制输出
 void suspended_controller_calculate_output(const suspended_controller_t* controller,
-  float* motor_left,
-  float* motor_right) {
+  float* motor_left, float* motor_right) {
   if (!controller || !motor_left || !motor_right) return;
 
   // 默认输出
@@ -169,7 +169,7 @@ void suspended_controller_calculate_output(const suspended_controller_t* control
       // 姿态稳定控制
       // 简化的姿态稳定算法
       float pitch_error = get_pitch_error(); // 需要实际实现
-      float roll_error = get_roll_error(); // 需要实际实现
+      float roll_error = get_roll_error();   // 需要实际实现
 
       *motor_left = controller->params.stabilize_kp * pitch_error +
                     controller->params.stabilize_kd * roll_error;
@@ -211,13 +211,11 @@ void suspended_controller_print_status(const suspended_controller_t* controller)
 
   printf("=== 悬空控制器状态 ===\n");
   printf("控制模式: %s\n", mode_str[controller->mode]);
-  printf("悬空状态: %s\n",
-    suspended_state_to_string(controller->detector.fused_state));
-  printf("悬空时间: %u ms\n",
-    suspended_detector_get_duration(&controller->detector.imu_detector));
-  printf("总悬空时间: %u ms\n", controller->status.total_suspended_time);
-  printf("最长悬空: %u ms\n", controller->status.max_suspended_time);
-  printf("恢复尝试: %u\n", controller->status.recovery_attempts);
+  printf("悬空状态: %s\n", suspended_state_to_string(controller->detector.fused_state));
+  printf("悬空时间: %lu ms\n", suspended_detector_get_duration(&controller->detector.imu_detector));
+  printf("总悬空时间: %lu ms\n", controller->status.total_suspended_time);
+  printf("最长悬空: %lu ms\n", controller->status.max_suspended_time);
+  printf("恢复尝试: %lu\n", controller->status.recovery_attempts);
   printf("恢复成功: %s\n", controller->status.recovery_successful ? "是" : "否");
   printf("=====================\n\n");
 }

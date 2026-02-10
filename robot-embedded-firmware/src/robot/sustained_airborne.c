@@ -14,7 +14,8 @@
 // along with this program. If not, see [https://www.gnu.org/licenses/]
 
 // sustained_airborne.c
-#include "sustained_airborne.h"
+
+#include "robot/sustained_airborne.h"
 #include <string.h>
 #include <stdio.h>
 

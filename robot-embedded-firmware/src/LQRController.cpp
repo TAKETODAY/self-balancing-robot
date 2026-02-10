@@ -1,4 +1,4 @@
-// Copyright 2025 the original author or authors.
+// Copyright 2025 - 2026 the original author or authors.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -56,8 +56,6 @@ LowPassFilter lpf_height(0.1);
 // 超级平衡模式参数
 bool super_balance_mode = true; // 超级平衡模式
 PIDController pid_super_balance(11, 0, 0, 100000, 100); // 适配joyy实际需求
-
-#define constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
 
 static void foc_balance_loop(void* pvParameters);
 

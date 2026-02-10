@@ -53,6 +53,9 @@ idf_component_register(SRCS
     robot/airborne_detector.c
     robot/motor_airborne_detector.c
     robot/fused_airborne_detector.c
+    robot/multi_sensor_suspended.c
+    robot/suspended_control.c
+    robot/sustained_airborne.c
 
     protocol/message.c
     protocol/buffer.c

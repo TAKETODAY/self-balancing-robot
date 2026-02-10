@@ -19,6 +19,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#define constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
+
 #if !defined( __cplusplus)
 
 #define nullptr NULL
