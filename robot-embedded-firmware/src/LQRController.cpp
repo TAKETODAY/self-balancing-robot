@@ -18,8 +18,6 @@
 #include "attitude_sensor.h"
 #include "logging.hpp"
 #include "robot.hpp"
-#include "robot/attitude_to_suspended_adapter.h"
-#include "robot/suspended_control.h"
 
 #include "foc/BLDCMotor.h"
 #include "foc/common/pid.h"
