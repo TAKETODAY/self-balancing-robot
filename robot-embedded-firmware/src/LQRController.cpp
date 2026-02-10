@@ -202,7 +202,6 @@ static void foc_balance_loop(void* pvParameters) {
       continue;
     }
 
-
     controller->balance_loop();
     controller->yaw_loop();
 

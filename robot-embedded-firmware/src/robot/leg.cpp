@@ -169,3 +169,15 @@ void robot_leg_set_right_height_percentage(uint8_t percentage) {
   handle.right_position_percentage = percentage;
   servos.setTargetPosition(RIGHT, handle.right_position);
 }
+
+uint8_t robot_leg_get_left_height_percentage() {
+  return handle.left_position_percentage;
+}
+
+uint8_t robot_leg_get_right_height_percentage() {
+  return handle.right_position_percentage;
+}
+
+uint8_t robot_leg_get_height_percentage() {
+  return handle.right_position_percentage;
+}

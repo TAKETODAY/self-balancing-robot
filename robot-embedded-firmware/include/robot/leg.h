@@ -36,6 +36,11 @@ void robot_leg_set_left_height_percentage(uint8_t percentage);
 
 void robot_leg_set_right_height_percentage(uint8_t percentage);
 
+uint8_t robot_leg_get_left_height_percentage();
+
+uint8_t robot_leg_get_right_height_percentage();
+
+uint8_t robot_leg_get_height_percentage();
 
 #ifdef __cplusplus
 }
