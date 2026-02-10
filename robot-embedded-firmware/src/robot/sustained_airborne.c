@@ -302,9 +302,7 @@ static suspended_state_t determine_state(suspended_detector_t* detector,
 
 // 更新检测器
 suspended_state_t suspended_detector_update(suspended_detector_t* detector,
-  float vertical_accel,
-  float vertical_velocity,
-  uint32_t timestamp) {
+  float vertical_accel, float vertical_velocity, uint32_t timestamp) {
   if (!detector) return SUSPENDED_NONE;
 
   static uint32_t last_timestamp = 0;

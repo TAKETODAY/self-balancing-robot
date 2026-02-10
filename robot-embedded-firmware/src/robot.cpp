@@ -19,7 +19,7 @@
 #include "foc/sensors/MagneticSensorI2C.h"
 #include "battery.hpp"
 #include "esp_log.h"
-#include "AttitudeSensor.hpp"
+#include "attitude_sensor.h"
 #include "LQRController.hpp"
 #include "nvs_flash.h"
 

@@ -18,6 +18,10 @@
 
 #include "defs.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // 腾空状态
 typedef enum {
   GROUND_CONTACT = 0, // 地面接触
@@ -122,5 +126,9 @@ void airborne_detector_reset(airborne_detector_t* detector);
 
 // 打印状态信息
 void airborne_detector_print_status(const airborne_detector_t* detector);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // AIRBORNE_DETECTOR_H

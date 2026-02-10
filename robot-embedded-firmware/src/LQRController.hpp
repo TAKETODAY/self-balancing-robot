@@ -1,4 +1,4 @@
-// Copyright 2025 the original author or authors.
+// Copyright 2025 - 2026 the original author or authors.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -28,7 +28,6 @@ public:
   void yaw_loop();
 
 public:
-  bool super_balance_mode = false;
 
   // LQR自平衡控制器参数
   float LQR_angle = 0;
@@ -41,29 +40,28 @@ public:
   float speed_control = 0;
   float distance_control = 0;
   float LQR_u = 0;
-  float pitch_zeropoint = 2; // 7 设定默认俯仰角度，向前到正，向后倒负
+  float pitch_zeropoint = 2;                        // 7 设定默认俯仰角度，向前到正，向后倒负
   float original_pitch_zeropoint = pitch_zeropoint; // 保存原始的角度零点
-  float distance_zeropoint = 0.5f; // 轮部位移零点偏置
-  float pitch_adjust = 0.0f; // 俯仰角度调整,负数前倾，正数后倾
+  float distance_zeropoint = 0.5f;                  // 轮部位移零点偏置
+  float pitch_adjust = 0.0f;                        // 俯仰角度调整,负数前倾，正数后倾
 
   // 记录轮部转速，用于判断跳跃状态
-  unsigned long last_speed_record_time = 0; // 上次记录转速的时间
+  unsigned long last_speed_record_time = 0;        // 上次记录转速的时间
   const unsigned long SPEED_RECORD_INTERVAL = 100; // 转速记录间隔(毫秒) ，因为时间相隔太近速度差不明显的
 
-  float last_lqr_speed = 0; // 记录上一时刻的轮部转速
+  float last_lqr_speed = 0;   // 记录上一时刻的轮部转速
   float robot_speed_diff = 0; // 速度差
 
 
   // 快速下坠加速度阈值
-  bool is_falling = false; // 正在下降
   unsigned long last_falling_trigger_time = 0; // 上一次触发is_falling的时间戳（毫秒）
   const unsigned long FALLING_COOLDOWN = 3000; // 冷却时间：3000毫秒（3秒）
 
   // 开机默认坐下 修改
-  bool robot_enabled = true; // 开机禁用平衡，默认坐下
+  bool robot_enabled = true;       // 开机禁用平衡，默认坐下
   bool last_robot_enabled = false; // 同步初始状态
-  int sitting_down = 0; // 开机直接进入“坐下状态”，避免无控制
-  int stand_up_count = 0; // 站立标志位
+  int sitting_down = 0;            // 开机直接进入“坐下状态”，避免无控制
+  int stand_up_count = 0;          // 站立标志位
 
 
   // YAW轴控制数据
@@ -75,17 +73,10 @@ public:
   float YAW_output = 0;
 
   // 跳跃相关参数
-  int jump_flag = 0; // 跳跃过程计数
+  int jump_flag = 0;     // 跳跃过程计数
   int jump_pre_flag = 0; // 跳跃前蓄能计数
-
-  int forward_jump_flag = 0; // 前跳跃标志位
-  int back_jump_flag = 0; // 后跳跃标志位
-  int left_jump_flag = 0; // 左跳跃标志位
-  int right_jump_flag = 0; // 右跳跃标志位
 
   // 倒地恢复计数
   int fallRecoveryResetCounter = 0;
-
-
 
 };

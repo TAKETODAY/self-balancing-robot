@@ -30,7 +30,7 @@ set(FOC_FILES
 idf_component_register(SRCS
     main.cpp
     battery.cpp
-    AttitudeSensor.cpp
+    attitude_sensor.c
     STSServoDriver.cpp
     LQRController.cpp
     mpu6050.c
@@ -56,6 +56,7 @@ idf_component_register(SRCS
     robot/multi_sensor_suspended.c
     robot/suspended_control.c
     robot/sustained_airborne.c
+    robot/attitude_to_suspended_adapter.c
 
     protocol/message.c
     protocol/buffer.c

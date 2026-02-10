@@ -1,4 +1,4 @@
-// Copyright 2025 the original author or authors.
+// Copyright 2025 - 2026 the original author or authors.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,33 +17,31 @@
 
 #include "mpu6050.h"
 
-class AttitudeSensor {
-public:
-  AttitudeSensor();
-  ~AttitudeSensor();
+#ifdef __cplusplus
+extern "C" {
 
-  void begin();
 
-  void setGyroOffsets(float x, float y, float z);
 
-  void calcGyroOffsets(bool console = false, uint16_t delayBefore = 1000, uint16_t delayAfter = 500);
-  void update();
+#endif
 
-public:
-  mpu6050_axis_value_t acce{};
-  mpu6050_axis_value_t gyro{};
-  mpu6050_axis_value_t offset{};
 
-  float roll{}, pitch{}, yaw{};
+void attitude_begin();
 
-private:
-  mpu6050_handle_t mpu6050;
+void attitude_set_gyro_offsets(float x, float y, float z);
 
-  const float accCoef; // Weight of gyroscope
-  const float gyroCoef;
+void attitude_calc_gyro_offsets(bool console, uint16_t delayBefore, uint16_t delayAfter);
 
-  float interval{};
-  uint64_t preInterval{};
-};
+void attitude_update();
 
-extern AttitudeSensor attitude;
+mpu6050_axis_value_t* attitude_get_gyroscope();
+mpu6050_axis_value_t* attitude_get_acceleration();
+
+float attitude_get_pitch();
+float attitude_get_roll();
+float attitude_get_yaw();
+
+void attitude_destory();
+
+#ifdef __cplusplus
+}
+#endif

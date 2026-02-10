@@ -19,6 +19,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "attitude_sensor.h"
+
 // 初始化
 void suspended_controller_init(suspended_controller_t* controller) {
   if (!controller) return;
@@ -58,7 +60,7 @@ void suspended_controller_update(suspended_controller_t* controller,
   uint32_t current_time = sensors[0].timestamp; // 假设第一个传感器有时间戳
 
   // 状态机
-  suspended_control_mode_t old_mode = controller->mode;
+  //suspended_control_mode_t old_mode = controller->mode;
 
   switch (controller->mode) {
     case SUSPENDED_CTRL_NONE:
@@ -168,8 +170,9 @@ void suspended_controller_calculate_output(const suspended_controller_t* control
     case SUSPENDED_CTRL_STABILIZE:
       // 姿态稳定控制
       // 简化的姿态稳定算法
-      float pitch_error = get_pitch_error(); // 需要实际实现
-      float roll_error = get_roll_error();   // 需要实际实现
+
+      float pitch_error = attitude_get_pitch();
+      float roll_error = attitude_get_roll();
 
       *motor_left = controller->params.stabilize_kp * pitch_error +
                     controller->params.stabilize_kd * roll_error;

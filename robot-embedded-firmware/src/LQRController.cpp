@@ -15,9 +15,10 @@
 
 #include "LQRController.hpp"
 
-#include "AttitudeSensor.hpp"
+#include "attitude_sensor.h"
 #include "logging.hpp"
 #include "robot.hpp"
+#include "robot/attitude_to_suspended_adapter.h"
 #include "foc/BLDCMotor.h"
 #include "foc/common/pid.h"
 #include "foc/drivers/BLDCDriver3PWM.h"
@@ -54,8 +55,9 @@ LowPassFilter lpf_roll(0.3);
 LowPassFilter lpf_height(0.1);
 
 // 超级平衡模式参数
-bool super_balance_mode = true;                         // 超级平衡模式
 PIDController pid_super_balance(11, 0, 0, 100000, 100); // 适配joyy实际需求
+
+static mpu6050_suspended_adapter_t suspended_adapter;
 
 static void foc_balance_loop(void* pvParameters);
 
@@ -84,7 +86,16 @@ void LQRController::begin() {
     }
   }
 
-  attitude.begin();
+  attitude_begin();
+
+  if (!mpu6050_suspended_adapter_init(&suspended_adapter, 1.0f, 1.0f)) {
+    ESP_LOGE("MAIN", "悬空检测适配器初始化失败");
+    return;
+  }
+
+  if (!mpu6050_suspended_adapter_calibrate(&suspended_adapter, 2000)) {
+    ESP_LOGW("MAIN", "校准失败，但系统将继续运行");
+  }
 
   sensorL.init(&i2c);
   sensorR.init(&i2c1);
@@ -128,7 +139,7 @@ void LQRController::begin() {
   motor_R.init();
   motor_R.initFOC();
 
-  xTaskCreate(foc_balance_loop, "balance_loop", 2048, this, 10, nullptr);
+  xTaskCreate(foc_balance_loop, "balance_loop", 4096, this, 10, nullptr);
 }
 
 
@@ -138,7 +149,8 @@ static void foc_balance_loop(void* pvParameters) {
 
   for (;;) {
     delayMicroseconds(1500);
-    attitude.update();
+    attitude_update();
+    // suspended_state_t state = mpu6050_suspended_adapter_update(&suspended_adapter);
 
     controller->balance_loop();
     controller->yaw_loop();
@@ -196,9 +208,9 @@ void LQRController::resetZeroPoint() {
 void LQRController::balance_loop() {
   LQR_distance = (-0.5) * (motor_L.shaft_angle + motor_R.shaft_angle);    // 两个电机的旋转角度（shaft_angle）,单位：弧度（rad）实际位移量
   LQR_speed = (-0.5) * (motor_L.shaft_velocity + motor_R.shaft_velocity); // 两个电机角速度（shaft_velocity）,单位：弧度 / 秒（rad/s）
-  LQR_angle = attitude.pitch;                                             // mpu6050 pitch 角度，单位：度（°）
+  LQR_angle = attitude_get_pitch();                                       // mpu6050 pitch 角度，单位：度（°）
 
-  LQR_gyro = attitude.gyro.y; // pitch Y轴角速度,单位：度 / 秒（°/s）
+  LQR_gyro = attitude_get_gyroscope()->y; // pitch Y轴角速度,单位：度 / 秒（°/s）
 
   angle_control = pid_pitch(LQR_angle - pitch_zeropoint) + pitch_adjust;
 
@@ -206,11 +218,7 @@ void LQRController::balance_loop() {
 
   // 前进后退跳跃的系数都不一样
   float speed_target_coeff = 0.1;
-  if (jump_flag) {
-    // 跳跃
-    speed_target_coeff = 0.1;
-  }
-  else if (wrobot.joyy > 0) {
+  if (wrobot.joyy > 0) {
     // 前进
     speed_target_coeff = 0.18;
   }
@@ -218,43 +226,26 @@ void LQRController::balance_loop() {
     // 后退
     speed_target_coeff = 0.11;
   }
-  else {
-    speed_target_coeff = 0.1;
-  }
 
   // 超级平衡模式
-  if (super_balance_mode && !is_falling && robot_enabled && !sitting_down && !jump_flag) {
-    // 误差=实际角度 - 默认零点
-    float balance_joyy = pid_super_balance(LQR_angle - pitch_zeropoint);
-    balance_joyy = constrain(balance_joyy, -100.0f, 100.0f);
-    wrobot.joyy = balance_joyy;
-  }
+  // if (super_balance_mode  && robot_enabled && !sitting_down && !jump_flag) {
+  // 误差=实际角度 - 默认零点
+  // float balance_joyy = pid_super_balance(LQR_angle - pitch_zeropoint);
+  // balance_joyy = constrain(balance_joyy, -100.0f, 100.0f);
+  // wrobot.joyy = balance_joyy;
+  // }
 
   speed_control = pid_speed(LQR_speed - speed_target_coeff * lpf_joyy(wrobot.joyy)); // 最大8v
 
   // 检测轮子差速，判断轮子是否离地
-  unsigned long current_time = millis();
-  if (current_time - last_speed_record_time >= SPEED_RECORD_INTERVAL) {
+  if (unsigned long current_time = millis(); current_time - last_speed_record_time >= SPEED_RECORD_INTERVAL) {
     robot_speed_diff = LQR_speed - last_lqr_speed;
-
     // 轮子离地
     if (robot_speed_diff > 18.0) {
-      // wheel_ground_flag = 0; // 轮子离地标记
-      //  Serial.println("TAKE OFF");
-      // Serial.print(wheel_ground_flag);
-      // Serial.print(",robot_speed_diff:");
-      // Serial.println(robot_speed_diff);
-      // Serial.print(",jump_flag:");
-      // Serial.println(jump_flag); // 100 左右
+
     }
-    if (robot_speed_diff < -9.0) // 轮子着地
-    {
-      // wheel_ground_flag = 1; // 轮子着地标记
-      // Serial.println("LANDING");
-      // Serial.print(",robot_speed_diff:");
-      // Serial.println(robot_speed_diff);
-      // Serial.print(",jump_flag:");
-      // Serial.println(jump_flag); // 120左右
+    if (robot_speed_diff < -9.0) {
+      // 轮子着地
       if (jump_flag) {
         // 落地点作为新的位移零点
         resetZeroPoint();
@@ -283,12 +274,12 @@ void LQRController::balance_loop() {
 
   // 计算 LQR_u
   // 必须是在跳跃时jump_flag > 0，LQR_u= 角度控制量 + 角速度控制量
-  if ((jump_flag > 0 and jump_flag < 120)) // jump_flag：100离地 120着地
-  {
+  if (jump_flag > 0 and jump_flag < 120) {
+    // jump_flag：100离地 120着地
     LQR_u = angle_control + gyro_control; // 角度控制量 + 角速度控制，位移和速度控制分量被忽略
   }
-  else // 当轮部未离地时，LQR_u：4个参数
-  {
+  else {
+    // 当轮部未离地时，LQR_u：4个参数
     // 当轮部未离地时，LQR_u =角度控制量+角速度控制量+位移控制量+速度控制量
     LQR_u = angle_control + gyro_control + distance_control + speed_control;
   }
@@ -318,7 +309,7 @@ void LQRController::balance_loop() {
 
 }
 
-long map(long x, long in_min, long in_max, long out_min, long out_max) {
+static long map(long x, long in_min, long in_max, long out_min, long out_max) {
   const long run = in_max - in_min;
   if (run == 0) {
     log_error("map(): Invalid input range, min == max");
@@ -363,7 +354,7 @@ void LQRController::yaw_loop() {
   // 限制yaw_angle_control上限，避免超压（按电机7.4V反推，设为12较合适）
   yaw_angle_control = constrain(yaw_angle_control, -12.0f, 12.0f);
 
-  YAW_gyro = attitude.gyro.z; // 左右偏航角速度，用于纠正小车前后走直线时的角度偏差
+  YAW_gyro = attitude_get_gyroscope()->z; // 左右偏航角速度，用于纠正小车前后走直线时的角度偏差
   float yaw_gyro_control = pid_yaw_gyro(YAW_gyro);
   YAW_output = yaw_angle_control + yaw_gyro_control;
 }

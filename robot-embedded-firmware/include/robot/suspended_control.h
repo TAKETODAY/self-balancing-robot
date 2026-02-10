@@ -18,6 +18,11 @@
 
 #include "multi_sensor_suspended.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 // 悬空控制模式
 typedef enum {
   SUSPENDED_CTRL_NONE = 0,  // 无控制
@@ -71,5 +76,9 @@ void suspended_controller_calculate_output(const suspended_controller_t* control
   float* motor_left, float* motor_right);
 
 void suspended_controller_print_status(const suspended_controller_t* controller);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // SUSPENDED_CONTROL_H
