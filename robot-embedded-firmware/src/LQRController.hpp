@@ -28,7 +28,6 @@ public:
   void yaw_loop();
 
 public:
-
   // LQR自平衡控制器参数
   float LQR_angle = 0;
   float LQR_gyro = 0;
@@ -52,10 +51,7 @@ public:
   float last_lqr_speed = 0;   // 记录上一时刻的轮部转速
   float robot_speed_diff = 0; // 速度差
 
-
-  // 快速下坠加速度阈值
-  unsigned long last_falling_trigger_time = 0; // 上一次触发is_falling的时间戳（毫秒）
-  const unsigned long FALLING_COOLDOWN = 3000; // 冷却时间：3000毫秒（3秒）
+  bool sustained_airborne = false;
 
   // 开机默认坐下 修改
   bool robot_enabled = true;       // 开机禁用平衡，默认坐下

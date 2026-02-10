@@ -50,12 +50,6 @@ idf_component_register(SRCS
     robot/leg.cpp
     robot/error.c
     robot/error_string.c
-    robot/airborne_detector.c
-    robot/motor_airborne_detector.c
-    robot/fused_airborne_detector.c
-    robot/multi_sensor_suspended.c
-    robot/sustained_airborne.c
-    robot/attitude_to_suspended_adapter.c
 
     protocol/message.c
     protocol/buffer.c

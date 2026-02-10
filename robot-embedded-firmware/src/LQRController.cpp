@@ -59,13 +59,7 @@ LowPassFilter lpf_height(0.1);
 // 超级平衡模式参数
 PIDController pid_super_balance(11, 0, 0, 100000, 100); // 适配joyy实际需求
 
-static mpu6050_suspended_adapter_t suspended_adapter;
-static uint32_t last_status_print = 0;
-
 static void foc_balance_loop(void* pvParameters);
-static void emergency_shutdown();
-static void attempt_ground_recovery();
-static void enter_airborne_mode();
 
 void robot_suspended_controller_init();
 
@@ -95,15 +89,6 @@ void LQRController::begin() {
   }
 
   attitude_begin();
-
-  if (!mpu6050_suspended_adapter_init(&suspended_adapter, 1.0f, 1.0f)) {
-    ESP_LOGE("MAIN", "悬空检测适配器初始化失败");
-    return;
-  }
-
-  if (!mpu6050_suspended_adapter_calibrate(&suspended_adapter, 2000)) {
-    ESP_LOGW("MAIN", "校准失败，但系统将继续运行");
-  }
 
   sensorL.init(&i2c);
   sensorR.init(&i2c1);
@@ -151,45 +136,6 @@ void LQRController::begin() {
 }
 
 
-// 控制函数示例
-static void enter_airborne_mode() {
-  // 进入空中控制模式
-  ESP_LOGI("CONTROL", "进入空中控制模式");
-
-  // 1. 降低电机功率
-  // reduce_motor_power(0.3f);
-
-  // 2. 切换到姿态保持模式
-  // switch_to_attitude_hold_mode();
-
-  // 3. 准备着陆缓冲
-  // prepare_landing_buffer();
-}
-
-static void attempt_ground_recovery() {
-  // 尝试恢复地面接触
-  ESP_LOGI("CONTROL", "尝试恢复地面接触");
-
-  // 1. 缓慢增加下降速度
-  // increase_descent_speed(0.1f);
-
-  // 2. 轻微调整姿态
-  // adjust_attitude_for_recovery();
-
-  // 3. 如果超过20秒仍悬空，进入紧急模式
-  uint32_t duration = mpu6050_suspended_adapter_get_duration(&suspended_adapter);
-  if (duration > 20000) {
-    ESP_LOGE("CONTROL", "恢复尝试失败，进入紧急模式");
-    emergency_shutdown();
-  }
-}
-
-static void emergency_shutdown() {
-
-}
-
-bool suspended_update();
-
 static void foc_balance_loop(void* pvParameters) {
   auto* controller = static_cast<LQRController*>(pvParameters);
   log_info("foc balance looping");
@@ -198,40 +144,43 @@ static void foc_balance_loop(void* pvParameters) {
     delayMicroseconds(1500);
     attitude_update();
 
-    if (suspended_update()) {
-      continue;
-    }
-
     controller->balance_loop();
-    controller->yaw_loop();
 
-    wrobot.joyx_last = wrobot.joyx;
-    wrobot.joyy_last = wrobot.joyy;
-
-    motor_L.target = (-0.5) * (controller->LQR_u + controller->YAW_output);
-    motor_R.target = (-0.5) * (controller->LQR_u - controller->YAW_output);
-
-    // fallRecoveryResetCounter作用：防止小车倒地后某个角度，陷入循环，motor.target一直=0
-    // 向后倒地-31度，向前倒地（带支架）52度
-    if (((controller->LQR_angle < -30.0f && controller->fallRecoveryResetCounter < 130)    // 向后倒地
-         || (controller->LQR_angle > 35.0f && controller->fallRecoveryResetCounter < 400)) // 向前倒底 实测角度小于52度，并且完全倒地耗时较长
-        && !controller->sitting_down && controller->robot_enabled && wrobot.joyy == 0) {
-      controller->resetZeroPoint();
-      controller->fallRecoveryResetCounter++;
-
+    if (controller->sustained_airborne) {
       motor_L.target = 0;
       motor_R.target = 0;
     }
+    else {
+      controller->yaw_loop();
 
-    // 大仰角倒地，轮子就不要转了 修改
-    if (abs(controller->LQR_angle) > 120.0f) {
-      motor_L.target = 0;
-      motor_R.target = 0;
-    }
+      wrobot.joyx_last = wrobot.joyx;
+      wrobot.joyy_last = wrobot.joyy;
 
-    // 达到平衡角度后，重置重置计数器
-    if (abs(controller->LQR_angle) < 25.0f) {
-      controller->fallRecoveryResetCounter = 0;
+      motor_L.target = (-0.5) * (controller->LQR_u + controller->YAW_output);
+      motor_R.target = (-0.5) * (controller->LQR_u - controller->YAW_output);
+
+      // fallRecoveryResetCounter作用：防止小车倒地后某个角度，陷入循环，motor.target一直=0
+      // 向后倒地-31度，向前倒地（带支架）52度
+      if (((controller->LQR_angle < -30.0f && controller->fallRecoveryResetCounter < 130)    // 向后倒地
+           || (controller->LQR_angle > 35.0f && controller->fallRecoveryResetCounter < 400)) // 向前倒底 实测角度小于52度，并且完全倒地耗时较长
+          && !controller->sitting_down && controller->robot_enabled && wrobot.joyy == 0) {
+        controller->resetZeroPoint();
+        controller->fallRecoveryResetCounter++;
+
+        motor_L.target = 0;
+        motor_R.target = 0;
+      }
+
+      // 大仰角倒地，轮子就不要转了 修改
+      if (abs(controller->LQR_angle) > 120.0f) {
+        motor_L.target = 0;
+        motor_R.target = 0;
+      }
+
+      // 达到平衡角度后，重置重置计数器
+      if (abs(controller->LQR_angle) < 25.0f) {
+        controller->fallRecoveryResetCounter = 0;
+      }
     }
 
     motor_L.loopFOC();
@@ -243,7 +192,6 @@ static void foc_balance_loop(void* pvParameters) {
     // attitude.update();
   }
 }
-
 
 // 重置距离零点
 void LQRController::resetZeroPoint() {
@@ -292,9 +240,10 @@ void LQRController::balance_loop() {
     robot_speed_diff = LQR_speed - last_lqr_speed;
     // 轮子离地
     if (robot_speed_diff > 18.0) {
-
+      sustained_airborne = true;
     }
     if (robot_speed_diff < -9.0) {
+      sustained_airborne = false;
       // 轮子着地
       if (jump_flag) {
         // 落地点作为新的位移零点
@@ -407,54 +356,4 @@ void LQRController::yaw_loop() {
   YAW_gyro = attitude_get_gyroscope()->z; // 左右偏航角速度，用于纠正小车前后走直线时的角度偏差
   float yaw_gyro_control = pid_yaw_gyro(YAW_gyro);
   YAW_output = yaw_angle_control + yaw_gyro_control;
-}
-
-bool suspended_update() {
-  suspended_state_t state = mpu6050_suspended_adapter_update(&suspended_adapter);
-
-  // 状态变化检测
-  static suspended_state_t last_state = SUSPENDED_NONE;
-  if (state != last_state) {
-    last_state = state;
-
-    const char* state_str = suspended_state_to_string(state);
-    float confidence = mpu6050_suspended_adapter_get_confidence(&suspended_adapter);
-
-    ESP_LOGI("SUSPENDED", "状态变化: %s (置信度: %.1f%%)", state_str, confidence * 100);
-
-    // 根据状态执行相应动作
-    switch (state) {
-      case SUSPENDED_TRANSIENT:
-        // 瞬态悬空：保持平衡，准备着陆
-        ESP_LOGI("CONTROL", "瞬态悬空 - 保持姿态");
-        return true;
-
-      case SUSPENDED_STABLE:
-        // 稳定悬空：进入空中控制模式
-        ESP_LOGI("CONTROL", "稳定悬空 - 进入空中控制模式");
-        enter_airborne_mode();
-        return true;
-
-      case SUSPENDED_LONG_TERM:
-        // 长期悬空：尝试恢复或降低功耗
-        ESP_LOGW("CONTROL", "长期悬空 - 尝试恢复地面接触");
-        attempt_ground_recovery();
-        return true;
-
-      case SUSPENDED_PERMANENT:
-        // 永久悬空：紧急处理
-        ESP_LOGE("CONTROL", "永久悬空 - 需要人工干预！");
-        emergency_shutdown();
-        return true;
-
-      case SUSPENDED_NONE:
-      default:
-        // 地面接触：恢复正常控制
-        ESP_LOGI("CONTROL", "地面接触 - 恢复正常控制");
-        break;
-    }
-  }
-
-
-  return false;
 }
