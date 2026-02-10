@@ -52,11 +52,8 @@ public:
   float robot_speed_diff = 0; // 速度差
 
   // 开机默认坐下 修改
-  bool robot_enabled = true;       // 开机禁用平衡，默认坐下
-  bool last_robot_enabled = false; // 同步初始状态
-  int sitting_down = 0;            // 开机直接进入“坐下状态”，避免无控制
-  int stand_up_count = 0;          // 站立标志位
-
+  int sitting_down = 0;   // 开机直接进入“坐下状态”，避免无控制
+  int stand_up_count = 0; // 站立标志位
 
   // YAW轴控制数据
   float YAW_gyro = 0;
@@ -67,10 +64,6 @@ public:
   float YAW_output = 0;
 
   // 跳跃相关参数
-  int jump_flag = 0;     // 跳跃过程计数
-  int jump_pre_flag = 0; // 跳跃前蓄能计数
-
-  // 倒地恢复计数
-  int fallRecoveryResetCounter = 0;
+  int jump_flag = 0; // 跳跃过程计数
 
 };

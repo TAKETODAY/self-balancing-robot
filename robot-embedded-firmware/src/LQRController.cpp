@@ -54,8 +54,6 @@ LowPassFilter lpf_zeropoint(0.1);
 LowPassFilter lpf_roll(0.3);
 LowPassFilter lpf_height(0.1);
 
-// 超级平衡模式参数
-PIDController pid_super_balance(11, 0, 0, 100000, 100); // 适配joyy实际需求
 
 static void foc_balance_loop(void* pvParameters);
 
@@ -151,28 +149,18 @@ static void foc_balance_loop(void* pvParameters) {
     motor_L.target = (-0.5) * (controller->LQR_u + controller->YAW_output);
     motor_R.target = (-0.5) * (controller->LQR_u - controller->YAW_output);
 
-    // fallRecoveryResetCounter作用：防止小车倒地后某个角度，陷入循环，motor.target一直=0
-    // 向后倒地-31度，向前倒地（带支架）52度
-    if (((controller->LQR_angle < -30.0f && controller->fallRecoveryResetCounter < 130)    // 向后倒地
-         || (controller->LQR_angle > 35.0f && controller->fallRecoveryResetCounter < 400)) // 向前倒底 实测角度小于52度，并且完全倒地耗时较长
-        && !controller->sitting_down && controller->robot_enabled && wrobot.joyy == 0) {
+    if (controller->LQR_angle < -30.0f || controller->LQR_angle > 35.0f) {
       controller->resetZeroPoint();
-      controller->fallRecoveryResetCounter++;
 
       motor_L.target = 0;
       motor_R.target = 0;
     }
-
-    // 大仰角倒地，轮子就不要转了 修改
-    if (abs(controller->LQR_angle) > 120.0f) {
+    else if (abs(controller->LQR_angle) > 120.0f) {
+      // 大仰角倒地，轮子就不要转了 修改
       motor_L.target = 0;
       motor_R.target = 0;
     }
 
-    // 达到平衡角度后，重置重置计数器
-    if (abs(controller->LQR_angle) < 25.0f) {
-      controller->fallRecoveryResetCounter = 0;
-    }
 
     motor_L.loopFOC();
     motor_R.loopFOC();
@@ -188,7 +176,6 @@ static void foc_balance_loop(void* pvParameters) {
 void LQRController::resetZeroPoint() {
   distance_zeropoint = LQR_distance;
   pid_lqr_u.error_prev = 0;
-  pid_super_balance.error_prev = 0.0f; // 重置积分项
   pitch_adjust = 0.0f;
 }
 
@@ -215,14 +202,6 @@ void LQRController::balance_loop() {
     // 后退
     speed_target_coeff = 0.11;
   }
-
-  // 超级平衡模式
-  // if (super_balance_mode  && robot_enabled && !sitting_down && !jump_flag) {
-  // 误差=实际角度 - 默认零点
-  // float balance_joyy = pid_super_balance(LQR_angle - pitch_zeropoint);
-  // balance_joyy = constrain(balance_joyy, -100.0f, 100.0f);
-  // wrobot.joyy = balance_joyy;
-  // }
 
   speed_control = pid_speed(LQR_speed - speed_target_coeff * lpf_joyy(wrobot.joyy)); // 最大8v
 
@@ -253,8 +232,8 @@ void LQRController::balance_loop() {
   }
 
   // 2. 运动中实时重置位移零点和积分情形
-  if (abs(robot_speed_diff) > 10 || (abs(LQR_speed) > 15) // 这两种是启动后自平衡，速度较快
-      || wrobot.joyy != 0 || sitting_down) {
+  if (abs(robot_speed_diff) > 10 || abs(LQR_speed) > 15 || wrobot.joyy != 0) {
+    // 这两种是启动后自平衡，速度较快
     resetZeroPoint();
   }
 
@@ -274,8 +253,7 @@ void LQRController::balance_loop() {
 
   // 小车没有控制的时候自稳定状态
   // 控制量lqr_u<5V，前进后退控制量很小， 遥控器无信号输入joyy=0，轮部位移控制正常介入distance_control<4，不处于跳跃后的恢复时期jump_flag=0,以及不是坐下状态
-  if (abs(LQR_u) < 5 && wrobot.joyy == 0 && abs(distance_control) < 4 && (jump_flag == 0)) //  && !sitting_down
-  {
+  if (abs(LQR_u) < 5 && wrobot.joyy == 0 && abs(distance_control) < 4 && jump_flag == 0) {
     LQR_u = pid_lqr_u(LQR_u);                                          // 小转矩非线性补偿
     pitch_zeropoint -= pid_zeropoint(lpf_zeropoint(distance_control)); // 重心自适应
   }

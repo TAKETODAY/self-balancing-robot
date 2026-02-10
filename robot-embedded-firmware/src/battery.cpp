@@ -140,10 +140,10 @@ float battery_calculate_percentage(const float voltage) {
 void showBatteryLED(void* pvParameters) {
   for (;;) {
     const float voltage = battery_voltage_read();
-    log_info("%.2fV", voltage);
+    // log_info("%.2fV", voltage);
 
     const float percentage = battery_calculate_percentage(voltage);
-    log_info("%.2f", percentage);
+    // log_info("%.2f", percentage);
 
     // 电量显示
     if (voltage > 7.0f) {
