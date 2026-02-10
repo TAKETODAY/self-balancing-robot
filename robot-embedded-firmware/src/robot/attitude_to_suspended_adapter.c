@@ -82,8 +82,8 @@ static float calculate_vertical_acceleration(float accel_scale) {
 
   // 使用姿态角将加速度从机器人坐标系转换到世界坐标系
   // roll和pitch应从姿态传感器获取（单位为弧度）
-  const float roll = attitude_get_roll() * (float) M_PI / 180.0f;   // 转换为弧度
-  const float pitch = attitude_get_pitch() * (float) M_PI / 180.0f; // 转换为弧度
+  const float roll = attitude_get_roll() * M_PI / 180.0f;   // 转换为弧度
+  const float pitch = attitude_get_pitch() * M_PI / 180.0f; // 转换为弧度
 
   // 旋转矩阵计算垂直加速度
   // R = Rz(yaw) * Ry(pitch) * Rx(roll)
@@ -116,8 +116,7 @@ static float calculate_vertical_velocity(mpu6050_suspended_adapter_t* adapter, f
   float vertical_velocity = last_vertical_velocity + motion_accel * dt;
 
   // 应用低通滤波减少噪声
-  vertical_velocity = low_pass_filter(vertical_velocity,
-    last_vertical_velocity, 0.2f);
+  vertical_velocity = low_pass_filter(vertical_velocity, last_vertical_velocity, 0.2f);
 
   // 限制速度范围
   if (vertical_velocity > 5.0f) vertical_velocity = 5.0f;
@@ -210,26 +209,14 @@ suspended_state_t mpu6050_suspended_adapter_update(mpu6050_suspended_adapter_t* 
   for (int i = 0; i < 10; i++) {
     sum += adapter->filter.vertical_accel_buffer[i];
   }
+
   float avg_vertical_accel = sum / 10.0f;
 
   // 应用低通滤波
-  adapter->filter.filtered_vertical_accel = low_pass_filter(
-    avg_vertical_accel,
-    adapter->filter.filtered_vertical_accel,
-    0.3f);
+  adapter->filter.filtered_vertical_accel = low_pass_filter(avg_vertical_accel, adapter->filter.filtered_vertical_accel, 0.3f);
 
   // 计算垂直速度
-  adapter->filter.filtered_vertical_velocity = calculate_vertical_velocity(
-    adapter, adapter->filter.filtered_vertical_accel, dt);
-
-  // 计算角速度幅度（用于振动检测）
-  // MPU6050陀螺仪默认量程±250°/s时，灵敏度为131 LSB/°/s
-  const mpu6050_axis_value_t* gyro = attitude_get_gyroscope();
-  float gx = gyro->x / 131.0f * (float) (M_PI / 180.0f) * adapter->gyro_scale; // rad/s
-  float gy = gyro->y / 131.0f * (float) (M_PI / 180.0f) * adapter->gyro_scale; // rad/s
-  float gz = gyro->z / 131.0f * (float) (M_PI / 180.0f) * adapter->gyro_scale; // rad/s
-
-  float angular_velocity_magnitude = sqrtf(gx * gx + gy * gy + gz * gz);
+  adapter->filter.filtered_vertical_velocity = calculate_vertical_velocity(adapter, adapter->filter.filtered_vertical_accel, dt);
 
   // 更新悬空检测器
   return suspended_detector_update(&adapter->suspended_detector,

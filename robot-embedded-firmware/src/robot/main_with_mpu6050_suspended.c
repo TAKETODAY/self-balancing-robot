@@ -117,9 +117,6 @@ void suspended_detection_task(void* arg) {
     // 更新悬空检测
     suspended_state_t state = mpu6050_suspended_adapter_update(&suspended_adapter);
 
-    // 获取当前时间
-    uint32_t current_time = esp_timer_get_time() / 1000;
-
     // 状态变化检测
     static suspended_state_t last_state = SUSPENDED_NONE;
     if (state != last_state) {
@@ -163,6 +160,9 @@ void suspended_detection_task(void* arg) {
           break;
       }
     }
+
+    // 获取当前时间
+    uint32_t current_time = esp_timer_get_time() / 1000;
 
     // 定期打印状态
     if (current_time - last_status_print > 2000) {
