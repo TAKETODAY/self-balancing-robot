@@ -51,8 +51,6 @@ public:
   float last_lqr_speed = 0;   // 记录上一时刻的轮部转速
   float robot_speed_diff = 0; // 速度差
 
-  bool sustained_airborne = false;
-
   // 开机默认坐下 修改
   bool robot_enabled = true;       // 开机禁用平衡，默认坐下
   bool last_robot_enabled = false; // 同步初始状态

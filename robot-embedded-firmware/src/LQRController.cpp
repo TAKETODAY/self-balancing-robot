@@ -143,42 +143,35 @@ static void foc_balance_loop(void* pvParameters) {
     attitude_update();
 
     controller->balance_loop();
+    controller->yaw_loop();
 
-    if (controller->sustained_airborne) {
+    wrobot.joyx_last = wrobot.joyx;
+    wrobot.joyy_last = wrobot.joyy;
+
+    motor_L.target = (-0.5) * (controller->LQR_u + controller->YAW_output);
+    motor_R.target = (-0.5) * (controller->LQR_u - controller->YAW_output);
+
+    // fallRecoveryResetCounter作用：防止小车倒地后某个角度，陷入循环，motor.target一直=0
+    // 向后倒地-31度，向前倒地（带支架）52度
+    if (((controller->LQR_angle < -30.0f && controller->fallRecoveryResetCounter < 130)    // 向后倒地
+         || (controller->LQR_angle > 35.0f && controller->fallRecoveryResetCounter < 400)) // 向前倒底 实测角度小于52度，并且完全倒地耗时较长
+        && !controller->sitting_down && controller->robot_enabled && wrobot.joyy == 0) {
+      controller->resetZeroPoint();
+      controller->fallRecoveryResetCounter++;
+
       motor_L.target = 0;
       motor_R.target = 0;
     }
-    else {
-      controller->yaw_loop();
 
-      wrobot.joyx_last = wrobot.joyx;
-      wrobot.joyy_last = wrobot.joyy;
+    // 大仰角倒地，轮子就不要转了 修改
+    if (abs(controller->LQR_angle) > 120.0f) {
+      motor_L.target = 0;
+      motor_R.target = 0;
+    }
 
-      motor_L.target = (-0.5) * (controller->LQR_u + controller->YAW_output);
-      motor_R.target = (-0.5) * (controller->LQR_u - controller->YAW_output);
-
-      // fallRecoveryResetCounter作用：防止小车倒地后某个角度，陷入循环，motor.target一直=0
-      // 向后倒地-31度，向前倒地（带支架）52度
-      if (((controller->LQR_angle < -30.0f && controller->fallRecoveryResetCounter < 130)    // 向后倒地
-           || (controller->LQR_angle > 35.0f && controller->fallRecoveryResetCounter < 400)) // 向前倒底 实测角度小于52度，并且完全倒地耗时较长
-          && !controller->sitting_down && controller->robot_enabled && wrobot.joyy == 0) {
-        controller->resetZeroPoint();
-        controller->fallRecoveryResetCounter++;
-
-        motor_L.target = 0;
-        motor_R.target = 0;
-      }
-
-      // 大仰角倒地，轮子就不要转了 修改
-      if (abs(controller->LQR_angle) > 120.0f) {
-        motor_L.target = 0;
-        motor_R.target = 0;
-      }
-
-      // 达到平衡角度后，重置重置计数器
-      if (abs(controller->LQR_angle) < 25.0f) {
-        controller->fallRecoveryResetCounter = 0;
-      }
+    // 达到平衡角度后，重置重置计数器
+    if (abs(controller->LQR_angle) < 25.0f) {
+      controller->fallRecoveryResetCounter = 0;
     }
 
     motor_L.loopFOC();
@@ -238,10 +231,8 @@ void LQRController::balance_loop() {
     robot_speed_diff = LQR_speed - last_lqr_speed;
     // 轮子离地
     if (robot_speed_diff > 18.0) {
-      sustained_airborne = true;
     }
     if (robot_speed_diff < -9.0) {
-      sustained_airborne = false;
       // 轮子着地
       if (jump_flag) {
         // 落地点作为新的位移零点
