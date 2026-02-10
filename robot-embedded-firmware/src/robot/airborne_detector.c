@@ -18,6 +18,7 @@
 #include "robot/airborne_detector.h"
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
 
 // 默认配置
 static const airborne_config_t DEFAULT_CONFIG = {

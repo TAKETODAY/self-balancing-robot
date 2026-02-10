@@ -54,7 +54,7 @@ LowPassFilter lpf_roll(0.3);
 LowPassFilter lpf_height(0.1);
 
 // 超级平衡模式参数
-bool super_balance_mode = true; // 超级平衡模式
+bool super_balance_mode = true;                         // 超级平衡模式
 PIDController pid_super_balance(11, 0, 0, 100000, 100); // 适配joyy实际需求
 
 static void foc_balance_loop(void* pvParameters);
@@ -128,7 +128,7 @@ void LQRController::begin() {
   motor_R.init();
   motor_R.initFOC();
 
-  xTaskCreate(foc_balance_loop, "balance_loop", 2048, this, 10, NULL);
+  xTaskCreate(foc_balance_loop, "balance_loop", 2048, this, 10, nullptr);
 }
 
 
@@ -151,7 +151,7 @@ static void foc_balance_loop(void* pvParameters) {
 
     // fallRecoveryResetCounter作用：防止小车倒地后某个角度，陷入循环，motor.target一直=0
     // 向后倒地-31度，向前倒地（带支架）52度
-    if (((controller->LQR_angle < -30.0f && controller->fallRecoveryResetCounter < 130) // 向后倒地
+    if (((controller->LQR_angle < -30.0f && controller->fallRecoveryResetCounter < 130)    // 向后倒地
          || (controller->LQR_angle > 35.0f && controller->fallRecoveryResetCounter < 400)) // 向前倒底 实测角度小于52度，并且完全倒地耗时较长
         && !controller->sitting_down && controller->robot_enabled && wrobot.joyy == 0) {
       controller->resetZeroPoint();
@@ -194,9 +194,9 @@ void LQRController::resetZeroPoint() {
 
 // lqr自平衡控制
 void LQRController::balance_loop() {
-  LQR_distance = (-0.5) * (motor_L.shaft_angle + motor_R.shaft_angle); // 两个电机的旋转角度（shaft_angle）,单位：弧度（rad）实际位移量
+  LQR_distance = (-0.5) * (motor_L.shaft_angle + motor_R.shaft_angle);    // 两个电机的旋转角度（shaft_angle）,单位：弧度（rad）实际位移量
   LQR_speed = (-0.5) * (motor_L.shaft_velocity + motor_R.shaft_velocity); // 两个电机角速度（shaft_velocity）,单位：弧度 / 秒（rad/s）
-  LQR_angle = attitude.pitch; // mpu6050 pitch 角度，单位：度（°）
+  LQR_angle = attitude.pitch;                                             // mpu6050 pitch 角度，单位：度（°）
 
   LQR_gyro = attitude.gyro.y; // pitch Y轴角速度,单位：度 / 秒（°/s）
 
@@ -263,7 +263,7 @@ void LQRController::balance_loop() {
         // 大减速运动状态手柄震动
       }
     }
-    last_lqr_speed = LQR_speed; // 每隔100ms更新一次历史转速
+    last_lqr_speed = LQR_speed;            // 每隔100ms更新一次历史转速
     last_speed_record_time = current_time; // 更新记录时间
   }
 
@@ -297,7 +297,7 @@ void LQRController::balance_loop() {
   // 控制量lqr_u<5V，前进后退控制量很小， 遥控器无信号输入joyy=0，轮部位移控制正常介入distance_control<4，不处于跳跃后的恢复时期jump_flag=0,以及不是坐下状态
   if (abs(LQR_u) < 5 && wrobot.joyy == 0 && abs(distance_control) < 4 && (jump_flag == 0)) //  && !sitting_down
   {
-    LQR_u = pid_lqr_u(LQR_u); // 小转矩非线性补偿
+    LQR_u = pid_lqr_u(LQR_u);                                          // 小转矩非线性补偿
     pitch_zeropoint -= pid_zeropoint(lpf_zeropoint(distance_control)); // 重心自适应
   }
   else {

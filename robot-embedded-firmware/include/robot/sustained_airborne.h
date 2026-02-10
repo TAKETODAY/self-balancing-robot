@@ -129,38 +129,37 @@ typedef struct {
 } suspended_detector_t;
 
 // 初始化悬空检测器
-void suspended_detector_init(suspended_detector_t* detector,
-  const suspended_config_t* config);
+void suspended_detector_init(suspended_detector_t* this, const suspended_config_t* config);
 
 // 更新检测器状态
-suspended_state_t suspended_detector_update(suspended_detector_t* detector,
+suspended_state_t suspended_detector_update(suspended_detector_t* this,
   float vertical_accel,
   float vertical_velocity,
   uint32_t timestamp);
 
 // 获取当前状态
-suspended_state_t suspended_detector_get_state(const suspended_detector_t* detector);
+suspended_state_t suspended_detector_get_state(const suspended_detector_t* this);
 
 // 检查是否持续悬空
-bool suspended_detector_is_suspended(const suspended_detector_t* detector);
+bool suspended_detector_is_suspended(const suspended_detector_t* this);
 
 // 获取悬空持续时间 (ms)
-uint32_t suspended_detector_get_duration(const suspended_detector_t* detector);
+uint32_t suspended_detector_get_duration(const suspended_detector_t* this);
 
 // 获取检测置信度
-float suspended_detector_get_confidence(const suspended_detector_t* detector);
+float suspended_detector_get_confidence(const suspended_detector_t* this);
 
 // 校准地面模式（需要在地面静止时调用）
-bool suspended_detector_calibrate_ground(suspended_detector_t* detector,
+bool suspended_detector_calibrate_ground(suspended_detector_t* this,
   float* accel_samples, uint16_t sample_count);
 
 // 重置检测器
-void suspended_detector_reset(suspended_detector_t* detector);
+void suspended_detector_reset(suspended_detector_t* this);
 
 // 获取状态字符串
 const char* suspended_state_to_string(suspended_state_t state);
 
 // 获取建议的控制动作
-const char* suspended_detector_get_recommendation(const suspended_detector_t* detector);
+const char* suspended_detector_get_recommendation(const suspended_detector_t* this);
 
 #endif // SUSTAINED_AIRBORNE_H

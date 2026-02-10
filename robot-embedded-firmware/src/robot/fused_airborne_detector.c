@@ -16,6 +16,7 @@
 #include "robot/fused_airborne_detector.h"
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 // 默认权重
 static const fusion_weights_t DEFAULT_WEIGHTS = {

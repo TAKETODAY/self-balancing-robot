@@ -17,15 +17,14 @@
 
 #include "robot/sustained_airborne.h"
 #include <string.h>
-#include <stdio.h>
 
 // 默认配置
 static const suspended_config_t DEFAULT_CONFIG = {
   .algorithm = DETECTION_ADAPTIVE,
 
   // 时间阈值 (ms)
-  .transient_threshold = 100, // 100ms瞬态
-  .stable_threshold = 1000, // 1秒稳定
+  .transient_threshold = 100,  // 100ms瞬态
+  .stable_threshold = 1000,    // 1秒稳定
   .long_term_threshold = 5000, // 5秒长期
 
   // 模式参数
@@ -147,21 +146,21 @@ static void analyze_frequency(suspended_detector_t* detector, float accel, uint3
 }
 
 // 基于时间的检测算法
-static float time_based_detection(suspended_detector_t* detector) {
-  if (detector->duration < detector->config.transient_threshold) {
+static float time_based_detection(const suspended_detector_t* this) {
+  if (this->duration < this->config.transient_threshold) {
     return 0.0f; // 太短，不是悬空
   }
 
   float confidence = 0.0f;
 
   // 线性映射：100ms -> 0%，1s -> 50%，5s -> 100%
-  if (detector->duration <= detector->config.stable_threshold) {
-    confidence = (float) (detector->duration - detector->config.transient_threshold) /
-                 (float) (detector->config.stable_threshold - detector->config.transient_threshold) * 0.5f;
+  if (this->duration <= this->config.stable_threshold) {
+    confidence = (float) (this->duration - this->config.transient_threshold) /
+                 (float) (this->config.stable_threshold - this->config.transient_threshold) * 0.5f;
   }
-  else if (detector->duration <= detector->config.long_term_threshold) {
-    confidence = 0.5f + (float) (detector->duration - detector->config.stable_threshold) /
-                 (float) (detector->config.long_term_threshold - detector->config.stable_threshold) * 0.5f;
+  else if (this->duration <= this->config.long_term_threshold) {
+    confidence = 0.5f + (float) (this->duration - this->config.stable_threshold) /
+                 (float) (this->config.long_term_threshold - this->config.stable_threshold) * 0.5f;
   }
   else {
     confidence = 1.0f;
@@ -400,8 +399,8 @@ suspended_state_t suspended_detector_update(suspended_detector_t* detector,
 }
 
 // 获取当前状态
-suspended_state_t suspended_detector_get_state(const suspended_detector_t* detector) {
-  return detector ? detector->state : SUSPENDED_NONE;
+suspended_state_t suspended_detector_get_state(const suspended_detector_t* this) {
+  return this ? this->state : SUSPENDED_NONE;
 }
 
 // 检查是否持续悬空
@@ -423,10 +422,8 @@ float suspended_detector_get_confidence(const suspended_detector_t* detector) {
 }
 
 // 校准地面模式
-bool suspended_detector_calibrate_ground(suspended_detector_t* detector,
-  float* accel_samples,
-  uint16_t sample_count) {
-  if (!detector || !accel_samples || sample_count == 0) {
+bool suspended_detector_calibrate_ground(suspended_detector_t* this, float* accel_samples, uint16_t sample_count) {
+  if (!this || !accel_samples || sample_count == 0) {
     return false;
   }
 
@@ -443,14 +440,14 @@ bool suspended_detector_calibrate_ground(suspended_detector_t* detector,
   // 保存到地面模式
   for (int i = 0; i < 50; i++) {
     if (i < actual_count) {
-      detector->pattern.ground_pattern[i] = accel_samples[i];
+      this->pattern.ground_pattern[i] = accel_samples[i];
     }
     else {
-      detector->pattern.ground_pattern[i] = avg;
+      this->pattern.ground_pattern[i] = avg;
     }
   }
 
-  detector->is_calibrated = true;
+  this->is_calibrated = true;
 
   return true;
 }
