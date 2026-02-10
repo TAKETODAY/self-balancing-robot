@@ -25,7 +25,7 @@ static const suspended_config_t DEFAULT_CONFIG = {
   // 时间阈值 (ms)
   .transient_threshold = 100,  // 100ms瞬态
   .stable_threshold = 1000,    // 1秒稳定
-  .long_term_threshold = 5000, // 5秒长期
+  .long_term_threshold = 3000, // 5秒长期
 
   // 模式参数
   .pattern_similarity = 0.85f,

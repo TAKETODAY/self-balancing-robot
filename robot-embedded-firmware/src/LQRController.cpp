@@ -19,6 +19,8 @@
 #include "logging.hpp"
 #include "robot.hpp"
 #include "robot/attitude_to_suspended_adapter.h"
+#include "robot/suspended_control.h"
+
 #include "foc/BLDCMotor.h"
 #include "foc/common/pid.h"
 #include "foc/drivers/BLDCDriver3PWM.h"
@@ -64,6 +66,8 @@ static void foc_balance_loop(void* pvParameters);
 static void emergency_shutdown();
 static void attempt_ground_recovery();
 static void enter_airborne_mode();
+
+void robot_suspended_controller_init();
 
 void LQRController::begin() {
   static espp::I2c i2c({
@@ -184,81 +188,17 @@ static void emergency_shutdown() {
 
 }
 
+bool suspended_update();
+
 static void foc_balance_loop(void* pvParameters) {
   auto* controller = static_cast<LQRController*>(pvParameters);
   log_info("foc balance looping");
 
   for (;;) {
-    // delayMicroseconds(1500);
+    delayMicroseconds(1500);
     attitude_update();
 
-    suspended_state_t state = mpu6050_suspended_adapter_update(&suspended_adapter);
-
-    // 状态变化检测
-    static suspended_state_t last_state = SUSPENDED_NONE;
-    if (state != last_state) {
-      last_state = state;
-
-      const char* state_str = suspended_state_to_string(state);
-      float confidence = mpu6050_suspended_adapter_get_confidence(&suspended_adapter);
-
-      ESP_LOGI("SUSPENDED", "状态变化: %s (置信度: %.1f%%)", state_str, confidence * 100);
-
-      // 根据状态执行相应动作
-      switch (state) {
-        case SUSPENDED_TRANSIENT:
-          // 瞬态悬空：保持平衡，准备着陆
-          ESP_LOGI("CONTROL", "瞬态悬空 - 保持姿态");
-          break;
-
-        case SUSPENDED_STABLE:
-          // 稳定悬空：进入空中控制模式
-          ESP_LOGI("CONTROL", "稳定悬空 - 进入空中控制模式");
-          enter_airborne_mode();
-          break;
-
-        case SUSPENDED_LONG_TERM:
-          // 长期悬空：尝试恢复或降低功耗
-          ESP_LOGW("CONTROL", "长期悬空 - 尝试恢复地面接触");
-          attempt_ground_recovery();
-          break;
-
-        case SUSPENDED_PERMANENT:
-          // 永久悬空：紧急处理
-          ESP_LOGE("CONTROL", "永久悬空 - 需要人工干预！");
-          emergency_shutdown();
-          break;
-
-        case SUSPENDED_NONE:
-        default:
-          // 地面接触：恢复正常控制
-          ESP_LOGI("CONTROL", "地面接触 - 恢复正常控制");
-          break;
-      }
-    }
-
-    // 获取当前时间
-    uint32_t current_time = esp_timer_get_time() / 1000;
-
-    // 定期打印状态
-    if (current_time - last_status_print > 2000) {
-      // 每2秒打印一次
-      last_status_print = current_time;
-      mpu6050_suspended_adapter_print_status(&suspended_adapter);
-    }
-
-    // 检查是否一直悬空（超过5秒）
-    if (mpu6050_suspended_adapter_is_suspended(&suspended_adapter)) {
-      uint32_t duration = mpu6050_suspended_adapter_get_duration(&suspended_adapter);
-
-      if (duration > 5000) {
-        ESP_LOGW("SUSPENDED", "持续悬空超过5秒，可能需要人工干预");
-
-        // 如果超过10秒，发送警报
-        if (duration > 10000) {
-          ESP_LOGE("SUSPENDED", "持续悬空超过10秒！");
-        }
-      }
+    if (suspended_update()) {
       continue;
     }
 
@@ -468,4 +408,54 @@ void LQRController::yaw_loop() {
   YAW_gyro = attitude_get_gyroscope()->z; // 左右偏航角速度，用于纠正小车前后走直线时的角度偏差
   float yaw_gyro_control = pid_yaw_gyro(YAW_gyro);
   YAW_output = yaw_angle_control + yaw_gyro_control;
+}
+
+bool suspended_update() {
+  suspended_state_t state = mpu6050_suspended_adapter_update(&suspended_adapter);
+
+  // 状态变化检测
+  static suspended_state_t last_state = SUSPENDED_NONE;
+  if (state != last_state) {
+    last_state = state;
+
+    const char* state_str = suspended_state_to_string(state);
+    float confidence = mpu6050_suspended_adapter_get_confidence(&suspended_adapter);
+
+    ESP_LOGI("SUSPENDED", "状态变化: %s (置信度: %.1f%%)", state_str, confidence * 100);
+
+    // 根据状态执行相应动作
+    switch (state) {
+      case SUSPENDED_TRANSIENT:
+        // 瞬态悬空：保持平衡，准备着陆
+        ESP_LOGI("CONTROL", "瞬态悬空 - 保持姿态");
+        return true;
+
+      case SUSPENDED_STABLE:
+        // 稳定悬空：进入空中控制模式
+        ESP_LOGI("CONTROL", "稳定悬空 - 进入空中控制模式");
+        enter_airborne_mode();
+        return true;
+
+      case SUSPENDED_LONG_TERM:
+        // 长期悬空：尝试恢复或降低功耗
+        ESP_LOGW("CONTROL", "长期悬空 - 尝试恢复地面接触");
+        attempt_ground_recovery();
+        return true;
+
+      case SUSPENDED_PERMANENT:
+        // 永久悬空：紧急处理
+        ESP_LOGE("CONTROL", "永久悬空 - 需要人工干预！");
+        emergency_shutdown();
+        return true;
+
+      case SUSPENDED_NONE:
+      default:
+        // 地面接触：恢复正常控制
+        ESP_LOGI("CONTROL", "地面接触 - 恢复正常控制");
+        break;
+    }
+  }
+
+
+  return false;
 }

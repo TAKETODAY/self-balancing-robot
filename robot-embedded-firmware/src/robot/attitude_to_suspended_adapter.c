@@ -39,8 +39,8 @@ bool mpu6050_suspended_adapter_init(mpu6050_suspended_adapter_t* adapter,
   // 初始化悬空检测器
   suspended_config_t config = {
     .algorithm = DETECTION_ADAPTIVE,
-    .transient_threshold = 100,
-    .stable_threshold = 1000,
+    .transient_threshold = 10,
+    .stable_threshold = 500,
     .long_term_threshold = 5000,
     .pattern_similarity = 0.85f,
     .pattern_window = 50,
