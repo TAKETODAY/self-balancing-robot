@@ -95,6 +95,7 @@ static void handle_robot_message(robot_message_t* message) {
     }
     case MESSAGE_CONTROL_HEIGHT: {
       robot_set_height((uint8_t) lpf_height1(message->body.height.percentage));
+      break;
     }
     case MESSAGE_EMERGENCY_STOP:
       robot_stop();

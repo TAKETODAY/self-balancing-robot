@@ -149,11 +149,6 @@ static void foc_balance_loop(void* pvParameters) {
     delayMicroseconds(1500);
     attitude_update();
 
-    if (controller->stoped) {
-      vTaskSuspend(nullptr); // 挂起当前任务
-    }
-
-
     controller->balance_loop();
     controller->yaw_loop();
 
