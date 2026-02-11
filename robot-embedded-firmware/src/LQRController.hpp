@@ -15,6 +15,10 @@
 
 #pragma once
 
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include "defs.h"
+
 class LQRController {
 
 public:
@@ -26,6 +30,12 @@ public:
   void resetZeroPoint();
   void balance_loop();
   void yaw_loop();
+
+  void stop();
+  void recover();
+
+private:
+  TaskHandle_t task_handle = nullptr;
 
 public:
   // LQR自平衡控制器参数
@@ -65,5 +75,7 @@ public:
 
   // 跳跃相关参数
   int jump_flag = 0; // 跳跃过程计数
+
+  bool stoped;
 
 };

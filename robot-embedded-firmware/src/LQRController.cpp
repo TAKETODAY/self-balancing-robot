@@ -54,7 +54,6 @@ LowPassFilter lpf_zeropoint(0.1);
 LowPassFilter lpf_roll(0.3);
 LowPassFilter lpf_height(0.1);
 
-
 static void foc_balance_loop(void* pvParameters);
 
 void robot_suspended_controller_init();
@@ -128,9 +127,13 @@ void LQRController::begin() {
   motor_R.init();
   motor_R.initFOC();
 
-  xTaskCreate(foc_balance_loop, "balance_loop", 4096, this, 10, nullptr);
+  xTaskCreate(foc_balance_loop, "balance_loop", 4096, this, 10, &task_handle);
 }
 
+static void stop_motors() {
+  motor_L.target = 0;
+  motor_R.target = 0;
+}
 
 static void foc_balance_loop(void* pvParameters) {
   auto* controller = static_cast<LQRController*>(pvParameters);
@@ -139,6 +142,11 @@ static void foc_balance_loop(void* pvParameters) {
   for (;;) {
     delayMicroseconds(1500);
     attitude_update();
+
+    if (controller->stoped) {
+      vTaskSuspend(nullptr); // 挂起当前任务
+    }
+
 
     controller->balance_loop();
     controller->yaw_loop();
@@ -149,26 +157,15 @@ static void foc_balance_loop(void* pvParameters) {
     motor_L.target = (-0.5) * (controller->LQR_u + controller->YAW_output);
     motor_R.target = (-0.5) * (controller->LQR_u - controller->YAW_output);
 
-    if (controller->LQR_angle < -30.0f || controller->LQR_angle > 35.0f) {
-      controller->resetZeroPoint();
-
-      motor_L.target = 0;
-      motor_R.target = 0;
+    if (abs(controller->LQR_angle) > 40.0f) {
+      stop_motors();
     }
-    else if (abs(controller->LQR_angle) > 120.0f) {
-      // 大仰角倒地，轮子就不要转了 修改
-      motor_L.target = 0;
-      motor_R.target = 0;
-    }
-
 
     motor_L.loopFOC();
     motor_R.loopFOC();
 
     motor_L.move();
     motor_R.move();
-
-    // attitude.update();
   }
 }
 
@@ -323,4 +320,25 @@ void LQRController::yaw_loop() {
   YAW_gyro = attitude_get_gyroscope()->z; // 左右偏航角速度，用于纠正小车前后走直线时的角度偏差
   float yaw_gyro_control = pid_yaw_gyro(YAW_gyro);
   YAW_output = yaw_angle_control + yaw_gyro_control;
+}
+
+void LQRController::stop() {
+  stop_motors();
+
+  motor_L.loopFOC();
+  motor_R.loopFOC();
+
+  motor_L.move();
+  motor_R.move();
+
+  if (const eTaskState state = eTaskGetState(task_handle); state != eSuspended) {
+    vTaskSuspend(task_handle);
+  }
+}
+
+void LQRController::recover() {
+  if (const eTaskState state = eTaskGetState(task_handle); state == eSuspended) {
+    vTaskResume(task_handle);
+  }
+
 }

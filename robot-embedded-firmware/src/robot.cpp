@@ -14,6 +14,7 @@
 // along with this program. If not, see [https://www.gnu.org/licenses/]
 
 #include "robot.hpp"
+#include "robot/leg.h"
 #include "robot/error.h"
 
 #include "foc/sensors/MagneticSensorI2C.h"
@@ -34,7 +35,7 @@ static auto TAG = "default";
 
 Wrobot wrobot;
 
-LQRController lqr_controller;
+static LQRController lqr_controller;
 
 #define MAX_BLE_PACKET_SIZE    512
 #define RX_QUEUE_LEN 100
@@ -87,7 +88,14 @@ static void handle_robot_message(robot_message_t* message) {
       const auto control_leg = message->body.control_leg;
       robot_leg_set_left_height_percentage(control_leg.left_percentage);
       robot_leg_set_right_height_percentage(control_leg.right_percentage);
+      break;
     }
+    case MESSAGE_EMERGENCY_STOP:
+      robot_stop();
+      break;
+    case MESSAGE_EMERGENCY_RECOVER:
+      robot_recover();
+      break;
     default:
       break;
   }
@@ -149,7 +157,15 @@ void on_report_timer_callback(TimerHandle_t xTimer) {
 
 }
 
-void robot_set_leg_height(const uint8_t percentage) {
+void robot_stop() {
+  lqr_controller.stop();
+}
+
+void robot_recover() {
+  lqr_controller.recover();
+}
+
+void robot_set_height(const uint8_t percentage) {
   robot_leg_set_height_percentage(percentage);
 }
 

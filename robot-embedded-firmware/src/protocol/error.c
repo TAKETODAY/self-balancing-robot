@@ -15,12 +15,6 @@
 
 #include "protocol/error.h"
 
-#include <stdio.h>
-
-#include "logging.hpp"
-
-static const char* TAG = "Buffer";
-
 const char* buffer_error_to_string(buffer_error_t error) {
   switch (error) {
     case BUFFER_OK: return "Success";

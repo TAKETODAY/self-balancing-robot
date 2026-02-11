@@ -16,7 +16,6 @@
 #pragma once
 
 #include "event.hpp"
-#include "robot/leg.h"
 
 #include "foc/BLDCMotor.h"
 
@@ -38,15 +37,15 @@ typedef enum {
   STATE_ERROR,
 
   // 核心平衡状态
-  STATE_STANDING, // 静止站立平衡
+  STATE_STANDING,  // 静止站立平衡
   STATE_BALANCING, // 主动移动平衡
 
   // 动作状态
-  STATE_CROUCHING, // 正在蹲下
-  STATE_CROUCHED, // 蹲下保持
+  STATE_CROUCHING,   // 正在蹲下
+  STATE_CROUCHED,    // 蹲下保持
   STATE_STANDING_UP, // 正在起立
-  STATE_JUMPING, // 跳跃中（包含起跳、腾空、落地）
-  STATE_WALKING, // 行走中
+  STATE_JUMPING,     // 跳跃中（包含起跳、腾空、落地）
+  STATE_WALKING,     // 行走中
 
   // 安全状态
   STATE_EMERGENCY_STOP,
@@ -95,9 +94,13 @@ typedef enum {
 
 void robot_init();
 
-void robot_set_leg_height(uint8_t percentage);
+void robot_set_height(uint8_t percentage);
 
 void robot_set_speed(uint16_t left_wheel_speed, uint16_t right_wheel_speed);
+
+void robot_stop();
+
+void robot_recover();
 
 #ifdef __cplusplus
 }

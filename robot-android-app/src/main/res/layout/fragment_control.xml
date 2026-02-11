@@ -206,17 +206,19 @@
 
   </LinearLayout>
 
-  <Button
-    android:id="@+id/btn_emergency_stop"
+  <androidx.appcompat.widget.AppCompatToggleButton
+    android:id="@+id/emergency_stop"
     android:layout_width="70dp"
     android:layout_height="70dp"
     android:layout_marginEnd="16dp"
     android:layout_marginBottom="16dp"
     android:background="@drawable/shape_emergency_button"
     android:elevation="20sp"
-    android:text="停"
+    android:textOff="OFF"
+    android:textOn="ON"
     android:textSize="20sp"
     android:textStyle="bold"
+    android:fontFamily="@font/font"
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintEnd_toEndOf="parent" />
 

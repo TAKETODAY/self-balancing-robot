@@ -17,6 +17,8 @@
 
 package cn.taketoday.robot.protocol;
 
+import org.jspecify.annotations.Nullable;
+
 import java.util.concurrent.atomic.AtomicInteger;
 
 import cn.taketoday.robot.protocol.message.ControlLegMessage;
@@ -39,9 +41,9 @@ public class RobotMessage implements Message {
 
   public final byte flags;
 
-  public final byte[] data;
+  public final byte @Nullable [] data;
 
-  public RobotMessage(short sequence, MessageType type, byte flags, byte[] data) {
+  public RobotMessage(short sequence, MessageType type, byte flags, byte @Nullable [] data) {
     this.sequence = sequence;
     this.type = type;
     this.flags = flags;
@@ -74,7 +76,10 @@ public class RobotMessage implements Message {
     writable.write(sequence);
     writable.write((Message) type);
     writable.write(flags);
-    writable.writeFully(data);
+
+    if (data != null) {
+      writable.writeFully(data);
+    }
   }
 
   public static RobotMessage parse(byte[] data) {
@@ -92,6 +97,14 @@ public class RobotMessage implements Message {
   public static RobotMessage forControl(int leftWheelSpeed, int rightWheelSpeed) {
     ControlMessage controlMessage = new ControlMessage(leftWheelSpeed, rightWheelSpeed);
     return new RobotMessage(generateSequence(), MessageType.CONTROL, (byte) 0, controlMessage.toByteArray());
+  }
+
+  public static RobotMessage forEmergencyStop() {
+    return new RobotMessage(generateSequence(), MessageType.EMERGENCY_STOP, (byte) 0, null);
+  }
+
+  public static RobotMessage forEmergencyRecover() {
+    return new RobotMessage(generateSequence(), MessageType.EMERGENCY_RECOVER, (byte) 0, null);
   }
 
   public static RobotMessage forControlLeg(int leftPercentage, int rightPercentage) {

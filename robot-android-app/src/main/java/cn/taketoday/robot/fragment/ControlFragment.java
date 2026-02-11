@@ -72,6 +72,15 @@ public class ControlFragment extends ViewBindingFragment<FragmentControlBinding>
 //      binding.textViewStrengthLeft.setText(strength + "%");
     });
 
+    binding.emergencyStop.setOnCheckedChangeListener((buttonView, checked) -> {
+      if (checked) {
+        robotModel.emergencyStop();
+      }
+      else {
+        robotModel.emergencyRecover();
+      }
+    });
+
     binding.legControl.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 
       @Override

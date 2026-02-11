@@ -31,8 +31,12 @@ const char* buffer_error_to_string(buffer_error_t error);
 
 #define BUFFER_PRINT_ERROR(buf, format, ...) \
   do { \
-      ESP_LOGE("BUFFER", "ERROR: 0x%02X: %s | %s:%d | " format, \
-            buf.last_error.code, buffer_error_to_string(buf.last_error.code), buf.last_error.file, buf.last_error.line, ##__VA_ARGS__); \
+     ESP_LOGE("BUFFER", "ERROR: 0x%02X: %s | %s:%d | " format, \
+                (buf).last_error.code, \
+                buffer_error_to_string((buf).last_error.code), \
+                ((buf).last_error.file) ? (buf).last_error.file : "unknown", \
+                (buf).last_error.line, \
+                ##__VA_ARGS__); \
   } while(0)
 
 #ifdef __cplusplus

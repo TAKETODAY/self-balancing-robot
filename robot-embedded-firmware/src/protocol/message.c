@@ -86,7 +86,8 @@ static bool deserialize_body(robot_message_t* msg, buffer_t* buf) {
     case MESSAGE_CONTROL_LEG: return deserialize_control_leg_message(&msg->body.control_leg, buf);
     case MESSAGE_CONFIG_GET: return deserialize_config_message(&msg->body.config, buf);
     case MESSAGE_CONFIG_SET: return deserialize_config_message(&msg->body.config, buf);
-    case MESSAGE_EMERGENCY_STOP: return true; // no body
+    case MESSAGE_EMERGENCY_STOP:
+    case MESSAGE_EMERGENCY_RECOVER: return true; // no body
 
     default:
       break;
@@ -101,12 +102,12 @@ bool robot_message_deserialize(robot_message_t* msg, buffer_t* buf) {
          && deserialize_body(msg, buf);
 }
 
-
 const char* message_type_to_string(const message_type_t type) {
   switch (type) {
     case MESSAGE_CONTROL: return "CONTROL";
     case MESSAGE_CONTROL_LEG: return "CONTROL_LEG";
     case MESSAGE_EMERGENCY_STOP: return "EMERGENCY_STOP";
+    case MESSAGE_EMERGENCY_RECOVER: return "EMERGENCY_RECOVER";
     case MESSAGE_CONFIG_SET: return "CONFIG_SET";
     case MESSAGE_CONFIG_GET: return "CONFIG_GET";
     case MESSAGE_FIRMWARE_INFO: return "FIRMWARE_INFO";

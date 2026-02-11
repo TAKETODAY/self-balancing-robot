@@ -27,6 +27,7 @@ public enum MessageType implements Message, Enumerable<Integer> {
   CONTROL(1),
   CONTROL_LEG(2),
   EMERGENCY_STOP(3),
+  EMERGENCY_RECOVER(4),
 
   CONFIG_SET(0x10),
   CONFIG_GET(0x11),

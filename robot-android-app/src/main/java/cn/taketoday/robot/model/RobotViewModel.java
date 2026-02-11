@@ -57,14 +57,28 @@ public class RobotViewModel extends ViewModel implements DataHandler, LoggingSup
     this.writableChannel = writableChannel;
   }
 
-  public void sendData(byte[] data) {
+  public void sendMessage(byte[] data) {
     writableChannel.write(data);
     debug("write: %s", Arrays.toString(data));
   }
 
+  public void sendMessage(RobotMessage message) {
+    sendMessage(message.toByteArray());
+  }
+
   public void setHeightPercentage(int percentage) {
     RobotMessage robotMessage = RobotMessage.forControlLeg(percentage, percentage);
-    sendData(robotMessage.toByteArray());
+    sendMessage(robotMessage.toByteArray());
+  }
+
+  public void emergencyStop() {
+    debug("stop");
+    sendMessage(RobotMessage.forEmergencyStop());
+  }
+
+  public void emergencyRecover() {
+    debug("recover");
+    sendMessage(RobotMessage.forEmergencyRecover());
   }
 
   public static RobotViewModel getInstance(ViewModelStoreOwner store) {
