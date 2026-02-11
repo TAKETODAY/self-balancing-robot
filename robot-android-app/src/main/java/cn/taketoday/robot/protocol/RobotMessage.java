@@ -21,6 +21,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import cn.taketoday.robot.protocol.message.ControlHeightMessage;
 import cn.taketoday.robot.protocol.message.ControlLegMessage;
 import infra.lang.Enumerable;
 import io.netty.buffer.ByteBuf;
@@ -110,6 +111,11 @@ public class RobotMessage implements Message {
   public static RobotMessage forControlLeg(int leftPercentage, int rightPercentage) {
     ControlLegMessage controlMessage = new ControlLegMessage(leftPercentage, rightPercentage);
     return new RobotMessage(generateSequence(), MessageType.CONTROL_LEG, (byte) 0, controlMessage.toByteArray());
+  }
+
+  public static RobotMessage forControlHeight(int percentage) {
+    ControlHeightMessage controlMessage = new ControlHeightMessage(percentage);
+    return new RobotMessage(generateSequence(), MessageType.CONTROL_HEIGHT, (byte) 0, controlMessage.toByteArray());
   }
 
   static short generateSequence() {

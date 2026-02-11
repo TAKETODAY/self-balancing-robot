@@ -77,6 +77,9 @@ void heart_rate_task(void* param) {
   vTaskDelete(nullptr);
 }
 
+LowPassFilter lpf_height1(0.1);
+
+
 static void handle_robot_message(robot_message_t* message) {
   switch (message->type) {
     case MESSAGE_CONTROL: {
@@ -89,6 +92,9 @@ static void handle_robot_message(robot_message_t* message) {
       robot_leg_set_left_height_percentage(control_leg.left_percentage);
       robot_leg_set_right_height_percentage(control_leg.right_percentage);
       break;
+    }
+    case MESSAGE_CONTROL_HEIGHT: {
+      robot_set_height((uint8_t) lpf_height1(message->body.height.percentage));
     }
     case MESSAGE_EMERGENCY_STOP:
       robot_stop();
@@ -164,6 +170,7 @@ void robot_stop() {
 void robot_recover() {
   lqr_controller.recover();
 }
+
 
 void robot_set_height(const uint8_t percentage) {
   robot_leg_set_height_percentage(percentage);

@@ -67,7 +67,7 @@ public class RobotViewModel extends ViewModel implements DataHandler, LoggingSup
   }
 
   public void setHeightPercentage(int percentage) {
-    RobotMessage robotMessage = RobotMessage.forControlLeg(percentage, percentage);
+    RobotMessage robotMessage = RobotMessage.forControlHeight(percentage);
     sendMessage(robotMessage.toByteArray());
   }
 

@@ -15,47 +15,37 @@
  * along with this program. If not, see [https://www.gnu.org/licenses/]
  */
 
-package cn.taketoday.robot.protocol;
+package cn.taketoday.robot.protocol.message;
 
-import infra.lang.Enumerable;
+import cn.taketoday.robot.protocol.Message;
+import cn.taketoday.robot.protocol.Writable;
 
 /**
  * @author <a href="https://github.com/TAKETODAY">海子 Yang</a>
- * @since 1.0 2025/12/20 14:40
+ * @since 1.0 2026/2/9 21:44
  */
-public enum MessageType implements Message, Enumerable<Integer> {
-  CONTROL(1),
-  CONTROL_LEG(2),
-  CONTROL_HEIGHT(3),
+public class ControlHeightMessage implements Message {
 
-  CONFIG_SET(20),
-  CONFIG_GET(21),
-  FIRMWARE_INFO(22),
-  STATUS_REPORT(23),
+  public final byte percentage;
 
-  ACTION_PLAY(40),
-
-  ACK(60),
-  ERROR(61),
-  SENSOR_DATA(62),
-
-  EMERGENCY_STOP(80),
-  EMERGENCY_RECOVER(81);
-
-  public final int value;
-
-  MessageType(int value) {
-    this.value = value;
-  }
-
-  @Override
-  public Integer getValue() {
-    return value;
+  public ControlHeightMessage(int percentage) {
+    this.percentage = percentage(percentage);
   }
 
   @Override
   public void writeTo(Writable writable) {
-    writable.write((byte) value);
+    writable.write(percentage);
   }
 
+  static byte percentage(int percentage) {
+    if (percentage > 100) {
+      return 100;
+    }
+
+    if (percentage < 0) {
+      percentage = 10;
+    }
+
+    return (byte) percentage;
+  }
 }

@@ -20,6 +20,9 @@
 
 #ifdef __cplusplus
 extern "C" {
+
+
+
 #endif
 
 #define FLAG_DIRECTION    (1 << 0)  // 位0: 方向
@@ -35,20 +38,23 @@ extern "C" {
 typedef enum : uint8_t {
   MESSAGE_CONTROL = 1,
   MESSAGE_CONTROL_LEG = 2,
-  MESSAGE_EMERGENCY_STOP = 3,
-  MESSAGE_EMERGENCY_RECOVER = 4,
+  MESSAGE_CONTROL_HEIGHT = 3,
 
-  MESSAGE_CONFIG_SET = 0x10,    // 设置参数
-  MESSAGE_CONFIG_GET = 0x11,    // 获取参数
-  MESSAGE_FIRMWARE_INFO = 0x12, // 获取固件信息
-  MESSAGE_STATUS_REPORT = 0x13,
+  MESSAGE_CONFIG_SET = 20,    // 设置参数
+  MESSAGE_CONFIG_GET = 21,    // 获取参数
+  MESSAGE_FIRMWARE_INFO = 22, // 获取固件信息
+  MESSAGE_STATUS_REPORT = 23,
 
   // 动作与模式类
-  MESSAGE_ACTION_PLAY = 0x20,
+  MESSAGE_ACTION_PLAY = 40,
 
-  MESSAGE_ACK = 0x80,
-  MESSAGE_ERROR = 0x81,
-  MESSAGE_SENSOR_DATA = 0x82,
+  MESSAGE_ACK = 60,
+  MESSAGE_ERROR = 61,
+  MESSAGE_SENSOR_DATA = 62,
+
+  MESSAGE_EMERGENCY_STOP = 80,
+  MESSAGE_EMERGENCY_RECOVER = 81,
+
 } message_type_t;
 
 typedef enum : uint8_t {
@@ -77,6 +83,10 @@ typedef struct {
   uint8_t left_percentage;
   uint8_t right_percentage;
 } control_leg_message_t;
+
+typedef struct {
+  uint8_t percentage;
+} robot_height_message_t;
 
 typedef struct {
   float P;
@@ -146,6 +156,7 @@ typedef struct {
   union {
     control_message_t control;
     control_leg_message_t control_leg;
+    robot_height_message_t height;
     config_message_t config;
     config_set_message_t set_config;
   } body;
