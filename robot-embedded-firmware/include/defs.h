@@ -21,6 +21,18 @@
 
 #define constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
 
+inline long map(const long x, const long in_min, const long in_max, const long out_min, const long out_max) {
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
+
+inline int mapi(const int x, const int in_min, const int in_max, const int out_min, const int out_max) {
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
+
+inline float mapf(const float x, const float in_min, const float in_max, const float out_min, const float out_max) {
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
+
 #if !defined( __cplusplus)
 
 #define nullptr NULL
