@@ -141,7 +141,7 @@ static void foc_balance_loop(void* pvParameters) {
   log_info("foc balance looping");
 
   TickType_t xLastWakeTime = xTaskGetTickCount();
-  constexpr TickType_t xFrequency = pdMS_TO_TICKS(10); // 10ms
+  constexpr TickType_t xFrequency = pdMS_TO_TICKS(5);
 
   for (;;) {
     vTaskDelayUntil(&xLastWakeTime, xFrequency);
@@ -301,7 +301,7 @@ void LQRController::yaw_loop() {
     // 强制约束输出在0~60范围内（防止异常值）
     height = constrain(height, 30, 50);
     // 使用低波过滤器，平滑数据
-    wrobot.height = (int)lpf_height(height);
+    wrobot.height = (int) lpf_height(height);
 
     // 增加rgb效果
     // startLEDBlink(CRGB::Red, 200, 1);
