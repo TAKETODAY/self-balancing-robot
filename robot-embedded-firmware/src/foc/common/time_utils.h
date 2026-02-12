@@ -15,8 +15,6 @@
 
 #pragma once
 
-#include "foc_utils.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif

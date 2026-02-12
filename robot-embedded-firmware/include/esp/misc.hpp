@@ -1,4 +1,4 @@
-// Copyright 2025 the original author or authors.
+// Copyright 2025 - 2026 the original author or authors.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,6 +14,8 @@
 // along with this program. If not, see [https://www.gnu.org/licenses/]
 
 #pragma once
+
+#include "defs.h"
 
 #ifdef __cplusplus
 extern "C" {

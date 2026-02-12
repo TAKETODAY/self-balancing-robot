@@ -14,6 +14,7 @@
 // along with this program. If not, see [https://www.gnu.org/licenses/]
 
 #include "time_utils.h"
+#include "esp/misc.hpp"
 
 // function buffering delay() 
 // arduino uno function doesn't work well with interrupts

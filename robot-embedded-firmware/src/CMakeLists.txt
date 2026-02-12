@@ -1,7 +1,7 @@
 
 set(FOC_FILES
     foc/common/pid.cpp
-    foc/common/time_utils.cpp
+    foc/common/time_utils.c
     foc/common/foc_utils.cpp
     foc/common/lowpass_filter.cpp
     foc/common/base_classes/CurrentSense.cpp

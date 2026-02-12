@@ -50,7 +50,7 @@ static struct {
   .critical = 6.20f
 };
 
-static bool _adc_calibration_init(adc_unit_t unit, adc_channel_t channel, adc_atten_t atten, adc_cali_handle_t* out_handle) {
+static bool adc_calibration_init(adc_unit_t unit, adc_channel_t channel, adc_atten_t atten, adc_cali_handle_t* out_handle) {
   adc_cali_handle_t handle = nullptr;
   esp_err_t ret = ESP_FAIL;
   bool calibrated = false;
@@ -78,6 +78,7 @@ static bool _adc_calibration_init(adc_unit_t unit, adc_channel_t channel, adc_at
       .unit_id = unit,
       .atten = atten,
       .bitwidth = ADC_BITWIDTH_DEFAULT,
+      .default_vref = 0
     };
     ret = adc_cali_create_scheme_line_fitting(&cali_config, &handle);
     if (ret == ESP_OK) {
@@ -164,19 +165,19 @@ void showBatteryLED(void* pvParameters) {
 
 
 void battery_init() {
-  constexpr adc_oneshot_unit_init_cfg_t init_config1 = {
+  adc_oneshot_unit_init_cfg_t init_config1 = {
     .unit_id = ADC_UNIT_1,
   };
   ESP_ERROR_CHECK(adc_oneshot_new_unit(&init_config1, &adc1_handle));
 
-  constexpr adc_oneshot_chan_cfg_t config = {
+  adc_oneshot_chan_cfg_t config = {
     .atten = ADC_ATTEN_DB_12,
     .bitwidth = ADC_BITWIDTH_DEFAULT,
   };
 
   ESP_ERROR_CHECK(adc_oneshot_config_channel(adc1_handle, channel, &config));
 
-  do_calibration1_chan0 = _adc_calibration_init(ADC_UNIT_1, channel, ADC_ATTEN_DB_12, &adc_cali_handle);
+  do_calibration1_chan0 = adc_calibration_init(ADC_UNIT_1, channel, ADC_ATTEN_DB_12, &adc_cali_handle);
 
   pinMode(LED_BATTERY_PIN, OUTPUT);
   digitalWrite(LED_BATTERY_PIN, LOW);
