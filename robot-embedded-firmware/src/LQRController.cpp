@@ -322,48 +322,6 @@ void LQRController::yaw_loop() {
   YAW_output = yaw_angle_control + yaw_gyro_control;
 }
 
-// 常量定义
-static const float YAW_RATE_MAX = 200.0f; // °/s
-static const float YAW_DEADZONE = 10.0f;
-static const float HEIGHT_SPIN_LOW = 50.0f;  // 慢转时腿高
-static const float HEIGHT_SPIN_HIGH = 30.0f; // 快转时腿低
-static const float DEFAULT_HEIGHT = 30.0f;
-
-void LQRController::update_yaw_control() {
-  if (jump_flag) {
-    YAW_output = 0;
-    return;
-  }
-
-  int x = wrobot.joyx;
-  int y = wrobot.joyy;
-  int x_abs = abs(x);
-
-  // ----- 1. 计算目标偏航角速度（摇杆→°/s）-----
-  float target_rate = (float) x * (YAW_RATE_MAX / 100.0f);
-
-  // ----- 2. 角速度闭环 -----
-  float gyro_z = attitude_get_gyroscope()->z;
-  float rate_output = pid_yaw_rate(gyro_z, target_rate); // PID 输出限制在 ±12
-
-  // ----- 3. 原地打转特殊处理 -----
-  static float spin_coeff_smooth = 1.0f;
-  float target_spin_coeff = 1.0f;
-
-  if (y == 0 && x_abs > YAW_DEADZONE) {
-    // 原地打转 → 增强响应
-    target_spin_coeff = 1.0f + (x_abs - YAW_DEADZONE) / (100.0f - YAW_DEADZONE);
-    target_spin_coeff = constrain(target_spin_coeff, 1.0f, 2.0f);
-
-    // 腿高度：快转降低重心
-    float height = HEIGHT_SPIN_LOW - (x_abs * (HEIGHT_SPIN_LOW - HEIGHT_SPIN_HIGH) / 100.0f);
-    wrobot.height = (int) lpf_height(constrain(height, HEIGHT_SPIN_HIGH, HEIGHT_SPIN_LOW));
-  }
-  spin_coeff_smooth += (target_spin_coeff - spin_coeff_smooth) * 0.2f;
-
-  YAW_output = constrain(rate_output * spin_coeff_smooth, -12.0f, 12.0f);
-}
-
 void LQRController::stop() {
   log_info("stop");
   stop_motors();
