@@ -61,10 +61,6 @@ public:
   float last_lqr_speed = 0;   // 记录上一时刻的轮部转速
   float robot_speed_diff = 0; // 速度差
 
-  // 开机默认坐下 修改
-  int sitting_down = 0;   // 开机直接进入“坐下状态”，避免无控制
-  int stand_up_count = 0; // 站立标志位
-
   // YAW轴控制数据
   float YAW_gyro = 0;
   float YAW_angle = 0;

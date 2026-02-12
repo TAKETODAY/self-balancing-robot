@@ -271,15 +271,9 @@ void LQRController::balance_loop() {
 
 }
 
-static long map(long x, long in_min, long in_max, long out_min, long out_max) {
-  const long run = in_max - in_min;
-  if (run == 0) {
-    log_error("map(): Invalid input range, min == max");
-    return -1; // AVR returns -1, SAM returns 0
-  }
-  const long rise = out_max - out_min;
-  const long delta = x - in_min;
-  return (delta * rise) / run + out_min;
+static float map(const int x, const int out_min, const int out_max) {
+  const int rise = out_max - out_min;
+  return static_cast<float>(x * rise) / 100 + static_cast<float>(out_min);
 }
 
 void LQRController::yaw_loop() {
@@ -290,23 +284,24 @@ void LQRController::yaw_loop() {
   }
 
   // 1. 根据abs(wrobot.joyx)，动态设置yaw_target系数
-  float coeff = map(abs(wrobot.joyx), 0, 100, 10, 100) / 100.0f;
+  float coeff = map(abs(wrobot.joyx), 10, 100) / 100.0f;
   coeff = constrain(coeff, 0.1f, 1.0f);
-  float yaw_target = wrobot.joyx * coeff;
+  float yaw_target = (float) wrobot.joyx * coeff;
 
   // 2. 根据abs(wrobot.joyx)，提高PID响应：临时放大yaw_angle_control（核心突破上限）
   float yaw_angle_control_coeff = 1.0f;
   if (wrobot.joyy == 0 && abs(wrobot.joyx) > 10) {
     // 原地打转
-    yaw_angle_control_coeff = map(abs(wrobot.joyx), 0, 100, 1.0, 2.0);
+    yaw_angle_control_coeff = map(abs(wrobot.joyx), 1.0, 2.0);
     // 根据转向速度，智能计算wrobot.height
     // abs(wrobot.joyx) 范围0到100，默认0，输出范围20-50,默认 30
     // 反向映射：绝对值30→60，绝对值100→0（线性过渡）
-    wrobot.height = map(abs(wrobot.joyx), 0, 100, 50, 30);
+
+    float height = map(abs(wrobot.joyx), 50, 30);
     // 强制约束输出在0~60范围内（防止异常值）
-    wrobot.height = constrain(wrobot.height, 30, 50);
+    height = constrain(height, 30, 50);
     // 使用低波过滤器，平滑数据
-    wrobot.height = lpf_height(wrobot.height);
+    wrobot.height = (int)lpf_height(height);
 
     // 增加rgb效果
     // startLEDBlink(CRGB::Red, 200, 1);
