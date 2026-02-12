@@ -76,6 +76,6 @@ public:
   // 跳跃相关参数
   int jump_flag = 0; // 跳跃过程计数
 
-  bool stoped;
+  bool stoped = false;
 
 };

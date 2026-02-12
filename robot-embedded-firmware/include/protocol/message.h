@@ -20,9 +20,6 @@
 
 #ifdef __cplusplus
 extern "C" {
-
-
-
 #endif
 
 #define FLAG_DIRECTION    (1 << 0)  // 位0: 方向

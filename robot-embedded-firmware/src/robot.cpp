@@ -37,7 +37,6 @@ Wrobot wrobot;
 
 static LQRController lqr_controller;
 
-#define MAX_BLE_PACKET_SIZE    512
 #define RX_QUEUE_LEN 100
 
 static QueueHandle_t buffer_queue = xQueueCreate(RX_QUEUE_LEN, sizeof(robot_message_t));
@@ -136,7 +135,7 @@ void robot_init() {
 
   battery_init();
 
-  ble_server_init(onDataReceived, MAX_BLE_PACKET_SIZE);
+  ble_server_init(onDataReceived);
 
   xTaskCreate(heart_rate_task, "status_report", 4096, nullptr, 5, nullptr);
   xTaskCreate(robot_message_parsing_task, "robot_ctrl", 4096, nullptr, 8, nullptr);
@@ -171,6 +170,9 @@ void robot_recover() {
   lqr_controller.recover();
 }
 
+bool robot_is_connected() {
+  return false; //TODO
+}
 
 void robot_set_height(const uint8_t percentage) {
   robot_leg_set_height_percentage(percentage);

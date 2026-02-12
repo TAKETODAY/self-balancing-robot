@@ -26,6 +26,7 @@
 
 static int ble_server_gap_event(struct ble_gap_event* event, void* arg);
 
+#define MAX_BLE_PACKET_SIZE    512
 
 static struct {
   uint16_t mtu;
@@ -337,14 +338,14 @@ int gatt_svr_init(void) {
   return 0;
 }
 
-void ble_server_init(const ble_data_callback_t callback, const uint16_t mtu) {
+void ble_server_init(const ble_data_callback_t callback) {
   esp_err_t ret = nimble_port_init();
   if (ret != ESP_OK) {
     MODLOG_DFLT(ERROR, "Failed to init nimble %d \n", ret);
     return;
   }
 
-  this.mtu = mtu;
+  this.mtu = MAX_BLE_PACKET_SIZE;
   this.callback = callback;
   this.conn_handle = -1;
 

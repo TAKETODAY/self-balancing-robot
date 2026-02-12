@@ -102,6 +102,8 @@ void robot_stop();
 
 void robot_recover();
 
+bool robot_is_connected();
+
 #ifdef __cplusplus
 }
 #endif

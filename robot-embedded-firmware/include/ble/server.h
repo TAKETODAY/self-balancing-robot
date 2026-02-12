@@ -35,7 +35,7 @@ extern "C" {
 typedef ble_error_t (*ble_data_callback_t)(uint8_t* rx_buffer, uint16_t len);
 
 // Initialize the BLE server with a callback function for data reception
-void ble_server_init(ble_data_callback_t callback, uint16_t mtu);
+void ble_server_init(ble_data_callback_t callback);
 
 // Send data over BLE connection
 ble_error_t ble_server_send(uint8_t* buffer, size_t length);
