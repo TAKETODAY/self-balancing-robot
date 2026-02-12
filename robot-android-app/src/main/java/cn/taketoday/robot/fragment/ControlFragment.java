@@ -59,6 +59,7 @@ public class ControlFragment extends ViewBindingFragment<FragmentControlBinding>
 
     setConnectionStatus(robotModel.isConnected());
     robotModel.connected.observe(getViewLifecycleOwner(), this::setConnectionStatus);
+    robotModel.robotHeightPercentage.observe(getViewLifecycleOwner(), binding.robotHeight::setProgress);
 
     NavHostFragment navHostFragment = (NavHostFragment) requireParentFragment();
     var navController = navHostFragment.getNavController();
@@ -72,6 +73,14 @@ public class ControlFragment extends ViewBindingFragment<FragmentControlBinding>
 //      binding.textViewStrengthLeft.setText(strength + "%");
     });
 
+    binding.addHeightBtn.setOnClickListener(v -> {
+      robotModel.setRobotHeightPercentage(robotModel.getRobotHeightPercentage() + 10);
+    });
+
+    binding.minusHeightBtn.setOnClickListener(v -> {
+      robotModel.setRobotHeightPercentage(robotModel.getRobotHeightPercentage() - 10);
+    });
+
     binding.emergencyStop.setOnCheckedChangeListener((buttonView, checked) -> {
       if (checked) {
         robotModel.emergencyStop();
@@ -81,11 +90,11 @@ public class ControlFragment extends ViewBindingFragment<FragmentControlBinding>
       }
     });
 
-    binding.legControl.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+    binding.robotHeight.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 
       @Override
       public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-        robotModel.setHeightPercentage(progress);
+        robotModel.setRobotHeightPercentage(progress);
       }
 
       @Override

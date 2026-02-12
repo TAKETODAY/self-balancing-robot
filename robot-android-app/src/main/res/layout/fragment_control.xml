@@ -214,16 +214,16 @@
     android:layout_marginBottom="16dp"
     android:background="@drawable/shape_emergency_button"
     android:elevation="20sp"
+    android:fontFamily="@font/font"
     android:textOff="OFF"
     android:textOn="ON"
     android:textSize="20sp"
     android:textStyle="bold"
-    android:fontFamily="@font/font"
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintEnd_toEndOf="parent" />
 
   <SeekBar
-    android:id="@+id/leg_control"
+    android:id="@+id/robot_height"
     android:layout_width="261dp"
     android:layout_height="17dp"
     android:max="100"
@@ -235,6 +235,36 @@
     app:layout_constraintStart_toStartOf="parent"
     app:layout_constraintTop_toTopOf="parent"
     app:layout_constraintVertical_bias="0.37" />
+
+  <Button
+    android:id="@+id/add_height_btn"
+    style="@style/Widget.AppCompat.Button.Colored"
+    android:layout_width="100dp"
+    android:layout_height="60dp"
+    android:backgroundTint="@color/color_primary"
+    android:text="+"
+    android:textSize="18sp"
+    app:layout_constraintBottom_toTopOf="@+id/right_action_panel"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintHorizontal_bias="0.971"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent"
+    app:layout_constraintVertical_bias="0.52" />
+
+  <Button
+    android:id="@+id/minus_height_btn"
+    style="@style/Widget.AppCompat.Button.Colored"
+    android:layout_width="100dp"
+    android:layout_height="60dp"
+    android:backgroundTint="@color/color_accent"
+    android:text="-"
+    android:textSize="18sp"
+    app:layout_constraintBottom_toTopOf="@+id/right_action_panel"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintHorizontal_bias="0.971"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@+id/add_height_btn"
+    app:layout_constraintVertical_bias="0.313" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

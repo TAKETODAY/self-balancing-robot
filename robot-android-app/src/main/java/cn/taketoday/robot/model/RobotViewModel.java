@@ -27,6 +27,8 @@ import java.util.Arrays;
 import cn.taketoday.robot.LoggingSupport;
 import cn.taketoday.robot.protocol.RobotMessage;
 
+import static cn.taketoday.robot.util.RobotUtils.constrain;
+
 /**
  * @author <a href="https://github.com/TAKETODAY">海子 Yang</a>
  * @since 1.0 2025/12/20 14:54
@@ -37,7 +39,7 @@ public class RobotViewModel extends ViewModel implements DataHandler, LoggingSup
 
   public final MutableLiveData<Integer> batteryLevel = new MutableLiveData<>(100);
 
-  public final MutableLiveData<Integer> legHeightPercentage = new MutableLiveData<>(50);
+  public final MutableLiveData<Integer> robotHeightPercentage = new MutableLiveData<>(50);
 
   @SuppressWarnings("NullAway.Init")
   private WritableChannel writableChannel;
@@ -66,9 +68,16 @@ public class RobotViewModel extends ViewModel implements DataHandler, LoggingSup
     sendMessage(message.toByteArray());
   }
 
-  public void setHeightPercentage(int percentage) {
+  public void setRobotHeightPercentage(int percentage) {
+    percentage = constrain(percentage, 0, 100);
+    robotHeightPercentage.postValue(percentage);
     RobotMessage robotMessage = RobotMessage.forControlHeight(percentage);
     sendMessage(robotMessage.toByteArray());
+  }
+
+  public int getRobotHeightPercentage() {
+    Integer value = robotHeightPercentage.getValue();
+    return value != null ? value : 0;
   }
 
   public void emergencyStop() {
