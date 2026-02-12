@@ -57,7 +57,7 @@ idf_component_register(SRCS
 
     ${FOC_FILES}
 
-    PRIV_REQUIRES nvs_flash spi_flash esp_adc esp_driver_gpio esp_timer esp_wifi freertos bt
+    PRIV_REQUIRES nvs_flash spi_flash esp_adc esp_driver_gpio freertos bt # esp_timer esp_wifi
     INCLUDE_DIRS "." "../include"
 )
 

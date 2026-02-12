@@ -133,12 +133,6 @@ void LQRController::begin() {
 static void stop_motors() {
   motor_L.target = 0;
   motor_R.target = 0;
-
-  motor_L.loopFOC();
-  motor_R.loopFOC();
-
-  motor_L.move();
-  motor_R.move();
 }
 
 static void foc_balance_loop(void* pvParameters) {
@@ -161,13 +155,11 @@ static void foc_balance_loop(void* pvParameters) {
     if (abs(controller->LQR_angle) > 40.0f) {
       stop_motors();
     }
-    else {
-      motor_L.loopFOC();
-      motor_R.loopFOC();
+    motor_L.loopFOC();
+    motor_R.loopFOC();
 
-      motor_L.move();
-      motor_R.move();
-    }
+    motor_L.move();
+    motor_R.move();
   }
 }
 

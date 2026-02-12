@@ -112,8 +112,8 @@ void attitude_update() {
   this.gyro.y -= this.offset.y;
   this.gyro.z -= this.offset.z;
 
-  const float angleAccX = atan2(this.acce.y, this.acce.z + abs(this.acce.x)) * RAD_TO_DEG;
-  const float angleAccY = atan2(this.acce.x, this.acce.z + abs(this.acce.y)) * -RAD_TO_DEG;
+  const float angleAccX = atan2f(this.acce.y, this.acce.z + fabsf(this.acce.x)) * RAD_TO_DEG;
+  const float angleAccY = atan2f(this.acce.x, this.acce.z + fabsf(this.acce.y)) * -RAD_TO_DEG;
 
   this.interval = (float) (millis() - this.preInterval) * 0.001f;
 
