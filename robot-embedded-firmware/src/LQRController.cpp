@@ -136,6 +136,8 @@ static void stop_motors() {
   motor_R.target = 0;
 }
 
+static constexpr float K_SPEED_SCALE = -0.5f; // 带 f 后缀，明确 float
+
 static void foc_balance_loop(void* pvParameters) {
   auto* controller = static_cast<LQRController*>(pvParameters);
   log_info("foc balance looping");
@@ -154,11 +156,12 @@ static void foc_balance_loop(void* pvParameters) {
     wrobot.joyx_last = wrobot.joyx;
     wrobot.joyy_last = wrobot.joyy;
 
-    motor_L.target = (-0.5) * (controller->LQR_u + controller->YAW_output);
-    motor_R.target = (-0.5) * (controller->LQR_u - controller->YAW_output);
-
     if (abs(controller->LQR_angle) > 40.0f) {
       stop_motors();
+    }
+    else {
+      motor_L.target = K_SPEED_SCALE * (controller->LQR_u + controller->YAW_output);
+      motor_R.target = K_SPEED_SCALE * (controller->LQR_u - controller->YAW_output);
     }
     motor_L.loopFOC();
     motor_R.loopFOC();
