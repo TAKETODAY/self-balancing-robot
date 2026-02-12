@@ -35,7 +35,7 @@ typedef enum : uint8_t {
   BUFFER_OVERFLOW = 0x10,
   BUFFER_EOF = 0x11,
   BUFFER_INSUFFICIENT_SPACE = 0x12, // 空间不足
-  BUFFER_OUT_OF_BOUNDS = 0x13, // 访问越界
+  BUFFER_OUT_OF_BOUNDS = 0x13,      // 访问越界
 
   BUFFER_INVALID_SIZE = 0x14,
 

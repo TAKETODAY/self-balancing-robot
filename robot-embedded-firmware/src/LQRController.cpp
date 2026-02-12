@@ -24,6 +24,7 @@
 #include "foc/drivers/BLDCDriver3PWM.h"
 #include "foc/sensors/MagneticSensorI2C.h"
 
+#define balance_CORE 1
 
 static auto TAG = "LQR-controller";
 
@@ -127,7 +128,7 @@ void LQRController::begin() {
   motor_R.init();
   motor_R.initFOC();
 
-  xTaskCreate(foc_balance_loop, "balance_loop", 4096, this, 10, &task_handle);
+  xTaskCreatePinnedToCore(foc_balance_loop, "balance_loop", 4096, this, 10, &task_handle, balance_CORE);
 }
 
 static void stop_motors() {
@@ -139,7 +140,12 @@ static void foc_balance_loop(void* pvParameters) {
   auto* controller = static_cast<LQRController*>(pvParameters);
   log_info("foc balance looping");
 
+  TickType_t xLastWakeTime = xTaskGetTickCount();
+  constexpr TickType_t xFrequency = pdMS_TO_TICKS(10); // 10ms
+
   for (;;) {
+    vTaskDelayUntil(&xLastWakeTime, xFrequency);
+
     delayMicroseconds(1500);
     attitude_update();
 

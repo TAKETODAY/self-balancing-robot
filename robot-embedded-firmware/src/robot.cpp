@@ -151,6 +151,7 @@ static ble_error_t onDataReceived(uint8_t* rx_buffer, uint16_t len) {
       return BLE_OK;
     }
     MODLOG_DFLT(WARN, "BLE RX 队列已满，丢弃数据包");
+    return BLE_CONNECTION_BUSY;
   }
 
   BUFFER_PRINT_ERROR(buffer, "BLE message serialize failed");

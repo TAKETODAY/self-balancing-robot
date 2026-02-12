@@ -101,9 +101,6 @@ bool buffer_reset(buffer_t* buf) {
   return buffer_clear_error(buf);
 }
 
-bool buffer_clear(buffer_t* buf) {
-  return buffer_reset(buf);
-}
 
 size_t buffer_available(const buffer_t* buf) {
   if (!buf || !buf->data)
