@@ -77,8 +77,7 @@ void heart_rate_task(void* param) {
   vTaskDelete(nullptr);
 }
 
-LowPassFilter lpf_height1(0.1);
-
+LowPassFilter robot_height_filter(0.1);
 
 static void handle_robot_message(robot_message_t* message) {
   switch (message->type) {
@@ -94,7 +93,7 @@ static void handle_robot_message(robot_message_t* message) {
       break;
     }
     case MESSAGE_CONTROL_HEIGHT: {
-      robot_set_height((uint8_t) lpf_height1(message->body.height.percentage));
+      robot_set_height((uint8_t) robot_height_filter(message->body.height.percentage));
       break;
     }
     case MESSAGE_EMERGENCY_STOP:
