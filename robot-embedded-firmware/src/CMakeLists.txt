@@ -44,7 +44,7 @@ idf_component_register(SRCS
     esp/io.cpp
     esp/adc.cpp
     esp/gpio.cpp
-    esp/misc.cpp
+    esp/misc.c
     esp/serial.cpp
 
     robot/leg.cpp

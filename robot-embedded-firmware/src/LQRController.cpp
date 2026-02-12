@@ -146,7 +146,6 @@ static void foc_balance_loop(void* pvParameters) {
   for (;;) {
     vTaskDelayUntil(&xLastWakeTime, xFrequency);
 
-    delayMicroseconds(1500);
     attitude_update();
 
     controller->balance_loop();

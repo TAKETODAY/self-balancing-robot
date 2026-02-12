@@ -196,7 +196,7 @@ int STSServoDriver::sendMessage(byte const& servoId, byte const& commandID, byte
     digitalWrite(dirPin_, LOW);
   }
   // Give time for the message to be processed.
-  delayMicroseconds(200);
+  delay_microseconds(200);
   return ret;
 }
 

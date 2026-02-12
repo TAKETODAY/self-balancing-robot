@@ -1,4 +1,4 @@
-// Copyright 2025 the original author or authors.
+// Copyright 2025 - 2026 the original author or authors.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 typedef struct {
   gpio_config_t conf; /*!< gpio pin configuration */
-  gpio_num_t number; /*!< gpio pin number */
+  gpio_num_t number;  /*!< gpio pin number */
 } IoRecord;
 
 static IoRecord ioRecord[GPIO_NUM_MAX];

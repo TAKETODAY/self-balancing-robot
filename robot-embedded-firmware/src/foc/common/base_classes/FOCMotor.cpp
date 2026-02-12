@@ -1,4 +1,4 @@
-// Copyright 2025 the original author or authors.
+// Copyright 2025 - 2026 the original author or authors.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -196,14 +196,14 @@ int FOCMotor::characteriseMotor(float voltage, float correction_factor = 1.0f) {
         // step the voltage
         setPhaseVoltage(0, voltage, current_electric_angle);
         t0 = micros();
-        delayMicroseconds(risetime_us); // wait a little bit
+        delay_microseconds(risetime_us); // wait a little bit
 
         PhaseCurrent_s l_currents_raw = current_sense->getPhaseCurrents();
         t1 = micros();
         setPhaseVoltage(0, 0, current_electric_angle);
 
         DQCurrent_s l_currents = current_sense->getDQCurrents(current_sense->getABCurrents(l_currents_raw), current_electric_angle);
-        delayMicroseconds(settle_us); // wait a bit for the currents to go to 0 again
+        delay_microseconds(settle_us); // wait a bit for the currents to go to 0 again
 
         if (t0 > t1) continue; // safety first
 

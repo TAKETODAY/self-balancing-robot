@@ -118,12 +118,12 @@ int MagneticSensorI2C::checkBus(byte sda_pin, byte scl_pin) {
     for (byte i = 0; i < 16; i++) {
       // toggle clock for 2 bytes of data
       digitalWrite(scl_pin, LOW);
-      delayMicroseconds(20);
+      delay_microseconds(20);
       digitalWrite(scl_pin, HIGH);
-      delayMicroseconds(20);
+      delay_microseconds(20);
     }
     pinMode(sda_pin, INPUT);
-    delayMicroseconds(20);
+    delay_microseconds(20);
     if (digitalRead(sda_pin) == LOW) {
       // SDA still blocked
       return 2;

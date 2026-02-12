@@ -40,7 +40,7 @@ uint64_t millis();
  *
  * @param us microsecond
  */
-void delayMicroseconds(uint32_t us);
+void delay_microseconds(uint32_t us);
 
 /**
  * @brief Rtos ms delay function
