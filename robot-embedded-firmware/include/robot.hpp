@@ -18,8 +18,6 @@
 #include "event.hpp"
 #include "defs.h"
 
-#include "foc/BLDCMotor.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif

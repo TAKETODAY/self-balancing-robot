@@ -35,11 +35,10 @@ idf_component_register(SRCS
     LQRController.cpp
     mpu6050.c
     robot.cpp
-    stack_monitor.cpp
+#    stack_monitor.cpp
 
     ble/server.c
     ble/error.c
-    ble/heart_rate_mock.c
 
     esp/io.cpp
     esp/adc.cpp

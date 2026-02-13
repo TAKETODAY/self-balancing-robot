@@ -25,8 +25,6 @@
 #include "nvs_flash.h"
 
 #include "esp/serial.hpp"
-#include "ble/gatt_svc.h"
-#include "ble/heart_rate.h"
 
 #include "protocol.h"
 #include "ble.h"
@@ -53,27 +51,32 @@ void nvs_init() {
   ESP_ERROR_CHECK(ret);
 }
 
-void heart_rate_task(void* param) {
-  /* Task entry log */
+static void status_repor_task(void* param) {
   log_info("heart rate task has been started!");
 
-  /* Loop forever */
-  while (true) {
-    /* Update heart rate value every 1 second */
-    update_heart_rate();
-    uint8_t val = get_heart_rate();
-    log_info("heart rate updated to %d", val);
+  TickType_t xLastWakeTime = xTaskGetTickCount();
+  constexpr TickType_t xFrequency = pdMS_TO_TICKS(2000);
 
-    if (auto err = ble_server_send(&val, 1); err) {
-      BLE_LOG_ERROR(err, "ble send failed");
+  for (;;) {
+    vTaskDelayUntil(&xLastWakeTime, xFrequency);
+
+    robot_message_t message = robot_message_create(MESSAGE_STATUS_REPORT);
+    message.status_report = status_report_create(status_robot_height);
+    message.status_report.robot_height = { robot_leg_get_height_percentage() };
+
+    byte data[sizeof(robot_message_t)];
+    buffer_t buffer = buffer_create(data, sizeof(robot_message_t));
+
+    if (robot_message_serialize(&message, &buffer)) {
+      size_t size = buffer_get_size(&buffer);
+      if (auto err = ble_server_send(data, size); err) {
+        BLE_LOG_ERROR(err, "ble send failed");
+      }
     }
-
-    /* Sleep */
-    vTaskDelay(HEART_RATE_TASK_PERIOD);
+    else {
+      BUFFER_PRINT_ERROR(buffer, "BLE message serialize failed");
+    }
   }
-
-  /* Clean up at exit */
-  vTaskDelete(nullptr);
 }
 
 static void handle_robot_message(robot_message_t* message) {
@@ -105,21 +108,19 @@ static void handle_robot_message(robot_message_t* message) {
 }
 
 static void robot_message_parsing_task(void* pvParameters) {
-  MODLOG_DFLT(INFO, "BLE server started");
+  log_debug("BLE server started");
   for (;;) {
     robot_message_t message;
     if (xQueueReceive(buffer_queue, &message, portMAX_DELAY)) {
-      MODLOG_DFLT(INFO, "收到指令，type: %s, sequence: %u, size: %u",
+      log_info("收到指令，type: %s, sequence: %u, size: %u",
         message_type_to_string(message.type), message.sequence, sizeof(robot_message_t));
 
       handle_robot_message(&message);
     }
     else {
-      // 正常情况下，portMAX_DELAY 会导致任务阻塞，不会走到这里。
-      MODLOG_DFLT(ERROR, "从队列接收数据失败（不应发生）。\n");
+      log_error("从队列接收数据失败（不应发生）。\n");
     }
   }
-  vTaskDelete(nullptr);
 }
 
 void robot_init() {
@@ -134,7 +135,7 @@ void robot_init() {
 
   ble_server_init(onDataReceived);
 
-  xTaskCreate(heart_rate_task, "status_report", 4096, nullptr, 5, nullptr);
+  xTaskCreate(status_repor_task, "status_report", 4096, nullptr, 5, nullptr);
   xTaskCreate(robot_message_parsing_task, "robot_ctrl", 4096, nullptr, 8, nullptr);
 }
 
@@ -144,32 +145,15 @@ static ble_error_t onDataReceived(uint8_t* rx_buffer, uint16_t len) {
 
   if (robot_message_deserialize(&message, &buffer)) {
     if (xQueueSend(buffer_queue, &message, 0) == pdTRUE) {
-      MODLOG_DFLT(DEBUG, "数据包已放入队列等待处理");
+      log_debug("数据包已放入队列等待处理");
       return BLE_OK;
     }
-    MODLOG_DFLT(WARN, "BLE RX 队列已满，丢弃数据包");
+    log_warn("BLE RX 队列已满，丢弃数据包");
     return BLE_CONNECTION_BUSY;
   }
 
   BUFFER_PRINT_ERROR(buffer, "BLE message deserialize failed");
   return BLE_READ_FAILED;
-}
-
-void on_report_timer_callback(TimerHandle_t xTimer) {
-  robot_message_t message = robot_message_create(MESSAGE_STATUS_REPORT);
-  message.status_report = status_report_create(status_robot_height);
-  message.status_report.robot_height = { robot_leg_get_height_percentage() };
-
-  byte data[sizeof(robot_message_t)];
-  buffer_t buffer = buffer_create(data, sizeof(robot_message_t));
-
-  if (robot_message_serialize(&message, &buffer)) {
-    size_t size = buffer_get_size(&buffer);
-    ble_server_send(data, size);
-  }
-  else {
-    BUFFER_PRINT_ERROR(buffer, "BLE message serialize failed");
-  }
 }
 
 void robot_stop() {
