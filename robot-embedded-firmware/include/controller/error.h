@@ -55,12 +55,12 @@ const char* controller_error_to_string(controller_error_t err);
 #if !defined(NDEBUG)
 #define controller_log_error(err, format, ...) \
   do { \
-      ESP_LOGE("BLE", "ERROR: 0x%02X: %s | %s:%d | " format, \
+      ESP_LOGE("controller", "ERROR: 0x%02X: %s | %s:%d | " format, \
               err, controller_error_to_string(err), __FILE__, __LINE__, ##__VA_ARGS__); \
   } while(0)
 #else
 #define controller_log_error(err, format, ...) \
-        ESP_LOGE("BLE", "错误 0x%02X: %s", err, controller_error_to_string(err))
+        ESP_LOGE("controller", "错误 0x%02X: %s", err, controller_error_to_string(err))
 #endif
 
 
