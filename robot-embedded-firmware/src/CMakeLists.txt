@@ -52,6 +52,7 @@ idf_component_register(SRCS
     robot/error_string.c
 
     protocol/message.c
+    protocol/message/status_report.c
     protocol/buffer.c
 
     ${FOC_FILES}

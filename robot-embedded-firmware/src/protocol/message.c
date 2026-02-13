@@ -30,8 +30,8 @@ static bool serialize_control_message(const control_message_t* control, buffer_t
 
 static bool serialize_body(robot_message_t* msg, buffer_t* buf) {
   switch (msg->type) {
-    case MESSAGE_CONTROL:
-      return serialize_control_message(&msg->body.control, buf);
+    case MESSAGE_CONTROL: return serialize_control_message(&msg->control, buf);
+    case MESSAGE_STATUS_REPORT: return status_report_serialize(&msg->status_report, buf);
     default:
       break;
   }
@@ -80,18 +80,18 @@ static bool deserialize_config_message(config_message_t* config, buffer_t* buf) 
          && deserialize_config_body(config, buf);
 }
 
-bool deserialize_control_height_message(robot_height_message_t* height, buffer_t* buf) {
+bool deserialize_control_height_message(percentage_t* height, buffer_t* buf) {
   return buffer_read_u8(buf, &height->percentage);
 }
 
 static bool deserialize_body(robot_message_t* msg, buffer_t* buf) {
   switch (msg->type) {
-    case MESSAGE_CONTROL: return deserialize_control_message(&msg->body.control, buf);
-    case MESSAGE_CONTROL_LEG: return deserialize_control_leg_message(&msg->body.control_leg, buf);
-    case MESSAGE_CONTROL_HEIGHT: return deserialize_control_height_message(&msg->body.height, buf);
+    case MESSAGE_CONTROL: return deserialize_control_message(&msg->control, buf);
+    case MESSAGE_CONTROL_LEG: return deserialize_control_leg_message(&msg->control_leg, buf);
+    case MESSAGE_CONTROL_HEIGHT: return deserialize_control_height_message(&msg->height, buf);
 
-    case MESSAGE_CONFIG_GET: return deserialize_config_message(&msg->body.config, buf);
-    case MESSAGE_CONFIG_SET: return deserialize_config_message(&msg->body.config, buf);
+    case MESSAGE_CONFIG_GET: return deserialize_config_message(&msg->config, buf);
+    case MESSAGE_CONFIG_SET: return deserialize_config_message(&msg->config, buf);
     case MESSAGE_EMERGENCY_STOP:
     case MESSAGE_EMERGENCY_RECOVER: return true; // no body
 
@@ -125,6 +125,14 @@ const char* message_type_to_string(const message_type_t type) {
     case MESSAGE_SENSOR_DATA: return "SENSOR_DATA";
     default: return "UNKNOWN";
   }
+}
+
+inline robot_message_t robot_message_create(message_type_t type) {
+  return (robot_message_t){
+    .sequence = get_next_sequence(),
+    .type = type,
+    .flags = 0
+  };
 }
 
 void message_frame(const robot_message_t* message) {

@@ -25,7 +25,7 @@ bool buffer_has_error(const buffer_t* buf);
 
 error_info_t buffer_get_last_error(const buffer_t* buf);
 
-buffer_error_t buffer_clear_error(buffer_t* buf);
+void buffer_clear_error(buffer_t* buf);
 
 const char* buffer_error_to_string(buffer_error_t error);
 

@@ -20,6 +20,9 @@
 
 #ifdef __cplusplus
 extern "C" {
+
+
+
 #endif
 
 #ifdef __GNUC__
@@ -32,12 +35,15 @@ buffer_t* buffer_create_ptr(size_t capacity);
 
 buffer_t buffer_create(uint8_t* memory, size_t capacity);
 
+void buffer_free(buffer_t* buf);
+void buffer_reset(buffer_t* buf);
+
 bool buffer_init(buffer_t* buf, uint8_t* memory, size_t capacity);
-bool buffer_reset(buffer_t* buf);
 
 size_t buffer_available(const buffer_t* buf);
 bool buffer_is_empty(const buffer_t* buf);
-bool buffer_is_full(const buffer_t* buf);
+size_t buffer_get_size(const buffer_t* buf);
+uint8_t* buffer_get_data(const buffer_t* buf);
 
 bool buffer_write_raw(buffer_t* buf, const void* data, size_t size);
 bool buffer_read_raw(buffer_t* buf, void* data, size_t size);

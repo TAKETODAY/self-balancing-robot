@@ -13,35 +13,40 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see [https://www.gnu.org/licenses/]
 
+
 #pragma once
 
-#include <stdbool.h>
-#include "nimble/ble.h"
-#include "error.h"
+#include "defs.h"
+#include "../buffer.h"
+#include "common.h"
 
-// @formatter:off
 #ifdef __cplusplus
 extern "C" {
+
+
+
 #endif
-//@formatter:on
 
-// 16 Bit SPP Service UUID
-#define BLE_SVC_SPP_UUID16           0xABF0
+typedef enum : uint8_t {
+  status_battery = 1,
+  status_robot_height = 2,
 
-// 16 Bit SPP Service Characteristic UUID
-#define BLE_SVC_SPP_CHR_UUID16       0xABF1
+} status_type_t;
 
-// Callback function type for handling received BLE data
-typedef ble_error_t (*ble_data_callback_t)(uint8_t* rx_buffer, uint16_t len);
+typedef struct {
+  status_type_t type;
 
-// Initialize the BLE server with a callback function for data reception
-void ble_server_init(ble_data_callback_t callback);
+  union {
+    percentage_t battery;
+    percentage_t robot_height;
+  };
 
-// Send data over BLE connection
-ble_error_t ble_server_send(const uint8_t* buffer, size_t length);
+} status_report_t;
 
-// Check if BLE client is currently connected
-bool ble_server_is_connected();
+bool status_report_serialize(status_report_t* msg, buffer_t* buf);
+bool status_report_deserialize(status_report_t* msg, buffer_t* buf);
+
+status_report_t status_report_create(status_type_t type);
 
 #ifdef __cplusplus
 }

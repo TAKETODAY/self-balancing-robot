@@ -14,26 +14,24 @@
 // along with this program. If not, see [https://www.gnu.org/licenses/]
 
 
-// #include "esp_log.h"
-// #include "nvs_flash.h"
+#include "protocol/message/status_report.h"
 
-#include "robot.hpp"
+bool status_report_serialize(status_report_t* msg, buffer_t* buf) {
+  buffer_write_u8(buf, msg->type);
+  switch (msg->type) {
+    case status_robot_height:
+      return buffer_write_u8(buf, msg->battery.percentage);
+    default: return false;
+  }
+}
 
-/**
- * Declare the symbol pointing to the former implementation of esp_restart function
- */
-// extern void __real_esp_restart(void);
+bool status_report_deserialize(status_report_t* msg, buffer_t* buf) {
 
-/**
- * Redefine esp_restart function to print a message before actually restarting
- */
-// void __wrap_esp_restart(void) {
-//   printf("Restarting in progress...\n");
-//   /* Call the former implementation to actually restart the board */
-//   __real_esp_restart();
-// }
+  return false;
+}
 
-
-extern "C" void app_main(void) {
-  robot_init();
+inline status_report_t status_report_create(status_type_t type) {
+  return (status_report_t){
+    .type = type
+  };
 }

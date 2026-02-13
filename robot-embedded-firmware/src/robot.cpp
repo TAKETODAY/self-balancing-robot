@@ -79,18 +79,18 @@ void heart_rate_task(void* param) {
 static void handle_robot_message(robot_message_t* message) {
   switch (message->type) {
     case MESSAGE_CONTROL: {
-      const auto control = message->body.control;
+      const auto control = message->control;
       robot_set_speed(control.left_wheel_speed, control.right_wheel_speed);
       break;
     }
     case MESSAGE_CONTROL_LEG: {
-      const auto control_leg = message->body.control_leg;
+      const auto control_leg = message->control_leg;
       robot_leg_set_left_height_percentage(control_leg.left_percentage);
       robot_leg_set_right_height_percentage(control_leg.right_percentage);
       break;
     }
     case MESSAGE_CONTROL_HEIGHT: {
-      robot_set_height(message->body.height.percentage);
+      robot_set_height(message->height.percentage);
       break;
     }
     case MESSAGE_EMERGENCY_STOP:
@@ -123,7 +123,6 @@ static void robot_message_parsing_task(void* pvParameters) {
 }
 
 void robot_init() {
-
   nvs_init();
 
   serial.begin(115200);
@@ -152,13 +151,25 @@ static ble_error_t onDataReceived(uint8_t* rx_buffer, uint16_t len) {
     return BLE_CONNECTION_BUSY;
   }
 
-  BUFFER_PRINT_ERROR(buffer, "BLE message serialize failed");
+  BUFFER_PRINT_ERROR(buffer, "BLE message deserialize failed");
   return BLE_READ_FAILED;
 }
 
 void on_report_timer_callback(TimerHandle_t xTimer) {
-  sensor_data_t sensors;
+  robot_message_t message = robot_message_create(MESSAGE_STATUS_REPORT);
+  message.status_report = status_report_create(status_robot_height);
+  message.status_report.robot_height = { robot_leg_get_height_percentage() };
 
+  byte data[sizeof(robot_message_t)];
+  buffer_t buffer = buffer_create(data, sizeof(robot_message_t));
+
+  if (robot_message_serialize(&message, &buffer)) {
+    size_t size = buffer_get_size(&buffer);
+    ble_server_send(data, size);
+  }
+  else {
+    BUFFER_PRINT_ERROR(buffer, "BLE message serialize failed");
+  }
 }
 
 void robot_stop() {

@@ -73,6 +73,15 @@ inline buffer_t buffer_create(uint8_t* memory, const size_t capacity) {
   };
 }
 
+void buffer_free(buffer_t* buf) {
+  if (buf) {
+    free(buf->data);
+    buf->data = nullptr;
+    buf->capacity = 0;
+    buf->pos = 0;
+  }
+}
+
 bool buffer_init(buffer_t* buf, uint8_t* memory, const size_t capacity) {
   buffer_assert(buf && memory, buf, BUFFER_NULL_POINTER);
 
@@ -84,20 +93,11 @@ bool buffer_init(buffer_t* buf, uint8_t* memory, const size_t capacity) {
   return true;
 }
 
-buffer_error_t buffer_deinit(buffer_t* buf) {
-  if (buf) {
-    buf->data = nullptr;
-    buf->capacity = 0;
-    buf->pos = 0;
-  }
-  return BUFFER_OK;
-}
-
-bool buffer_reset(buffer_t* buf) {
+void buffer_reset(buffer_t* buf) {
   if (buf) {
     buf->pos = 0;
+    buffer_clear_error(buf);
   }
-  return buffer_clear_error(buf);
 }
 
 
@@ -111,8 +111,12 @@ inline bool buffer_is_empty(const buffer_t* buf) {
   return buffer_available(buf) == buf->capacity;
 }
 
-inline bool buffer_is_full(const buffer_t* buf) {
-  return buffer_available(buf) == 0;
+inline size_t buffer_get_size(const buffer_t* buf) {
+  return buf->pos;
+}
+
+inline uint8_t* buffer_get_data(const buffer_t* buf) {
+  return buf->data;
 }
 
 bool buffer_write_raw(buffer_t* buf, const void* data, const size_t size) {
@@ -298,10 +302,14 @@ const char* buffer_error_to_string(buffer_error_t error) {
   }
 }
 
-buffer_error_t buffer_clear_error(buffer_t* buf) {
+void buffer_clear_error(buffer_t* buf) {
   buf->last_error.code = BUFFER_OK;
-
-  return BUFFER_OK;
+#if BUFFER_DEBUG
+  buf->last_error.line = 0;
+  buf->last_error.file = nullptr;
+  buf->last_error.message = nullptr;
+  buf->last_error.function = nullptr;
+#endif
 }
 
 bool buffer_has_error(const buffer_t* buf) {

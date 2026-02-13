@@ -17,9 +17,14 @@
 
 #include "defs.h"
 #include "buffer.h"
+#include "message/common.h"
+#include "message/status_report.h"
 
 #ifdef __cplusplus
 extern "C" {
+
+
+
 #endif
 
 #define FLAG_DIRECTION    (1 << 0)  // 位0: 方向
@@ -81,9 +86,6 @@ typedef struct {
   uint8_t right_percentage;
 } control_leg_message_t;
 
-typedef struct {
-  uint8_t percentage;
-} robot_height_message_t;
 
 typedef struct {
   float P;
@@ -153,23 +155,22 @@ typedef struct {
   union {
     control_message_t control;
     control_leg_message_t control_leg;
-    robot_height_message_t height;
+    percentage_t height;
     config_message_t config;
     config_set_message_t set_config;
-  } body;
+
+    status_report_t status_report;
+  };
 
 } robot_message_t;
-
-
-typedef struct {
-
-} sensor_data_t;
 
 
 bool robot_message_serialize(robot_message_t* msg, buffer_t* buf);
 bool robot_message_deserialize(robot_message_t* msg, buffer_t* buf);
 
 const char* message_type_to_string(message_type_t type);
+
+robot_message_t robot_message_create(message_type_t type);
 
 #ifdef __cplusplus
 }

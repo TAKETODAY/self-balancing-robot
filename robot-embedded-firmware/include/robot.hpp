@@ -16,6 +16,7 @@
 #pragma once
 
 #include "event.hpp"
+#include "defs.h"
 
 #include "foc/BLDCMotor.h"
 

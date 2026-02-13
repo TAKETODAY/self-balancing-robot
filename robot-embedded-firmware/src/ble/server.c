@@ -392,7 +392,7 @@ void ble_server_init(const ble_data_callback_t callback) {
  * @param length length
  * @see ble_error_t
  */
-ble_error_t ble_server_send(uint8_t* const buffer, const size_t length) {
+ble_error_t ble_server_send(const uint8_t* buffer, const size_t length) {
   if (buffer == nullptr || length == 0) {
     return BLE_INVALID_PARAM;
   }
