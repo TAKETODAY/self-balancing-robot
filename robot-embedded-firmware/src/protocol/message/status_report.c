@@ -13,24 +13,36 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see [https://www.gnu.org/licenses/]
 
-
 #include "protocol/message/status_report.h"
 
-bool status_report_serialize(status_report_t* msg, buffer_t* buf) {
-  buffer_write_u8(buf, msg->type);
+static bool serialize_body(status_report_t* msg, buffer_t* buf) {
   switch (msg->type) {
-    case status_robot_height:
-      return buffer_write_u8(buf, msg->battery.percentage);
-    default: return false;
+    case status_battery: return buffer_write_u8(buf, msg->battery.percentage);
+    case status_robot_height: return buffer_write_u8(buf, msg->robot_height.percentage);
+
   }
-}
-
-bool status_report_deserialize(status_report_t* msg, buffer_t* buf) {
-
   return false;
 }
 
-inline status_report_t status_report_create(status_type_t type) {
+bool status_report_serialize(status_report_t* msg, buffer_t* buf) {
+  return buffer_write_u8(buf, msg->type)
+         && serialize_body(msg, buf);
+}
+
+static bool deserialize_body(status_report_t* msg, buffer_t* buf) {
+  switch (msg->type) {
+    case status_battery: return buffer_read_u8(buf, &msg->battery.percentage);
+    case status_robot_height: return buffer_read_u8(buf, &msg->robot_height.percentage);
+  }
+  return false;
+}
+
+bool status_report_deserialize(status_report_t* msg, buffer_t* buf) {
+  return buffer_read_u8(buf, (uint8_t*) &msg->type)
+         && deserialize_body(msg, buf);
+}
+
+inline status_report_t status_report_create(const status_type_t type) {
   return (status_report_t){
     .type = type
   };

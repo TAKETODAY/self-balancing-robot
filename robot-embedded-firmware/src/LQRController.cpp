@@ -34,8 +34,8 @@ static BLDCMotor motor_R(7);
 BLDCDriver3PWM driverL(32, 33, 25, 22);
 BLDCDriver3PWM driverR(26, 27, 14, 12);
 
-MagneticSensorI2C sensorL(AS5600_I2C);
-MagneticSensorI2C sensorR(AS5600_I2C);
+MagneticSensorI2C sensorL{ AS5600_I2C };
+MagneticSensorI2C sensorR{ AS5600_I2C };
 
 
 // PID控制器实例
