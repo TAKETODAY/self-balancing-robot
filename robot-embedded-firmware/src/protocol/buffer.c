@@ -64,14 +64,13 @@ buffer_t* buffer_create_ptr(const size_t capacity) {
   return buffer;
 }
 
-buffer_t buffer_create(uint8_t* memory, const size_t capacity) {
-  const buffer_t buf = {
+inline buffer_t buffer_create(uint8_t* memory, const size_t capacity) {
+  return (buffer_t){
     .data = memory,
     .capacity = capacity,
     .pos = 0,
     .last_error = { .code = BUFFER_OK }
   };
-  return buf;
 }
 
 bool buffer_init(buffer_t* buf, uint8_t* memory, const size_t capacity) {
