@@ -30,7 +30,9 @@
 #include "ble.h"
 #include "controller.h"
 
-static auto TAG = "default";
+static auto TAG = "ROBOT";
+
+#define LED_PIN gpio_num_t::GPIO_NUM_13
 
 Wrobot wrobot;
 
@@ -78,6 +80,9 @@ static void status_report_task(void* param) {
     else {
       buffer_print_error(buffer, "message serialize failed");
     }
+
+    // const float voltage = battery_voltage_read();
+    // const float percentage = battery_calculate_percentage(voltage);
   }
 }
 
@@ -110,7 +115,6 @@ static void handle_robot_message(robot_message_t* message) {
 }
 
 static void robot_message_parsing_task(void* pvParameters) {
-  log_debug("BLE server started");
   for (;;) {
     robot_message_t message;
     if (xQueueReceive(buffer_queue, &message, portMAX_DELAY)) {
@@ -146,21 +150,28 @@ static controller_error_t on_data_received(uint8_t* rx_buffer, uint16_t len) {
 static void conn_state_change(bool connected) {
   if (connected) {
     log_info("Controller Connected");
+    digitalWrite(LED_PIN, HIGH);
+    lqr_controller.recover();
   }
   else {
     log_info("Controller Disconnected");
+    digitalWrite(LED_PIN, LOW);
   }
 }
 
 void robot_init() {
   nvs_init();
 
+  pinMode(LED_PIN, OUTPUT);
+  digitalWrite(LED_PIN, LOW);
+
   serial.begin(115200);
+
   robot_leg_init();
+  battery_init();
 
   lqr_controller.begin();
-
-  battery_init();
+  lqr_controller.stop();
 
   controller_init(on_data_received, conn_state_change);
 

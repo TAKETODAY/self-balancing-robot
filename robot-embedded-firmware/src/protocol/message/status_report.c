@@ -17,9 +17,11 @@
 
 static bool serialize_body(status_report_t* msg, buffer_t* buf) {
   switch (msg->type) {
-    case status_battery: return buffer_write_u8(buf, msg->battery.percentage);
+    case status_battery: {
+      return buffer_write_f32(buf, msg->battery.voltage)
+             && buffer_write_u8(buf, msg->battery.percentage);
+    }
     case status_robot_height: return buffer_write_u8(buf, msg->robot_height.percentage);
-
   }
   return false;
 }
@@ -31,7 +33,10 @@ bool status_report_serialize(status_report_t* msg, buffer_t* buf) {
 
 static bool deserialize_body(status_report_t* msg, buffer_t* buf) {
   switch (msg->type) {
-    case status_battery: return buffer_read_u8(buf, &msg->battery.percentage);
+    case status_battery: {
+      return buffer_read_f32(buf, &msg->battery.voltage)
+             && buffer_read_u8(buf, &msg->battery.percentage);
+    }
     case status_robot_height: return buffer_read_u8(buf, &msg->robot_height.percentage);
   }
   return false;

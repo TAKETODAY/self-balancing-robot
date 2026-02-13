@@ -16,17 +16,12 @@
 #include "battery.hpp"
 #include "logging.hpp"
 #include "esp/gpio.hpp"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-
-#include <sys/unistd.h>
 
 #include "esp_log.h"
 #include "esp_adc/adc_cali.h"
 #include "esp_adc/adc_oneshot.h"
 #include "esp_adc/adc_cali_scheme.h"
 
-#define LED_BATTERY_PIN gpio_num_t::GPIO_NUM_13
 #define BAT_PIN gpio_num_t::GPIO_NUM_35
 
 static auto TAG = "battery";
@@ -138,32 +133,6 @@ float battery_calculate_percentage(const float voltage) {
 }
 
 
-void showBatteryLED(void* pvParameters) {
-  for (;;) {
-    const float voltage = battery_voltage_read();
-    // log_info("%.2fV", voltage);
-
-    const float percentage = battery_calculate_percentage(voltage);
-    // log_info("%.2f", percentage);
-
-    // 电量显示
-    if (voltage > 7.0f) {
-      digitalWrite(LED_BATTERY_PIN, HIGH);
-    }
-    else {
-      digitalWrite(LED_BATTERY_PIN, LOW);
-    }
-    vTaskDelay(pdMS_TO_TICKS(1000));
-
-    static int count = 0;
-    if (++count % 10 == 0) {
-      UBaseType_t stack_remain = uxTaskGetStackHighWaterMark(nullptr);
-      ESP_LOGW(TAG, "栈空间剩余: %d 字节", stack_remain);
-    }
-  }
-}
-
-
 void battery_init() {
   adc_oneshot_unit_init_cfg_t init_config1 = {
     .unit_id = ADC_UNIT_1,
@@ -178,11 +147,6 @@ void battery_init() {
   ESP_ERROR_CHECK(adc_oneshot_config_channel(adc1_handle, channel, &config));
 
   do_calibration1_chan0 = adc_calibration_init(ADC_UNIT_1, channel, ADC_ATTEN_DB_12, &adc_cali_handle);
-
-  pinMode(LED_BATTERY_PIN, OUTPUT);
-  digitalWrite(LED_BATTERY_PIN, LOW);
-
-  xTaskCreate(showBatteryLED, "bat-loop", 3000, nullptr, tskIDLE_PRIORITY, nullptr);
 }
 
 float battery_capacity_read() {
