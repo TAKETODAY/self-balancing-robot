@@ -1,3 +1,18 @@
+// Copyright 2025 - 2026 the original author or authors.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see [https://www.gnu.org/licenses/]
+
 #include "Sensor.h"
 #include "../foc_utils.h"
 #include "../time_utils.h"
@@ -6,7 +21,7 @@
 void Sensor::update() {
   float val = getSensorAngle();
   if (val < 0) // sensor angles are strictly non-negative. Negative values are used to signal errors.
-    return; // TODO signal error, e.g. via a flag and counter
+    return;    // TODO signal error, e.g. via a flag and counter
   angle_prev_ts = _micros();
   float d_angle = val - angle_prev;
   // if overflow happened track it as full rotation
@@ -18,7 +33,7 @@ void Sensor::update() {
 /** get current angular velocity (rad/s) */
 float Sensor::getVelocity() {
   // calculate sample time
-  float Ts = (angle_prev_ts - vel_angle_prev_ts) * 1e-6f;
+  float Ts = static_cast<float>(angle_prev_ts - vel_angle_prev_ts) * 1e-6f;
   if (Ts < 0.0f) {
     // handle micros() overflow - we need to reset vel_angle_prev_ts
     vel_angle_prev = angle_prev;
@@ -28,7 +43,7 @@ float Sensor::getVelocity() {
   }
   if (Ts < min_elapsed_time) return velocity; // don't update velocity if deltaT is too small
 
-  velocity = ((float) (full_rotations - vel_full_rotations) * _2PI + (angle_prev - vel_angle_prev)) / Ts;
+  velocity = (static_cast<float>(full_rotations - vel_full_rotations) * _2PI + (angle_prev - vel_angle_prev)) / Ts;
   vel_angle_prev = angle_prev;
   vel_full_rotations = full_rotations;
   vel_angle_prev_ts = angle_prev_ts;
@@ -59,11 +74,9 @@ float Sensor::getAngle() {
   return (float) full_rotations * _2PI + angle_prev;
 }
 
-
 double Sensor::getPreciseAngle() {
   return (double) full_rotations * (double) _2PI + (double) angle_prev;
 }
-
 
 int32_t Sensor::getFullRotations() {
   return full_rotations;

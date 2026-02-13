@@ -55,6 +55,8 @@ LowPassFilter lpf_zeropoint(0.1);
 LowPassFilter lpf_roll(0.3);
 LowPassFilter lpf_height(0.1);
 
+static constexpr float K_SCALE = -0.5f;
+
 static void foc_balance_loop(void* pvParameters);
 
 void robot_suspended_controller_init();
@@ -136,7 +138,6 @@ static void stop_motors() {
   motor_R.target = 0;
 }
 
-static constexpr float K_SPEED_SCALE = -0.5f; // 带 f 后缀，明确 float
 
 static void foc_balance_loop(void* pvParameters) {
   auto* controller = static_cast<LQRController*>(pvParameters);
@@ -160,8 +161,8 @@ static void foc_balance_loop(void* pvParameters) {
       stop_motors();
     }
     else {
-      motor_L.target = K_SPEED_SCALE * (controller->LQR_u + controller->YAW_output);
-      motor_R.target = K_SPEED_SCALE * (controller->LQR_u - controller->YAW_output);
+      motor_L.target = K_SCALE * (controller->LQR_u + controller->YAW_output);
+      motor_R.target = K_SCALE * (controller->LQR_u - controller->YAW_output);
     }
     motor_L.loopFOC();
     motor_R.loopFOC();
@@ -181,9 +182,9 @@ void LQRController::resetZeroPoint() {
 
 // lqr自平衡控制
 void LQRController::balance_loop() {
-  LQR_distance = (-0.5) * (motor_L.shaft_angle + motor_R.shaft_angle);    // 两个电机的旋转角度（shaft_angle）,单位：弧度（rad）实际位移量
-  LQR_speed = (-0.5) * (motor_L.shaft_velocity + motor_R.shaft_velocity); // 两个电机角速度（shaft_velocity）,单位：弧度 / 秒（rad/s）
-  LQR_angle = attitude_get_pitch();                                       // mpu6050 pitch 角度，单位：度（°）
+  LQR_distance = K_SCALE * (motor_L.shaft_angle + motor_R.shaft_angle);    // 两个电机的旋转角度（shaft_angle）,单位：弧度（rad）实际位移量
+  LQR_speed = K_SCALE * (motor_L.shaft_velocity + motor_R.shaft_velocity); // 两个电机角速度（shaft_velocity）,单位：弧度 / 秒（rad/s）
+  LQR_angle = attitude_get_pitch();                                        // mpu6050 pitch 角度，单位：度（°）
 
   LQR_gyro = attitude_get_gyroscope()->y; // pitch Y轴角速度,单位：度 / 秒（°/s）
 
@@ -272,12 +273,6 @@ void LQRController::balance_loop() {
     pid_speed.P = 0.5;
   }
 
-}
-
-static float map100(int x, int out_min, int out_max) {
-  x = constrain(x, 0, 100); // 安全钳位
-  float norm = x / 100.0f;
-  return out_min + norm * (out_max - out_min);
 }
 
 void LQRController::yaw_loop() {

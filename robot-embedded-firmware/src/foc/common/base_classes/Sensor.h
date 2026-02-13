@@ -1,4 +1,4 @@
-// Copyright 2025 the original author or authors.
+// Copyright 2025 - 2026 the original author or authors.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -22,8 +22,8 @@
  *  Direction structure
  */
 enum Direction : int8_t {
-  CW = 1, // clockwise
-  CCW = -1, // counter clockwise
+  CW = 1,     // clockwise
+  CCW = -1,   // counter clockwise
   UNKNOWN = 0 // not yet known or invalid state
 };
 
@@ -33,7 +33,7 @@ enum Direction : int8_t {
  */
 enum Pullup : uint8_t {
   USE_INTERN = 0x00, //!< Use internal pullups
-  USE_EXTERN = 0x01 //!< Use external pullups
+  USE_EXTERN = 0x01  //!< Use external pullups
 };
 
 /**
@@ -145,12 +145,12 @@ protected:
 
   // velocity calculation variables
   float velocity = 0.0f;
-  float angle_prev = 0.0f; // result of last call to getSensorAngle(), used for full rotations and velocity
-  long angle_prev_ts = 0; // timestamp of last call to getAngle, used for velocity
-  float vel_angle_prev = 0.0f; // angle at last call to getVelocity, used for velocity
-  long vel_angle_prev_ts = 0; // last velocity calculation timestamp
-  int32_t full_rotations = 0; // full rotation tracking
-  int32_t vel_full_rotations = 0; // previous full rotation value for velocity calculation
+  float angle_prev = 0.0f;             // result of last call to getSensorAngle(), used for full rotations and velocity
+  unsigned long angle_prev_ts = 0;     // timestamp of last call to getAngle, used for velocity
+  float vel_angle_prev = 0.0f;         // angle at last call to getVelocity, used for velocity
+  unsigned long vel_angle_prev_ts = 0; // last velocity calculation timestamp
+  int32_t full_rotations = 0;          // full rotation tracking
+  int32_t vel_full_rotations = 0;      // previous full rotation value for velocity calculation
 };
 
 #endif

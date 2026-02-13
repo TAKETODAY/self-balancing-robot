@@ -14,17 +14,16 @@
 // along with this program. If not, see [https://www.gnu.org/licenses/]
 
 #include "lowpass_filter.h"
+#include "time_utils.h"
 
-LowPassFilter::LowPassFilter(float time_constant)
-  : Tf(time_constant)
-  , y_prev(0.0f) {
-  timestamp_prev = _micros();
+LowPassFilter::LowPassFilter(float Tf)
+  : Tf(Tf), timestamp_prev(_micros()), y_prev(0.0f) {
+
 }
 
-
 float LowPassFilter::operator()(float x) {
-  const unsigned long timestamp = _micros();
-  float dt = (timestamp - timestamp_prev) * 1e-6f;
+  const uint64_t timestamp = _micros();
+  float dt = static_cast<float>(timestamp - timestamp_prev) * 1e-6f;
 
   if (dt < 0.0f) {
     dt = 1e-3f;

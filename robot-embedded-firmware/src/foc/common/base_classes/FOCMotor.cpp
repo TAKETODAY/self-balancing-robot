@@ -79,20 +79,22 @@ void FOCMotor::linkCurrentSense(CurrentSense* _current_sense) {
 float FOCMotor::shaftAngle() {
   // if no sensor linked return previous value ( for open loop )
   if (!sensor) return shaft_angle;
-  return sensor_direction * LPF_angle(sensor->getAngle()) - sensor_offset;
+  return (float) sensor_direction * LPF_angle(sensor->getAngle()) - sensor_offset;
 }
 
 // shaft velocity calculation
 float FOCMotor::shaftVelocity() {
   // if no sensor linked return previous value ( for open loop )
   if (!sensor) return shaft_velocity;
-  return sensor_direction * LPF_velocity(sensor->getVelocity());
+  return static_cast<float>(sensor_direction) * LPF_velocity(sensor->getVelocity());
 }
 
 float FOCMotor::electricalAngle() {
   // if no sensor linked return previous value ( for open loop )
-  if (!sensor) return electrical_angle;
-  return _normalizeAngle((float) (sensor_direction * pole_pairs) * sensor->getMechanicalAngle() - zero_electric_angle);
+  if (!sensor)
+    return electrical_angle;
+  return _normalizeAngle(static_cast<float>(sensor_direction * pole_pairs)
+                         * sensor->getMechanicalAngle() - zero_electric_angle);
 }
 
 /**
@@ -172,9 +174,9 @@ int FOCMotor::characteriseMotor(float voltage, float correction_factor = 1.0f) {
   float Lq = 0;
   float d_electrical_angle = 0;
 
-  unsigned int iterations = 40; // how often the algorithm gets repeated.
-  unsigned int cycles = 3; // averaged measurements for each iteration
-  unsigned int risetime_us = 200; // initially short for worst case scenario with low inductance
+  unsigned int iterations = 40;    // how often the algorithm gets repeated.
+  unsigned int cycles = 3;         // averaged measurements for each iteration
+  unsigned int risetime_us = 200;  // initially short for worst case scenario with low inductance
   unsigned int settle_us = 100000; // initially long for worst case scenario with high inductance
 
   // Pre-rotate the angle to the q-axis (only useful with sensor, else no harm in doing it)
