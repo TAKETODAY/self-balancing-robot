@@ -15,7 +15,6 @@
 
 #pragma once
 
-#include "event.hpp"
 #include "defs.h"
 
 #ifdef __cplusplus

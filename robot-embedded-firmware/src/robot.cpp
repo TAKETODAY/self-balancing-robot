@@ -19,7 +19,7 @@
 
 #include "foc/sensors/MagneticSensorI2C.h"
 #include "battery.hpp"
-#include "esp_log.h"
+#include "logging.hpp"
 #include "attitude_sensor.h"
 #include "LQRController.hpp"
 #include "nvs_flash.h"
@@ -51,8 +51,8 @@ void nvs_init() {
   ESP_ERROR_CHECK(ret);
 }
 
-static void status_repor_task(void* param) {
-  log_info("heart rate task has been started!");
+static void status_report_task(void* param) {
+  log_info("status report task started");
 
   TickType_t xLastWakeTime = xTaskGetTickCount();
   constexpr TickType_t xFrequency = pdMS_TO_TICKS(2000);
@@ -135,7 +135,7 @@ void robot_init() {
 
   ble_server_init(onDataReceived);
 
-  xTaskCreate(status_repor_task, "status_report", 4096, nullptr, 5, nullptr);
+  xTaskCreate(status_report_task, "status_report", 4096, nullptr, 5, nullptr);
   xTaskCreate(robot_message_parsing_task, "robot_ctrl", 4096, nullptr, 8, nullptr);
 }
 

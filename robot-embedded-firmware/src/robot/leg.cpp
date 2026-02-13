@@ -15,7 +15,7 @@
 
 #include "robot/leg.h"
 
-#include "esp_log.h"
+#include "logging.hpp"
 #include "robot.hpp"
 #include "STSServoDriver.hpp"
 #include "freertos/FreeRTOS.h"

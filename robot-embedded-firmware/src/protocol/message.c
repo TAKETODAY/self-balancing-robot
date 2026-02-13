@@ -127,7 +127,7 @@ const char* message_type_to_string(const message_type_t type) {
   }
 }
 
-inline robot_message_t robot_message_create(message_type_t type) {
+inline robot_message_t robot_message_create(const message_type_t type) {
   return (robot_message_t){
     .sequence = get_next_sequence(),
     .type = type,
