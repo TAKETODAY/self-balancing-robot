@@ -30,7 +30,7 @@ void buffer_clear_error(buffer_t* buf);
 const char* buffer_error_to_string(buffer_error_t error);
 
 #if BUFFER_DEBUG
-#define BUFFER_PRINT_ERROR(buf, format, ...) \
+#define buffer_print_error(buf, format, ...) \
   do { \
      ESP_LOGE("BUFFER", "ERROR: 0x%02X: %s | %s:%d | " format, \
                 (buf).last_error.code, \
@@ -40,7 +40,7 @@ const char* buffer_error_to_string(buffer_error_t error);
                 ##__VA_ARGS__); \
   } while(0)
 #else
-#define BUFFER_PRINT_ERROR(buf, format, ...) \
+#define buffer_print_error(buf, format, ...) \
   do { \
      ESP_LOGE("BUFFER", "ERROR: 0x%02X: %s | " format, \
                 (buf).last_error.code, buffer_error_to_string((buf).last_error.code), ##__VA_ARGS__); \

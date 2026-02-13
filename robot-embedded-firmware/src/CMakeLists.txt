@@ -37,7 +37,6 @@ idf_component_register(SRCS
     robot.cpp
 #    stack_monitor.cpp
 
-    ble/server.c
     ble/error.c
 
     esp/io.cpp
@@ -49,6 +48,9 @@ idf_component_register(SRCS
     robot/leg.cpp
     robot/error.c
     robot/error_string.c
+
+    controller/error.c
+    controller/ble_server.c
 
     protocol/message.c
     protocol/message/status_report.c

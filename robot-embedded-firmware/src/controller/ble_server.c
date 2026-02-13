@@ -22,7 +22,8 @@
 #include "services/gap/ble_svc_gap.h"
 #include "services/gatt/ble_svc_gatt.h"
 
-#include "ble/server.h"
+#include "ble_server.h"
+#include "controller.h"
 
 static int ble_server_gap_event(struct ble_gap_event* event, void* arg);
 
@@ -35,11 +36,13 @@ static struct {
   uint16_t chr_val_handle;
   uint8_t own_addr_type;
 
-  ble_data_callback_t callback;
+  data_callback_t data_callback;
+  conn_callback_t conn_callback;
 } this = {
   .mtu = 0,
   .conn_handle = -1,
-  .callback = nullptr
+  .data_callback = nullptr,
+  .conn_callback = nullptr
 };
 
 void ble_store_config_init(void);
@@ -166,6 +169,10 @@ static int ble_server_gap_event(struct ble_gap_event* event, void* arg) {
 
       this.conn_handle = -1;
 
+      if (this.conn_callback) {
+        this.conn_callback(false);
+      }
+
       /* Connection terminated; resume advertising. */
       ble_server_advertise();
       return 0;
@@ -197,6 +204,10 @@ static int ble_server_gap_event(struct ble_gap_event* event, void* arg) {
         event->subscribe.prev_notify, event->subscribe.cur_notify, event->subscribe.prev_indicate,
         event->subscribe.cur_indicate);
       this.conn_handle = event->subscribe.conn_handle;
+
+      if (this.conn_callback) {
+        this.conn_callback(true);
+      }
       return 0;
 
     default:
@@ -253,13 +264,13 @@ static int ble_svc_gatt_handler(uint16_t conn_handle, uint16_t attr_handle, stru
       break;
 
     case BLE_GATT_ACCESS_OP_WRITE_CHR:
-      if (this.callback) {
+      if (this.data_callback) {
         const uint16_t len = OS_MBUF_PKTLEN(ctxt->om);
         uint8_t rx_buffer[len];
         if (os_mbuf_copydata(ctxt->om, 0, len, rx_buffer) != 0) {
           return BLE_READ_FAILED;
         }
-        return this.callback(rx_buffer, len);
+        return this.data_callback(rx_buffer, len);
       }
       return BLE_NOT_INITIALIZED;
     default:
@@ -338,15 +349,16 @@ int gatt_svr_init(void) {
   return 0;
 }
 
-void ble_server_init(const ble_data_callback_t callback) {
-  esp_err_t ret = nimble_port_init();
+controller_error_t controller_init(const data_callback_t data_callback, const conn_callback_t conn_callback) {
+  const esp_err_t ret = nimble_port_init();
   if (ret != ESP_OK) {
     MODLOG_DFLT(ERROR, "Failed to init nimble %d \n", ret);
-    return;
+    return CONTROLLER_PLATFORM_ERROR;
   }
 
   this.mtu = MAX_BLE_PACKET_SIZE;
-  this.callback = callback;
+  this.data_callback = data_callback;
+  this.conn_callback = conn_callback;
   this.conn_handle = -1;
 
   /* Initialize the NimBLE host configuration. */
@@ -385,6 +397,8 @@ void ble_server_init(const ble_data_callback_t callback) {
   /* XXX Need to have template for store */
   ble_store_config_init();
   nimble_port_freertos_init(ble_server_host_task);
+
+  return CONTROLLER_OK;
 }
 
 /**
@@ -392,32 +406,32 @@ void ble_server_init(const ble_data_callback_t callback) {
  * @param length length
  * @see ble_error_t
  */
-ble_error_t ble_server_send(const uint8_t* buffer, const size_t length) {
+controller_error_t controller_send(const uint8_t* buffer, const size_t length) {
   if (buffer == nullptr || length == 0) {
-    return BLE_INVALID_PARAM;
+    return CONTROLLER_INVALID_PARAM;
   }
 
   if (this.conn_handle != -1) {
     struct os_mbuf* txom = ble_hs_mbuf_from_flat(buffer, length);
     if (txom == nullptr) {
-      return BLE_BUFFER_ALLOCATE_FAILED;
+      return CONTROLLER_BUFFER_ALLOCATE_FAILED;
     }
 
     const int rc = ble_gatts_notify_custom(this.conn_handle, this.chr_val_handle, txom);
     switch (rc) {
-      case 0: return BLE_OK;
-      case BLE_HS_ENOMEM: return BLE_OUT_OF_MEMORY;
-      case BLE_HS_EMSGSIZE: return BLE_DATA_TOO_LONG;
-      case BLE_HS_ENOTCONN: return BLE_NOT_CONNECTED;
+      case 0: return CONTROLLER_OK;
+      case BLE_HS_ENOMEM: return CONTROLLER_OUT_OF_MEMORY;
+      case BLE_HS_EMSGSIZE: return CONTROLLER_DATA_TOO_LONG;
+      case BLE_HS_ENOTCONN: return CONTROLLER_NOT_CONNECTED;
       default:
         MODLOG_DFLT(ERROR, "Failed to send notification to conn_handle=%d, rc=%d", this.conn_handle, rc);
         os_mbuf_free_chain(txom);
-        return BLE_WRITE_FAILED;
+        return CONTROLLER_WRITE_FAILED;
     }
   }
-  return BLE_NOT_CONNECTED;
+  return CONTROLLER_NOT_CONNECTED;
 }
 
-bool ble_server_is_connected() {
+bool controller_is_connected() {
   return this.conn_handle != -1;
 }

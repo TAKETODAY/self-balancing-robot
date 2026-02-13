@@ -100,7 +100,7 @@ void robot_stop();
 
 void robot_recover();
 
-bool robot_is_connected();
+bool robot_controller_is_connected();
 
 #ifdef __cplusplus
 }

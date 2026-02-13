@@ -15,5 +15,29 @@
 
 #pragma once
 
-#include "ble/error.h"
-#include "../src/controller/ble_server.h"
+#include "defs.h"
+#include "controller/error.h"
+
+// @formatter:off
+#ifdef __cplusplus
+extern "C" {
+#endif
+//@formatter:on
+
+// Callback function type for handling received data
+typedef controller_error_t (*data_callback_t)(uint8_t* rx_buffer, uint16_t len);
+
+typedef void (*conn_callback_t)(bool connected);
+
+// Initialize the controller with a callback function for handling received data
+controller_error_t controller_init(data_callback_t data_callback, conn_callback_t conn_callback);
+
+// Send data through the controller
+controller_error_t controller_send(const uint8_t* buffer, size_t length);
+
+// Check if controller client is currently connected
+bool controller_is_connected();
+
+#ifdef __cplusplus
+}
+#endif

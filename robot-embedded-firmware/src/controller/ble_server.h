@@ -15,9 +15,8 @@
 
 #pragma once
 
-#include <stdbool.h>
 #include "nimble/ble.h"
-#include "error.h"
+#include "ble/error.h"
 
 // @formatter:off
 #ifdef __cplusplus
@@ -30,18 +29,6 @@ extern "C" {
 
 // 16 Bit SPP Service Characteristic UUID
 #define BLE_SVC_SPP_CHR_UUID16       0xABF1
-
-// Callback function type for handling received BLE data
-typedef ble_error_t (*ble_data_callback_t)(uint8_t* rx_buffer, uint16_t len);
-
-// Initialize the BLE server with a callback function for data reception
-void ble_server_init(ble_data_callback_t callback);
-
-// Send data over BLE connection
-ble_error_t ble_server_send(const uint8_t* buffer, size_t length);
-
-// Check if BLE client is currently connected
-bool ble_server_is_connected();
 
 #ifdef __cplusplus
 }
