@@ -127,30 +127,6 @@ const char* message_type_to_string(const message_type_t type) {
   }
 }
 
-void test() {
-  uint8_t data[32];
-  buffer_t buf = buffer_create(data, 32);
-
-  robot_message_t msg = {
-    .sequence = get_next_sequence(),
-    .type = MESSAGE_CONFIG_GET,
-    .flags = 0b00001111,
-    .body.config = {
-      .type = PID_PITCH,
-      .data.pid = { 1, 1, 1 }
-    }
-  };
-
-  if (!robot_message_serialize(&msg, &buf)) {
-    error_info_t err = buffer_get_last_error(&buf);
-
-    printf("序列化失败！\n");
-    printf("错误码: 0x%02X\n", err.code);
-    printf("错误描述: %s\n", buffer_error_to_string(err.code));
-    printf("发生位置: %s:%d\n", err.function, err.line);
-  }
-}
-
 void message_frame(const robot_message_t* message) {
   // 处理紧急消息
   if (message->flags & FLAG_URGENT) {

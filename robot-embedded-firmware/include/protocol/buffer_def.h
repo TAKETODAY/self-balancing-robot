@@ -19,9 +19,9 @@
 
 #ifdef __cplusplus
 extern "C" {
-
-
 #endif
+
+#define BUFFER_DEBUG !NDEBUG
 
 typedef enum : uint8_t {
   // 成功
@@ -45,20 +45,25 @@ typedef enum : uint8_t {
 
 typedef struct {
   buffer_error_t code;
+
+#if BUFFER_DEBUG
   const char* file;
   uint16_t line;
   const char* function;
   const char* message;
+#endif
 } error_info_t;
 
-typedef struct {
+struct buffer_s {
   uint8_t* data;
   size_t capacity;
 
   size_t pos;
 
   error_info_t last_error;
-} buffer_t;
+};
+
+typedef struct buffer_s buffer_t;
 
 #ifdef __cplusplus
 }

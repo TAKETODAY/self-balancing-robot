@@ -28,7 +28,6 @@ extern "C" {
 #define always_inline inline
 #endif
 
-
 buffer_t* buffer_create_ptr(size_t capacity);
 
 buffer_t buffer_create(uint8_t* memory, size_t capacity);

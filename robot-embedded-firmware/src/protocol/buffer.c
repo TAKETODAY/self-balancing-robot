@@ -17,13 +17,17 @@
 #include <arpa/inet.h>
 
 #include "protocol/buffer.h"
+#include "protocol/error.h"
 
-#ifdef NDEBUG
+#if BUFFER_DEBUG
 #define buffer_assert(condition, buf, error) \
     do { \
         if (!(condition)) { \
             if (buf) { \
               buf->last_error.code = error; \
+              buf->last_error.file = __FILE__; \
+              buf->last_error.function = __func__; \
+              buf->last_error.line = __LINE__; \
               buf->last_error.message = ""; \
             } \
             return false; \
@@ -35,10 +39,6 @@
         if (!(condition)) { \
             if (buf) { \
               buf->last_error.code = error; \
-              buf->last_error.file = __FILE__; \
-              buf->last_error.function = __func__; \
-              buf->last_error.line = __LINE__; \
-              buf->last_error.message = ""; \
             } \
             return false; \
         } \
@@ -279,4 +279,47 @@ bool buffer_skip(buffer_t* buf, size_t size) {
 
   buf->pos += size;
   return true;
+}
+
+// -------------------------------------------------------------
+// ERROR
+// -------------------------------------------------------------
+
+const char* buffer_error_to_string(buffer_error_t error) {
+  switch (error) {
+    case BUFFER_OK: return "Success";
+    case BUFFER_NULL_POINTER: return "Null pointer";
+    case BUFFER_INVALID_ARG: return "无效参数";
+    case BUFFER_OVERFLOW: return "Buffer overflow";
+    case BUFFER_EOF: return "Buffer EOF";
+    case BUFFER_INSUFFICIENT_SPACE: return "空间不足";
+    case BUFFER_OUT_OF_BOUNDS: return "访问越界";
+    case BUFFER_INVALID_SIZE: return "Invalid size";
+    default: return "Unknown error";
+  }
+}
+
+buffer_error_t buffer_clear_error(buffer_t* buf) {
+  buf->last_error.code = BUFFER_OK;
+
+  return BUFFER_OK;
+}
+
+bool buffer_has_error(const buffer_t* buf) {
+  return buf && buf->last_error.code != BUFFER_OK;
+}
+
+error_info_t buffer_get_last_error(const buffer_t* buf) {
+  if (buf) {
+    return buf->last_error;
+  }
+  return (error_info_t){
+    .code = BUFFER_NULL_POINTER,
+#if BUFFER_DEBUG
+    .file = __FILE__,
+    .function = __func__,
+    .line = __LINE__,
+    .message = "Buffer pointer is NULL"
+#endif
+  };
 }

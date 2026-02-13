@@ -53,7 +53,6 @@ idf_component_register(SRCS
 
     protocol/message.c
     protocol/buffer.c
-    protocol/error.c
 
     ${FOC_FILES}
 
