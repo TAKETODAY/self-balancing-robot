@@ -26,6 +26,10 @@ import java.util.Arrays;
 
 import cn.taketoday.robot.LoggingSupport;
 import cn.taketoday.robot.protocol.RobotMessage;
+import cn.taketoday.robot.protocol.message.BatteryStatus;
+import cn.taketoday.robot.protocol.message.PercentageValue;
+import cn.taketoday.robot.protocol.message.ReportType;
+import cn.taketoday.robot.protocol.message.StatusReport;
 
 import static cn.taketoday.robot.util.RobotUtils.constrain;
 
@@ -37,7 +41,7 @@ public class RobotViewModel extends ViewModel implements DataHandler, LoggingSup
 
   public final MutableLiveData<Boolean> connected = new MutableLiveData<>(false);
 
-  public final MutableLiveData<Integer> batteryLevel = new MutableLiveData<>(100);
+  public final MutableLiveData<Integer> batteryPercentage = new MutableLiveData<>(100);
 
   public final MutableLiveData<Integer> robotHeightPercentage = new MutableLiveData<>(50);
 
@@ -51,6 +55,18 @@ public class RobotViewModel extends ViewModel implements DataHandler, LoggingSup
   @Override
   public void handleIncomingData(byte[] data) {
     debug("onDataReceived: %s", Arrays.toString(data));
+
+    RobotMessage message = RobotMessage.parse(data);
+
+    switch (message.type) {
+      case STATUS_REPORT -> {
+        StatusReport statusReport = message.read(StatusReport.factory);
+        handleStatusReport(statusReport);
+      }
+      default -> {
+        debug("unknown message type: %s", message.type);
+      }
+    }
 
   }
 
@@ -88,6 +104,20 @@ public class RobotViewModel extends ViewModel implements DataHandler, LoggingSup
   public void emergencyRecover() {
     debug("recover");
     sendMessage(RobotMessage.forEmergencyRecover());
+  }
+
+  private void handleStatusReport(StatusReport statusReport) {
+    ReportType type = statusReport.getType();
+    switch (type) {
+      case battery -> {
+        BatteryStatus batteryStatus = statusReport.read(BatteryStatus.class);
+        batteryPercentage.postValue(batteryStatus.getPercentage());
+      }
+      case robot_height -> {
+        PercentageValue percentage = PercentageValue.parse(statusReport.createBodyReadable());
+        robotHeightPercentage.postValue(percentage.value);
+      }
+    }
   }
 
   public static RobotViewModel getInstance(ViewModelStoreOwner store) {

@@ -55,10 +55,11 @@ public interface Message {
    * readFrom method must read the values in the same sequence
    * and with the same types as were written by writeTo.
    *
-   * @param input the source to read data from in order to restore the object
+   * @param readable the source to read data from in order to restore the object
    * @throws SerializationException Serialization occur
    */
-  default void readFrom(Readable input) {
+  default void readFrom(Readable readable) {
+    throw new UnsupportedOperationException();
   }
 
   /**
@@ -83,11 +84,11 @@ public interface Message {
      * from the given Input whose data had previously been written by
      * {@link Message#writeTo Message.writeTo()}.
      *
-     * @param source The Parcel to read the object's data from.
+     * @param readable The Parcel to read the object's data from.
      * @return Returns a new instance of the Message class.
      * @throws SerializationException Serialization occur
      */
-    M create(Readable source);
+    M create(Readable readable);
 
     /**
      * Create a new array of the Parcelable class.
@@ -96,7 +97,9 @@ public interface Message {
      * @return Returns an array of the Parcelable class, with every entry
      * initialized to null.
      */
-    M[] newArray(int size);
+    default M[] newArray(int size) {
+      throw new UnsupportedOperationException();
+    }
 
   }
 

@@ -42,7 +42,7 @@
         android:src="@drawable/battery" />
 
       <TextView
-        android:id="@+id/tv_battery_level"
+        android:id="@+id/battery"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
@@ -103,7 +103,7 @@
           android:textSize="12sp" />
 
         <TextView
-          android:id="@+id/tv_angle_x"
+          android:id="@+id/angle_x"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:layout_marginTop="4dp"
@@ -141,7 +141,7 @@
           android:textSize="12sp" />
 
         <TextView
-          android:id="@+id/tv_angle_y"
+          android:id="@+id/angle_y"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:layout_marginTop="4dp"

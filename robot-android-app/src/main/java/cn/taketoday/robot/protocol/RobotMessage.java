@@ -21,8 +21,8 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import cn.taketoday.robot.protocol.message.ControlHeightMessage;
 import cn.taketoday.robot.protocol.message.ControlLegMessage;
+import cn.taketoday.robot.protocol.message.PercentageValue;
 import infra.lang.Enumerable;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
@@ -60,7 +60,7 @@ public class RobotMessage implements Message {
   public <T extends Message> T read(Class<T> type) {
     try {
       T t = type.newInstance();
-      t.readFrom(new MessagePackReadable(Unpooled.wrappedBuffer(data)));
+      t.readFrom(new DefaultReadable(data));
       return t;
     }
     catch (Exception e) {
@@ -69,7 +69,7 @@ public class RobotMessage implements Message {
   }
 
   public <T> T read(Factory<T> factory) {
-    return factory.create(new MessagePackReadable(Unpooled.wrappedBuffer(data)));
+    return factory.create(new DefaultReadable(data));
   }
 
   @Override
@@ -84,7 +84,7 @@ public class RobotMessage implements Message {
   }
 
   public static RobotMessage parse(byte[] data) {
-    return parse(new MessagePackReadable(Unpooled.wrappedBuffer(data)));
+    return parse(new DefaultReadable(data));
   }
 
   public static RobotMessage parse(Readable source) {
@@ -114,7 +114,7 @@ public class RobotMessage implements Message {
   }
 
   public static RobotMessage forControlHeight(int percentage) {
-    ControlHeightMessage controlMessage = new ControlHeightMessage(percentage);
+    PercentageValue controlMessage = new PercentageValue(percentage);
     return new RobotMessage(generateSequence(), MessageType.CONTROL_HEIGHT, (byte) 0, controlMessage.toByteArray());
   }
 

@@ -18,34 +18,37 @@
 package cn.taketoday.robot.protocol.message;
 
 import cn.taketoday.robot.protocol.Message;
+import cn.taketoday.robot.protocol.Readable;
 import cn.taketoday.robot.protocol.Writable;
 
 /**
  * @author <a href="https://github.com/TAKETODAY">海子 Yang</a>
- * @since 1.0 2026/2/9 21:44
+ * @since 1.0 2026/2/14 13:24
  */
-public class ControlHeightMessage implements Message {
+public class BatteryStatus implements Message {
 
-  public final byte percentage;
+  private float voltage;
 
-  public ControlHeightMessage(int percentage) {
-    this.percentage = percentage(percentage);
-  }
+  private byte percentage;
 
   @Override
   public void writeTo(Writable writable) {
+    writable.write(voltage);
     writable.write(percentage);
   }
 
-  static byte percentage(int percentage) {
-    if (percentage > 100) {
-      return 100;
-    }
-
-    if (percentage < 0) {
-      percentage = 10;
-    }
-
-    return (byte) percentage;
+  @Override
+  public void readFrom(Readable readable) {
+    voltage = readable.readFloat();
+    percentage = readable.readByte();
   }
+
+  public int getPercentage() {
+    return percentage;
+  }
+
+  public float getVoltage() {
+    return voltage;
+  }
+
 }

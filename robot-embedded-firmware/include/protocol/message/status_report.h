@@ -32,13 +32,13 @@ typedef enum : uint8_t {
 typedef struct {
   float voltage;
   uint8_t percentage;
-} statuc_battery_t;
+} status_battery_t;
 
 typedef struct {
   status_type_t type;
 
   union {
-    statuc_battery_t battery;
+    status_battery_t battery;
     percentage_t robot_height;
   };
 

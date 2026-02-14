@@ -69,8 +69,12 @@ public class ControlFragment extends ViewBindingFragment<FragmentControlBinding>
     });
 
     binding.joystick.setOnMoveListener((angle, strength) -> {
-//      binding.textViewAngleLeft.setText(angle + "°");
-//      binding.textViewStrengthLeft.setText(strength + "%");
+      binding.angleX.setText(angle + "°");
+      binding.angleY.setText(strength + "%");
+    });
+
+    robotModel.batteryPercentage.observe(getViewLifecycleOwner(), value -> {
+      binding.battery.setText(value + "%");
     });
 
     binding.addHeightBtn.setOnClickListener(v -> {

@@ -15,32 +15,22 @@
  * along with this program. If not, see [https://www.gnu.org/licenses/]
  */
 
-package cn.taketoday.robot.protocol.message;
+package cn.taketoday.robot.protocol;
 
-import cn.taketoday.robot.protocol.Message;
-import cn.taketoday.robot.protocol.Writable;
-
-import static cn.taketoday.robot.protocol.message.PercentageValue.percentage;
+import org.jspecify.annotations.Nullable;
 
 /**
  * @author <a href="https://github.com/TAKETODAY">海子 Yang</a>
- * @since 1.0 2026/2/9 21:44
+ * @since 1.0 2026/2/14 13:10
  */
-public class ControlLegMessage implements Message {
+public class ProtocolException extends RuntimeException {
 
-  public final byte leftPercentage;
-
-  public final byte rightPercentage;
-
-  public ControlLegMessage(int leftPercentage, int rightPercentage) {
-    this.leftPercentage = percentage(leftPercentage);
-    this.rightPercentage = percentage(rightPercentage);
+  public ProtocolException(@Nullable String message) {
+    super(message);
   }
 
-  @Override
-  public void writeTo(Writable writable) {
-    writable.write(leftPercentage);
-    writable.write(rightPercentage);
+  public ProtocolException(@Nullable String message, @Nullable Throwable cause) {
+    super(message, cause);
   }
 
 }
