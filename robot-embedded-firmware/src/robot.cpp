@@ -32,13 +32,11 @@
 static auto TAG = "ROBOT";
 
 #define LED_PIN gpio_num_t::GPIO_NUM_13
+#define RX_QUEUE_LEN 100
 
 Wrobot wrobot;
 
 static LQRController lqr_controller;
-
-#define RX_QUEUE_LEN 100
-
 static QueueHandle_t buffer_queue = xQueueCreate(RX_QUEUE_LEN, sizeof(robot_message_t));
 
 static controller_error_t on_data_received(uint8_t* rx_buffer, uint16_t len);
