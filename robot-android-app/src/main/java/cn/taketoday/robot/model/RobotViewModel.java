@@ -54,9 +54,8 @@ public class RobotViewModel extends ViewModel implements DataHandler, LoggingSup
 
   @Override
   public void handleIncomingData(byte[] data) {
-    debug("onDataReceived: %s", Arrays.toString(data));
-
     RobotMessage message = RobotMessage.parse(data);
+    debug("onDataReceived: %s", message);
 
     switch (message.type) {
       case STATUS_REPORT -> {

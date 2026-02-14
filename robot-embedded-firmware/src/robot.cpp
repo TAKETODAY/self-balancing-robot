@@ -16,18 +16,17 @@
 #include "robot.hpp"
 #include "robot/leg.h"
 #include "robot/error.h"
+#include "robot/stats.h"
 
-#include "foc/sensors/MagneticSensorI2C.h"
 #include "battery.hpp"
 #include "logging.hpp"
-#include "attitude_sensor.h"
 #include "LQRController.hpp"
 #include "nvs_flash.h"
 
+#include "esp/gpio.hpp"
 #include "esp/serial.hpp"
 
 #include "protocol.h"
-#include "ble.h"
 #include "controller.h"
 
 static auto TAG = "ROBOT";
@@ -56,33 +55,32 @@ void nvs_init() {
 }
 
 static void status_report_task(void* param) {
-  log_info("status report task started");
+  log_debug("status report task started");
 
   TickType_t xLastWakeTime = xTaskGetTickCount();
-  constexpr TickType_t xFrequency = pdMS_TO_TICKS(2000);
+  constexpr TickType_t xFrequency = pdMS_TO_TICKS(10);
 
   for (;;) {
-    vTaskDelayUntil(&xLastWakeTime, xFrequency);
+    const uint32_t now = xTaskGetTickCount() * portTICK_PERIOD_MS;
 
-    robot_message_t message = robot_message_create(MESSAGE_STATUS_REPORT);
-    message.status_report = status_report_create(status_robot_height);
-    message.status_report.robot_height = { robot_leg_get_height_percentage() };
+    stats_collector_tick(now, [](const status_report_t* status_report)-> void {
+      static robot_message_t message = robot_message_create(MESSAGE_STATUS_REPORT);
+      static byte data[sizeof(robot_message_t)];
+      static buffer_t buffer = buffer_create(data, sizeof(robot_message_t));
+      message.status_report = *status_report;
 
-    byte data[sizeof(robot_message_t)];
-    buffer_t buffer = buffer_create(data, sizeof(robot_message_t));
-
-    if (robot_message_serialize(&message, &buffer)) {
-      size_t size = buffer_get_size(&buffer);
-      if (auto err = controller_send(data, size); err) {
-        controller_log_error(err, "send failed");
+      buffer_reset(&buffer);
+      if (robot_message_serialize(&message, &buffer)) {
+        size_t size = buffer_get_size(&buffer);
+        if (auto err = controller_send(data, size); err) {
+          controller_log_error(err, "send failed");
+        }
       }
-    }
-    else {
-      buffer_print_error(buffer, "message serialize failed");
-    }
-
-    // const float voltage = battery_voltage_read();
-    // const float percentage = battery_calculate_percentage(voltage);
+      else {
+        buffer_print_error(buffer, "message serialize failed");
+      }
+    });
+    vTaskDelayUntil(&xLastWakeTime, xFrequency);
   }
 }
 
@@ -161,6 +159,7 @@ static void conn_state_change(bool connected) {
 
 void robot_init() {
   nvs_init();
+  stats_collector_init();
 
   pinMode(LED_PIN, OUTPUT);
   digitalWrite(LED_PIN, LOW);

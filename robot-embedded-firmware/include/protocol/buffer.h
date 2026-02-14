@@ -20,15 +20,12 @@
 
 #ifdef __cplusplus
 extern "C" {
-
-
-
 #endif
 
 #ifdef __GNUC__
-#define always_inline __attribute__((always_inline)) inline
+#define _inline __attribute__((always_inline)) inline
 #else
-#define always_inline inline
+#define _inline inline
 #endif
 
 buffer_t* buffer_create_ptr(size_t capacity);

@@ -19,6 +19,7 @@ package cn.taketoday.robot.protocol;
 
 import org.jspecify.annotations.Nullable;
 
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import cn.taketoday.robot.protocol.message.ControlLegMessage;
@@ -81,6 +82,11 @@ public class RobotMessage implements Message {
     if (data != null) {
       writable.writeFully(data);
     }
+  }
+
+  @Override
+  public String toString() {
+    return String.format("RobotMessage[%s, %s, %s, %s]", sequence, type, flags, Arrays.toString(data));
   }
 
   public static RobotMessage parse(byte[] data) {

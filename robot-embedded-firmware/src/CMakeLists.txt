@@ -47,6 +47,7 @@ idf_component_register(SRCS
 
     robot/leg.cpp
     robot/error.c
+    robot/stats.c
     robot/error_string.c
 
     controller/error.c

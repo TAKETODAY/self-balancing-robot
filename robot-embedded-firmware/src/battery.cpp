@@ -21,6 +21,7 @@
 #include "esp_adc/adc_cali.h"
 #include "esp_adc/adc_oneshot.h"
 #include "esp_adc/adc_cali_scheme.h"
+#include "robot/stats.h"
 
 #define BAT_PIN gpio_num_t::GPIO_NUM_35
 
@@ -147,6 +148,16 @@ void battery_init() {
   ESP_ERROR_CHECK(adc_oneshot_config_channel(adc1_handle, channel, &config));
 
   do_calibration1_chan0 = adc_calibration_init(ADC_UNIT_1, channel, ADC_ATTEN_DB_12, &adc_cali_handle);
+
+  stats_register_callback([](status_report_t* report, void*)-> bool {
+    const float voltage = battery_voltage_read();
+    const float percentage = battery_calculate_percentage(voltage);
+    report->battery = {
+      .voltage = voltage,
+      .percentage = static_cast<uint8_t>(percentage)
+    };
+    return true;
+  }, status_battery, nullptr, 3000);
 }
 
 float battery_capacity_read() {

@@ -1,4 +1,4 @@
-// Copyright 2025 the original author or authors.
+// Copyright 2025 - 2026 the original author or authors.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,17 +17,17 @@
 
 #include "esp_log.h"
 
-// static const char* TAG = "default";
+#if NDEBUG
+#define log_info(format, ...) ESP_LOGI(TAG, format, __VA_ARGS__)
+#define log_debug(format, ...)
+#define log_warn(format, ...) ESP_LOGW(TAG, format, __VA_ARGS__)
+#define log_trace(format, ...)
+#define log_error(format, ...) ESP_LOGE(TAG, format, __VA_ARGS__)
 
-// #define log_info(TAG, format, ...) ESP_LOGI(TAG, format, __VA_ARGS__)
-// #define log_debug(TAG, format, ...) ESP_LOGD(TAG, format, __VA_ARGS__)
-// #define log_warn(TAG, format, ...) ESP_LOGW(TAG, format, __VA_ARGS__)
-// #define log_trace(TAG, format, ...) ESP_LOGV(TAG, format, __VA_ARGS__)
-// #define log_error(TAG, format, ...) ESP_LOGE(TAG, format, __VA_ARGS__)
-//
-
+#else
 #define log_info(format, ...) ESP_LOGI(TAG, format, __VA_ARGS__)
 #define log_debug(format, ...) ESP_LOGD(TAG, format, __VA_ARGS__)
 #define log_warn(format, ...) ESP_LOGW(TAG, format, __VA_ARGS__)
 #define log_trace(format, ...) ESP_LOGV(TAG, format, __VA_ARGS__)
 #define log_error(format, ...) ESP_LOGE(TAG, format, __VA_ARGS__)
+#endif

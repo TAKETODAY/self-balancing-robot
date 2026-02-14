@@ -19,6 +19,7 @@
 #include "robot.hpp"
 #include "STSServoDriver.hpp"
 #include "freertos/FreeRTOS.h"
+#include "robot/stats.h"
 
 static auto TAG = "robot-leg";
 
@@ -84,6 +85,11 @@ void robot_leg_init() {
     robot_leg_set_acceleration(SERVO_RIGHT_ACC);
     robot_leg_set_height_percentage(50);
   }
+
+  stats_register_callback([](status_report_t* report, void*)-> bool {
+    report->robot_height = { robot_leg_get_height_percentage() };
+    return true;
+  }, status_robot_height, nullptr, 3000);
 }
 
 void robot_leg_set_acceleration(const uint8_t acceleration) {

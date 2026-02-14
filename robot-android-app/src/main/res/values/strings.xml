@@ -52,6 +52,7 @@
   <string name="nav_header_subtitle">https://github.com/TAKETODAY</string>
 
   <string name="nav_header_desc">Navigation header</string>
+  <string name="value_unknown">N/A</string>
 
 </resources>
 
