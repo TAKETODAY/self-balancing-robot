@@ -13,3 +13,4 @@ exclude_paths:
   - "**/buildSrc/**/*"
   - "buildSrc/**/*"
   - "**/testFixtures/**/*"
+  - "**/foc/**"
