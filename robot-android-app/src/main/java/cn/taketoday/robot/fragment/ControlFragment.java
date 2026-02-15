@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 - 2026 the original author or authors.
+ * Copyright 2017 - 2025 the original author or authors.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
 
 package cn.taketoday.robot.fragment;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -53,6 +54,7 @@ public class ControlFragment extends ViewBindingFragment<FragmentControlBinding>
     return FragmentControlBinding.inflate(inflater, container, false);
   }
 
+  @SuppressLint({ "SetTextI18n", "DefaultLocale" })
   @Override
   public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
     RobotViewModel robotModel = RobotViewModel.getInstance(requireActivity());
@@ -73,8 +75,8 @@ public class ControlFragment extends ViewBindingFragment<FragmentControlBinding>
       binding.angleY.setText(strength + "%");
     });
 
-    robotModel.batteryPercentage.observe(getViewLifecycleOwner(), value -> {
-      binding.battery.setText(value + "%");
+    robotModel.batteryStatus.observe(getViewLifecycleOwner(), status -> {
+      binding.battery.setText(String.format("%.2fV", status.getVoltage()));
     });
 
     binding.addHeightBtn.setOnClickListener(v -> {

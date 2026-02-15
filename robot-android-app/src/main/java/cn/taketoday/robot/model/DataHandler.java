@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 - 2026 the original author or authors.
+ * Copyright 2017 - 2025 the original author or authors.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,12 +18,24 @@
 package cn.taketoday.robot.model;
 
 /**
+ * 数据处理器接口，定义了处理传入数据和注册可写通道的方法。
+ *
  * @author <a href="https://github.com/TAKETODAY">海子 Yang</a>
  * @since 1.0 2026/2/2 22:29
  */
 public interface DataHandler {
 
+  /**
+   * 处理传入的数据。
+   *
+   * @param data 传入的字节数据
+   */
   void handleIncomingData(byte[] data);
 
+  /**
+   * 注册一个可写通道，用于后续的数据写入操作。
+   *
+   * @param writableChannel 可写通道实例
+   */
   void register(WritableChannel writableChannel);
 }

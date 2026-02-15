@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 - 2026 the original author or authors.
+ * Copyright 2017 - 2025 the original author or authors.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,6 +34,18 @@ import cn.taketoday.robot.protocol.message.StatusReport;
 import static cn.taketoday.robot.util.RobotUtils.constrain;
 
 /**
+ * ViewModel class for managing the state and communication logic of the self-balancing robot.
+ * This class handles data flow between the UI and the robot hardware, including:
+ * <ul>
+ *   <li>Connection status monitoring</li>
+ *   <li>Battery status updates</li>
+ *   <li>Robot height control and reporting</li>
+ *   <li>Emergency stop and recovery commands</li>
+ * </ul>
+ *
+ * <p>The class implements {@link DataHandler} to process incoming robot messages and
+ * uses {@link MutableLiveData} to expose observable state changes to the UI layer.</p>
+ *
  * @author <a href="https://github.com/TAKETODAY">海子 Yang</a>
  * @since 1.0 2025/12/20 14:54
  */
@@ -41,7 +53,7 @@ public class RobotViewModel extends ViewModel implements DataHandler, LoggingSup
 
   public final MutableLiveData<Boolean> connected = new MutableLiveData<>(false);
 
-  public final MutableLiveData<Integer> batteryPercentage = new MutableLiveData<>(100);
+  public final MutableLiveData<BatteryStatus> batteryStatus = new MutableLiveData<>();
 
   public final MutableLiveData<Integer> robotHeightPercentage = new MutableLiveData<>(50);
 
@@ -109,8 +121,7 @@ public class RobotViewModel extends ViewModel implements DataHandler, LoggingSup
     ReportType type = statusReport.getType();
     switch (type) {
       case battery -> {
-        BatteryStatus batteryStatus = statusReport.read(BatteryStatus.class);
-        batteryPercentage.postValue(batteryStatus.getPercentage());
+        batteryStatus.postValue(statusReport.read(BatteryStatus.class));
       }
       case robot_height -> {
         PercentageValue percentage = PercentageValue.parse(statusReport.createBodyReadable());
