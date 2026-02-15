@@ -19,6 +19,7 @@
   xmlns:app="http://schemas.android.com/apk/res-auto"
   android:layout="@layout/fragment_settings">
 
+<!--
   <PreferenceCategory
     android:icon="@drawable/settings_black"
     app:title="@string/setting_password_title">
@@ -28,6 +29,22 @@
       app:key="password"
       app:title="@string/password_title"
       app:useSimpleSummaryProvider="true" />
+
+  </PreferenceCategory>
+-->
+
+  <PreferenceCategory
+    android:icon="@drawable/settings_black"
+    app:title="@string/setting_connection_category">
+
+    <SwitchPreferenceCompat
+      android:icon="@drawable/bluetooth"
+      app:key="settings.auto-connect-bluetooth"
+      app:maxWidth="32dp"
+      app:maxHeight="32dp"
+      app:summaryOff="@string/setting_auto_connect_bluetooth_off"
+      app:summaryOn="@string/setting_auto_connect_bluetooth_on"
+      app:title="@string/setting_auto_connect_bluetooth" />
 
   </PreferenceCategory>
 

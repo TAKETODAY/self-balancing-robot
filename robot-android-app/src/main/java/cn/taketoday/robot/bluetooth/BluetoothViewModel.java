@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 - 2026 the original author or authors.
+ * Copyright 2017 - 2025 the original author or authors.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,6 +30,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
 
@@ -37,6 +38,7 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelStoreOwner;
+import androidx.preference.PreferenceManager;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -47,8 +49,15 @@ import java.util.Map;
 import cn.taketoday.robot.ApplicationSupport;
 import cn.taketoday.robot.LoggingSupport;
 import cn.taketoday.robot.model.DataHandler;
+import infra.util.StringUtils;
 
 public class BluetoothViewModel extends AndroidViewModel implements ScanningListener, ApplicationSupport, ConnectionListener {
+
+  public static final String AUTO_CONNECT_BLUETOOTH_KEY = "settings.auto-connect-bluetooth";
+
+  public static final String LAST_DEVICE_NAME_KEY = "settings.last-device-name";
+
+  public static final String LAST_DEVICE_ADDRESS_KEY = "settings.last-device-address";
 
   public final MutableLiveData<List<BluetoothItem>> devices = new MutableLiveData<>();
 
@@ -74,16 +83,19 @@ public class BluetoothViewModel extends AndroidViewModel implements ScanningList
 
   private final MyBroadcastReceiver bluetoothBroadcastReceiver;
 
+  private final SharedPreferences preferences;
+
   public BluetoothViewModel(Application application, DataHandler handler) {
     super(application);
     debug("初始化蓝牙控制器: %s", this);
-
+    this.preferences = PreferenceManager.getDefaultSharedPreferences(application);
     this.bluetoothManager = application.getSystemService(BluetoothManager.class);
     this.bluetoothAdapter = bluetoothManager.getAdapter();
     this.bluetoothLeService = new BluetoothLeService(application, handler);
     this.bluetoothBroadcastReceiver = new MyBroadcastReceiver(bluetoothLeService);
     if (this.bluetoothAdapter == null) {
       makeLongToast("该设备不支持蓝牙");
+      throw new IllegalArgumentException("该设备不支持蓝牙");
     }
     else {
       debug("注册蓝牙监听器");
@@ -95,6 +107,17 @@ public class BluetoothViewModel extends AndroidViewModel implements ScanningList
     bluetoothLeService.addConnectionListener(this);
     bluetoothLeService.addScanningListener(this);
     addCloseable(this::destroy);
+
+    boolean autoConnectBluetooth = preferences.getBoolean(AUTO_CONNECT_BLUETOOTH_KEY, false);
+    if (autoConnectBluetooth) {
+
+      String address = preferences.getString(LAST_DEVICE_ADDRESS_KEY, null);
+      if (StringUtils.hasText(address)) {
+        BluetoothDevice remoteDevice = bluetoothAdapter.getRemoteDevice(address);
+        connect(remoteDevice);
+      }
+
+    }
   }
 
   public void startScan() {
@@ -203,6 +226,9 @@ public class BluetoothViewModel extends AndroidViewModel implements ScanningList
   public void onConnected(BluetoothDevice device) {
     connected.postValue(true);
     bluetoothLeService.readRemoteRssi();
+
+    preferences.edit().putString(LAST_DEVICE_NAME_KEY, device.getName()).apply();
+    preferences.edit().putString(LAST_DEVICE_ADDRESS_KEY, device.getAddress()).apply();
   }
 
   @Override

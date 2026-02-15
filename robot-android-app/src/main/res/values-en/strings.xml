@@ -69,6 +69,10 @@
 
   <string name="nav_header_desc">Navigation header</string>
   <string name="value_unknown">N/A</string>
+  <string name="setting_connection_category">Connect</string>
+  <string name="setting_auto_connect_bluetooth">Auto connect robot bluetooth</string>
+  <string name="setting_auto_connect_bluetooth_off">Auto connect bluetooth off</string>
+  <string name="setting_auto_connect_bluetooth_on">Auto connect bluetooth on</string>
 
 </resources>
 

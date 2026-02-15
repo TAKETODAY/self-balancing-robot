@@ -53,6 +53,11 @@
 
   <string name="nav_header_desc">Navigation header</string>
   <string name="value_unknown">N/A</string>
+  <string name="setting_connection_category">连接</string>
+
+  <string name="setting_auto_connect_bluetooth">自动连接机器人蓝牙</string>
+  <string name="setting_auto_connect_bluetooth_off">自动连接蓝牙关闭</string>
+  <string name="setting_auto_connect_bluetooth_on">自动连接蓝牙开启</string>
 
 </resources>
 
