@@ -51,7 +51,7 @@ PIDController pid_zeropoint(0.002, 0, 0, 100000, 4);
 PIDController pid_roll_angle(8, 0, 0, 100000, 450);
 
 // 低通滤波器实例
-LowPassFilter lpf_joyy(0.2); // 新输入值占输出值的10%，历史值占90%
+LowPassFilter lpf_joyy(0.1); // 新输入值占输出值的10%，历史值占90%
 LowPassFilter lpf_zeropoint(0.1);
 LowPassFilter lpf_roll(0.3);
 LowPassFilter lpf_height(0.1);
@@ -155,10 +155,10 @@ static void foc_balance_loop(void* pvParameters) {
     controller->balance_loop();
     controller->yaw_loop();
 
-    wrobot.joyx_last = wrobot.joyx;
-    wrobot.joyy_last = wrobot.joyy;
+    controller->joyx_last = controller->joyx;
+    controller->joyy_last = controller->joyy;
 
-    if (abs(controller->LQR_angle) > 40.0f) {
+    if (abs(controller->LQR_angle) > 60.0f) {
       stop_motors();
     }
     else {
@@ -195,19 +195,19 @@ void lqr_controller::balance_loop() {
 
   // 前进后退跳跃的系数都不一样
   float speed_target_coeff = 0.1;
-  if (wrobot.joyy > 0) {
+  if (joyy > 0) {
     // 前进
     speed_target_coeff = 0.18;
   }
-  else if (wrobot.joyy < 0) {
+  else if (joyy < 0) {
     // 后退
     speed_target_coeff = 0.11;
   }
 
-  speed_control = pid_speed(LQR_speed - speed_target_coeff * lpf_joyy(wrobot.joyy)); // 最大8v
+  speed_control = pid_speed(LQR_speed - speed_target_coeff * lpf_joyy(joyy)); // 最大8v
 
   // 检测轮子差速，判断轮子是否离地
-  if (unsigned long current_time = millis(); current_time - last_speed_record_time >= SPEED_RECORD_INTERVAL) {
+  if (uint64_t current_time = millis(); current_time - last_speed_record_time >= SPEED_RECORD_INTERVAL) {
     robot_speed_diff = LQR_speed - last_lqr_speed;
     // 轮子离地
     if (robot_speed_diff > 18.0) {
@@ -228,12 +228,12 @@ void lqr_controller::balance_loop() {
 
   // 重置位移零点和积分情形
   // 1.判断摇杆是否没有前后左右运动指令
-  if ((wrobot.joyx_last != 0 && wrobot.joyx == 0) || (wrobot.joyy_last != 0 && wrobot.joyy == 0)) {
+  if ((joyx_last != 0 && joyx == 0) || (joyy_last != 0 && joyy == 0)) {
     resetZeroPoint();
   }
 
   // 2. 运动中实时重置位移零点和积分情形
-  if (abs(robot_speed_diff) > 10 || abs(LQR_speed) > 15 || wrobot.joyy != 0) {
+  if (abs(robot_speed_diff) > 10 || abs(LQR_speed) > 15 || joyy != 0) {
     // 这两种是启动后自平衡，速度较快
     resetZeroPoint();
   }
@@ -254,7 +254,7 @@ void lqr_controller::balance_loop() {
 
   // 小车没有控制的时候自稳定状态
   // 控制量lqr_u<5V，前进后退控制量很小， 遥控器无信号输入joyy=0，轮部位移控制正常介入distance_control<4，不处于跳跃后的恢复时期jump_flag=0,以及不是坐下状态
-  if (abs(LQR_u) < 5 && wrobot.joyy == 0 && abs(distance_control) < 4 && jump_flag == 0) {
+  if (abs(LQR_u) < 5 && joyy == 0 && abs(distance_control) < 4 && jump_flag == 0) {
     LQR_u = pid_lqr_u(LQR_u);                                          // 小转矩非线性补偿
     pitch_zeropoint -= pid_zeropoint(lpf_zeropoint(distance_control)); // 重心自适应
   }
@@ -264,8 +264,7 @@ void lqr_controller::balance_loop() {
 
   // 平衡控制参数自适应
   // 考虑 leg_height_base = 0
-  uint8_t height = robot_leg_get_height_percentage();
-  if (height < 50) {
+  if (uint8_t height = robot_leg_get_height_percentage(); height < 50) {
     pid_speed.P = 0.7;
   }
   else if (height < 64) {
@@ -284,23 +283,22 @@ void lqr_controller::yaw_loop() {
     return;
   }
 
-  // 1. 根据abs(wrobot.joyx)，动态设置yaw_target系数
-  // float coeff = map100(abs(wrobot.joyx), 10, 100) / 100.0f;
-  float coeff = mapf(abs(wrobot.joyx), 0, 100, 0.1f, 1.0f);
+  // 1. 根据abs(joyx)，动态设置yaw_target系数
+  float coeff = mapf(static_cast<float>(abs(joyx)), 0, 100, 0.1f, 1.0f);
 
   coeff = constrain(coeff, 0.1f, 1.0f);
-  float yaw_target = (float) wrobot.joyx * coeff;
+  float yaw_target = static_cast<float>(joyx) * coeff;
 
-  // 2. 根据abs(wrobot.joyx)，提高PID响应：临时放大yaw_angle_control（核心突破上限）
+  // 2. 根据abs(joyx)，提高PID响应：临时放大yaw_angle_control（核心突破上限）
   float yaw_angle_control_coeff = 1.0f;
-  if (wrobot.joyy == 0 && abs(wrobot.joyx) > 10) {
+  if (joyy == 0 && abs(joyx) > 10) {
     // 原地打转
-    yaw_angle_control_coeff = mapf(abs(wrobot.joyx), 0, 100, 1.0, 2.0);
-    // 根据转向速度，智能计算wrobot.height
-    // abs(wrobot.joyx) 范围0到100，默认0，输出范围20-50,默认 30
+    yaw_angle_control_coeff = mapf(static_cast<float>(abs(joyx)), 0, 100, 1.0, 2.0);
+    // 根据转向速度，智能计算height
+    // abs(joyx) 范围0到100，默认0，输出范围20-50,默认 30
     // 反向映射：绝对值30→60，绝对值100→0（线性过渡）
 
-    int height = mapi(abs(wrobot.joyx), 0, 100, 50, 30);
+    int height = mapi(abs(joyx), 0, 100, 50, 30);
     // 强制约束输出在0~60范围内（防止异常值）
     height = constrain(height, 30, 50);
     // 使用低波过滤器，平滑数据

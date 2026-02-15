@@ -49,30 +49,6 @@ typedef enum {
   STATE_EMERGENCY_STOP,
 } RobotState;
 
-typedef struct {
-  int8_t joyy;
-  int8_t joyy_last;
-  int8_t joyx;
-  int8_t joyx_last;
-} Wrobot;
-
-// typedef struct {
-//   int joyx; // 左右转向（-100~100），正面看，正数：向左转，负数，向右转
-//   int joyy; // 前后移动（-100~100）
-//   int jump; // 跳跃标记（0=不跳，1=跳）
-//   float roll_adjust; // 左右平衡调整（-5~5），基数0，正面看，正数：向右摆动；负数：向左摆动
-//   float leg_height_base; // 腿部基准高度（20~60，核心高度控制参数）,基数20，变小升高，变大降低
-//   unsigned long stepDuration; // 步骤持续时间（毫秒）
-//   unsigned long pauseDuration; // 步骤执行后的停顿时间（毫秒）
-//   // 舵机参数：无需默认值，动作集定义时按需填写，不填则用结构体默认值（或省略）
-//   int acc0; // 舵机1加速度 0-250
-//   int acc1; // 舵机2加速度 0-250
-//   int speed0; // 舵机1速度 0-500
-//   int speed1; // 舵机2速度 0-500
-// } ActionStep;
-
-extern Wrobot wrobot;
-
 // 机器人运动状态枚举
 typedef enum {
   FORWARD = 0,
@@ -89,7 +65,7 @@ void robot_set_height(uint8_t percentage);
 
 void robot_set_speed(uint16_t left_wheel_speed, uint16_t right_wheel_speed);
 
-void robot_set_joy(uint8_t x, uint8_t y);
+void robot_set_joy(int8_t x, int8_t y);
 
 void robot_stop();
 

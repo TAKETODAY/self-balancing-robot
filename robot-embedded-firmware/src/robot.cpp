@@ -34,8 +34,6 @@ static auto TAG = "ROBOT";
 #define LED_PIN gpio_num_t::GPIO_NUM_13
 #define RX_QUEUE_LEN 100
 
-Wrobot wrobot;
-
 static lqr_controller lqr_controller;
 static QueueHandle_t buffer_queue = xQueueCreate(RX_QUEUE_LEN, sizeof(robot_message_t));
 
@@ -90,8 +88,8 @@ static void handle_robot_message(robot_message_t* message) {
       break;
     }
     case MESSAGE_CONTROL_JOY: {
-      auto joy = message->control_joy;
-      robot_set_joy(joy.x, joy.y);
+      auto [x, y] = message->control_joy;
+      robot_set_joy(x, y);
       break;
     }
     case MESSAGE_CONTROL_LEG: {
@@ -201,7 +199,7 @@ void robot_set_speed(uint16_t left_wheel_speed, uint16_t right_wheel_speed) {
 
 }
 
-void robot_set_joy(uint8_t x, uint8_t y) {
-  wrobot.joyx = x;
-  wrobot.joyy = y;
+void robot_set_joy(int8_t x, int8_t y) {
+  lqr_controller.joyx = x;
+  lqr_controller.joyy = y;
 }

@@ -414,7 +414,8 @@ public class JoystickView extends View implements Runnable {
     mPosY = mButtonDirection < 0 ? mCenterY : (int) event.getY(); // direction negative is horizontal axe
     mPosX = mButtonDirection > 0 ? mCenterX : (int) event.getX(); // direction positive is vertical axe
 
-    if (event.getAction() == MotionEvent.ACTION_UP) {
+    int action = event.getAction();
+    if (action == MotionEvent.ACTION_UP) {
 
       // stop listener because the finger left the touch screen
       mThread.interrupt();
@@ -430,8 +431,7 @@ public class JoystickView extends View implements Runnable {
       // if mAutoReCenterButton is false we will send the last strength and angle a bit
       // later only after processing new position X and Y otherwise it could be above the border limit
     }
-
-    if (event.getAction() == MotionEvent.ACTION_DOWN) {
+    else if (action == MotionEvent.ACTION_DOWN) {
       if (mThread != null && mThread.isAlive()) {
         mThread.interrupt();
       }

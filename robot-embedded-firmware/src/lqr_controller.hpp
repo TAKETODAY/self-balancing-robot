@@ -74,4 +74,9 @@ public:
   // 跳跃相关参数
   int jump_flag = 0; // 跳跃过程计数
 
+  int8_t joyx; // 前后移动（-100~100）
+  int8_t joyy; // 左右转向（-100~100），正面看，正数：向左转，负数，向右转
+
+  int8_t joyx_last;
+  int8_t joyy_last;
 };
