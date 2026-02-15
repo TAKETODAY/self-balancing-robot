@@ -20,7 +20,7 @@
 
 #include "battery.hpp"
 #include "logging.hpp"
-#include "LQRController.hpp"
+#include "lqr_controller.hpp"
 #include "nvs_flash.h"
 
 #include "esp/gpio.hpp"
@@ -36,7 +36,7 @@ static auto TAG = "ROBOT";
 
 Wrobot wrobot;
 
-static LQRController lqr_controller;
+static lqr_controller lqr_controller;
 static QueueHandle_t buffer_queue = xQueueCreate(RX_QUEUE_LEN, sizeof(robot_message_t));
 
 static controller_error_t on_data_received(uint8_t* rx_buffer, uint16_t len);
@@ -172,8 +172,8 @@ void robot_init() {
 
   controller_init(on_data_received, conn_state_change);
 
-  xTaskCreate(status_report_task, "status_report", 4096, nullptr, 5, nullptr);
-  xTaskCreate(robot_message_parsing_task, "robot_ctrl", 4096, nullptr, 8, nullptr);
+  xTaskCreate(status_report_task, "sr", 4096, nullptr, 5, nullptr);
+  xTaskCreate(robot_message_parsing_task, "rm", 4096, nullptr, 8, nullptr);
 }
 
 void robot_stop() {

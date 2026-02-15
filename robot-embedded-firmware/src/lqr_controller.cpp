@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see [https://www.gnu.org/licenses/]
 
-#include "LQRController.hpp"
+#include "lqr_controller.hpp"
 
 #include "attitude_sensor.h"
 #include "logging.hpp"
@@ -61,7 +61,7 @@ static void foc_balance_loop(void* pvParameters);
 
 void robot_suspended_controller_init();
 
-void LQRController::begin() {
+void lqr_controller::begin() {
   static espp::I2c i2c({
     .port = I2C_NUM_0,
     .sda_io_num = GPIO_NUM_19,
@@ -140,7 +140,7 @@ static void stop_motors() {
 
 
 static void foc_balance_loop(void* pvParameters) {
-  auto* controller = static_cast<LQRController*>(pvParameters);
+  auto* controller = static_cast<lqr_controller*>(pvParameters);
   log_info("foc balance looping");
 
   TickType_t xLastWakeTime = xTaskGetTickCount();
@@ -173,7 +173,7 @@ static void foc_balance_loop(void* pvParameters) {
 }
 
 // 重置距离零点
-void LQRController::resetZeroPoint() {
+void lqr_controller::resetZeroPoint() {
   distance_zeropoint = LQR_distance;
   pid_lqr_u.error_prev = 0;
   pitch_adjust = 0.0f;
@@ -181,7 +181,7 @@ void LQRController::resetZeroPoint() {
 
 
 // lqr自平衡控制
-void LQRController::balance_loop() {
+void lqr_controller::balance_loop() {
   LQR_distance = K_SCALE * (motor_L.shaft_angle + motor_R.shaft_angle);    // 两个电机的旋转角度（shaft_angle）,单位：弧度（rad）实际位移量
   LQR_speed = K_SCALE * (motor_L.shaft_velocity + motor_R.shaft_velocity); // 两个电机角速度（shaft_velocity）,单位：弧度 / 秒（rad/s）
   LQR_angle = attitude_get_pitch();                                        // mpu6050 pitch 角度，单位：度（°）
@@ -275,7 +275,7 @@ void LQRController::balance_loop() {
 
 }
 
-void LQRController::yaw_loop() {
+void lqr_controller::yaw_loop() {
   // 跳跃中，YAW_output 设为0，避免干扰左右旋转
   if (jump_flag) {
     YAW_output = 0;
@@ -317,7 +317,7 @@ void LQRController::yaw_loop() {
   YAW_output = yaw_angle_control + yaw_gyro_control;
 }
 
-void LQRController::stop() {
+void lqr_controller::stop() {
   log_info("stop");
   stop_motors();
 
@@ -329,8 +329,8 @@ void LQRController::stop() {
   }
 }
 
-void LQRController::start() {
-  log_info("recover");
+void lqr_controller::start() {
+  log_info("start");
   if (const eTaskState state = eTaskGetState(task_handle); state == eSuspended) {
 
     motor_L.enable();
@@ -341,6 +341,6 @@ void LQRController::start() {
 
 }
 
-bool LQRController::is_started() {
+bool lqr_controller::is_started() {
   return eTaskGetState(task_handle) == eRunning;
 }

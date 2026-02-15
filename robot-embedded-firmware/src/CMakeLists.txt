@@ -32,7 +32,7 @@ idf_component_register(SRCS
     battery.cpp
     attitude_sensor.c
     STSServoDriver.cpp
-    LQRController.cpp
+    lqr_controller.cpp
     mpu6050.c
     robot.cpp
 #    stack_monitor.cpp

@@ -19,11 +19,11 @@
 #include <freertos/task.h>
 #include "defs.h"
 
-class LQRController {
+class lqr_controller {
 
 public:
-  LQRController() = default;
-  ~LQRController() = default;
+  lqr_controller() = default;
+  ~lqr_controller() = default;
 
   void begin();
 
