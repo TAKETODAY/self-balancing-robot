@@ -50,17 +50,10 @@ typedef enum {
 } RobotState;
 
 typedef struct {
-  int height = 38;
-  int roll;
-  int linear;
-  int angular;
-  int dir;
-  int dir_last;
   int joyy;
   int joyy_last;
   int joyx;
   int joyx_last;
-  bool go;
 } Wrobot;
 
 // typedef struct {
@@ -95,6 +88,8 @@ void robot_init();
 void robot_set_height(uint8_t percentage);
 
 void robot_set_speed(uint16_t left_wheel_speed, uint16_t right_wheel_speed);
+
+void robot_set_joy(uint8_t x, uint8_t y);
 
 void robot_stop();
 

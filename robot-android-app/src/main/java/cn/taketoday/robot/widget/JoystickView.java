@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 - 2026 the original author or authors.
+ * Copyright 2017 - 2025 the original author or authors.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -49,7 +49,7 @@ public class JoystickView extends View implements Runnable {
      * @param angle current angle
      * @param strength current strength
      */
-    void onMove(int angle, int strength);
+    void onMove(int xPercentage, int yPercentage, int angle, int strength);
   }
 
   /**
@@ -366,12 +366,14 @@ public class JoystickView extends View implements Runnable {
 
     // radius based on smallest size : height OR width
     int d = Math.min(w, h);
-    mButtonRadius = (int) (d / 2 * mButtonSizeRatio);
-    mBorderRadius = (int) (d / 2 * mBackgroundSizeRatio);
+    mButtonRadius = (int) ((float) d / 2 * mButtonSizeRatio);
+    mBorderRadius = (int) ((float) d / 2 * mBackgroundSizeRatio);
     mBackgroundRadius = mBorderRadius - (mPaintCircleBorder.getStrokeWidth() / 2);
 
-    if (mButtonBitmap != null)
-      mButtonBitmap = Bitmap.createScaledBitmap(mButtonBitmap, mButtonRadius * 2, mButtonRadius * 2, true);
+    if (mButtonBitmap != null) {
+      mButtonBitmap = Bitmap.createScaledBitmap(mButtonBitmap,
+              mButtonRadius * 2, mButtonRadius * 2, true);
+    }
   }
 
   @Override
@@ -422,8 +424,7 @@ public class JoystickView extends View implements Runnable {
         resetButtonPosition();
 
         // update now the last strength and angle which should be zero after resetButton
-        if (mCallback != null)
-          mCallback.onMove(getAngle(), getStrength());
+        callListener();
       }
 
       // if mAutoReCenterButton is false we will send the last strength and angle a bit
@@ -438,8 +439,7 @@ public class JoystickView extends View implements Runnable {
       mThread = new Thread(this);
       mThread.start();
 
-      if (mCallback != null)
-        mCallback.onMove(getAngle(), getStrength());
+      callListener();
     }
 
     // handle first touch and long press with multiple touch only
@@ -489,8 +489,7 @@ public class JoystickView extends View implements Runnable {
 
     if (!mAutoReCenterButton) {
       // Now update the last strength and angle if not reset to center
-      if (mCallback != null)
-        mCallback.onMove(getAngle(), getStrength());
+      callListener();
     }
 
     // to force a new draw
@@ -499,14 +498,35 @@ public class JoystickView extends View implements Runnable {
     return true;
   }
 
+  private void callListener() {
+    OnMoveListener callback = mCallback;
+    if (callback != null) {
+      int x = resolveX();
+      int y = resolveY();
+
+      int xPercentage = x * 100 / mBorderRadius;
+      int yPercentage = y * 100 / mBorderRadius;
+
+      callback.onMove(xPercentage, yPercentage, getAngle(x, y), getStrength());
+    }
+  }
+
   /**
    * Process the angle following the 360° counter-clock protractor rules.
    *
    * @return the angle of the button
    */
-  private int getAngle() {
-    int angle = (int) Math.toDegrees(Math.atan2(mCenterY - mPosY, mPosX - mCenterX));
+  private int getAngle(int x, int y) {
+    int angle = (int) Math.toDegrees(Math.atan2(y, x));
     return angle < 0 ? angle + 360 : angle; // make it as a regular counter-clock protractor
+  }
+
+  private int resolveY() {
+    return mCenterY - mPosY;
+  }
+
+  private int resolveX() {
+    return mPosX - mCenterX;
   }
 
   /**
@@ -814,8 +834,7 @@ public class JoystickView extends View implements Runnable {
     while (!Thread.interrupted()) {
       post(new Runnable() {
         public void run() {
-          if (mCallback != null)
-            mCallback.onMove(getAngle(), getStrength());
+          callListener();
         }
       });
 

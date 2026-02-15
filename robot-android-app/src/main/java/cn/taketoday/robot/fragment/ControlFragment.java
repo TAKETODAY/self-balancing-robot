@@ -70,9 +70,10 @@ public class ControlFragment extends ViewBindingFragment<FragmentControlBinding>
       navController.navigate(R.id.nav_device_connection);
     });
 
-    binding.joystick.setOnMoveListener((angle, strength) -> {
-      binding.angleX.setText(angle + "°");
-      binding.angleY.setText(strength + "%");
+    binding.joystick.setOnMoveListener((xPercentage, yPercentage, angle, strength) -> {
+      binding.angleX.setText(String.valueOf(xPercentage));
+      binding.angleY.setText(String.valueOf(yPercentage));
+      robotModel.joystickMove(xPercentage, yPercentage);
     });
 
     robotModel.batteryStatus.observe(getViewLifecycleOwner(), status -> {

@@ -134,4 +134,9 @@ public class RobotViewModel extends ViewModel implements DataHandler, LoggingSup
     return new ViewModelProvider(store).get(RobotViewModel.class);
   }
 
+  public void joystickMove(int x, int y) {
+    RobotMessage robotMessage = RobotMessage.forControlJoy(x, y);
+    sendMessage(robotMessage);
+  }
+
 }

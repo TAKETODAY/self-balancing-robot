@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 - 2026 the original author or authors.
+ * Copyright 2017 - 2025 the original author or authors.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import cn.taketoday.robot.protocol.message.ControlJoy;
 import cn.taketoday.robot.protocol.message.ControlLegMessage;
 import cn.taketoday.robot.protocol.message.PercentageValue;
 import infra.lang.Enumerable;
@@ -104,6 +105,11 @@ public class RobotMessage implements Message {
   public static RobotMessage forControl(int leftWheelSpeed, int rightWheelSpeed) {
     ControlMessage controlMessage = new ControlMessage(leftWheelSpeed, rightWheelSpeed);
     return new RobotMessage(generateSequence(), MessageType.CONTROL, (byte) 0, controlMessage.toByteArray());
+  }
+
+  public static RobotMessage forControlJoy(int x, int y) {
+    ControlJoy controlMessage = new ControlJoy(x, y);
+    return new RobotMessage(generateSequence(), MessageType.CONTROL_JOY, (byte) 0, controlMessage.toByteArray());
   }
 
   public static RobotMessage forEmergencyStop() {

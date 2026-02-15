@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 - 2026 the original author or authors.
+ * Copyright 2017 - 2025 the original author or authors.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ public enum MessageType implements Message, Enumerable<Integer> {
   CONTROL(1),
   CONTROL_LEG(2),
   CONTROL_HEIGHT(3),
+  CONTROL_JOY(4),
 
   CONFIG_SET(20),
   CONFIG_GET(21),

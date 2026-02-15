@@ -15,27 +15,30 @@
  * along with this program. If not, see [https://www.gnu.org/licenses/]
  */
 
-package cn.taketoday.robot.protocol;
+package cn.taketoday.robot.protocol.message;
+
+import cn.taketoday.robot.protocol.Message;
+import cn.taketoday.robot.protocol.Writable;
 
 /**
  * @author <a href="https://github.com/TAKETODAY">海子 Yang</a>
- * @since 1.0 2026/2/7 22:59
+ * @since 1.0 2026/2/15 18:35
  */
-public class ControlMessage implements Message {
+public class ControlJoy implements Message {
 
-  public final short leftWheelSpeed;
+  public final byte x;
 
-  public final short rightWheelSpeed;
+  public final byte y;
 
-  public ControlMessage(int leftWheelSpeed, int rightWheelSpeed) {
-    this.leftWheelSpeed = (short) leftWheelSpeed;
-    this.rightWheelSpeed = (short) rightWheelSpeed;
+  public ControlJoy(int x, int y) {
+    this.x = PercentageValue.percentage(x);
+    this.y = PercentageValue.percentage(y);
   }
 
   @Override
   public void writeTo(Writable writable) {
-    writable.write(leftWheelSpeed);
-    writable.write(rightWheelSpeed);
+    writable.write(x);
+    writable.write(y);
   }
 
 }

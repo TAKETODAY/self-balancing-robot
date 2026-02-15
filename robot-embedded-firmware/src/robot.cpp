@@ -89,6 +89,11 @@ static void handle_robot_message(robot_message_t* message) {
       robot_set_speed(control.left_wheel_speed, control.right_wheel_speed);
       break;
     }
+    case MESSAGE_CONTROL_JOY: {
+      auto joy = message->control_joy;
+      robot_set_joy(joy.x, joy.y);
+      break;
+    }
     case MESSAGE_CONTROL_LEG: {
       const auto control_leg = message->control_leg;
       robot_leg_set_left_height_percentage(control_leg.left_percentage);
@@ -194,4 +199,9 @@ void robot_set_height(const uint8_t percentage) {
 
 void robot_set_speed(uint16_t left_wheel_speed, uint16_t right_wheel_speed) {
 
+}
+
+void robot_set_joy(uint8_t x, uint8_t y) {
+  wrobot.joyx = x;
+  wrobot.joyy = y;
 }

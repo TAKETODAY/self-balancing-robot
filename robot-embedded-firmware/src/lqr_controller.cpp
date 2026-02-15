@@ -23,6 +23,7 @@
 #include "foc/common/pid.h"
 #include "foc/drivers/BLDCDriver3PWM.h"
 #include "foc/sensors/MagneticSensorI2C.h"
+#include "robot/leg.h"
 
 #define balance_CORE 1
 
@@ -263,10 +264,11 @@ void lqr_controller::balance_loop() {
 
   // 平衡控制参数自适应
   // 考虑 leg_height_base = 0
-  if (wrobot.height < 50) {
+  uint8_t height = robot_leg_get_height_percentage();
+  if (height < 50) {
     pid_speed.P = 0.7;
   }
-  else if (wrobot.height < 64) {
+  else if (height < 64) {
     pid_speed.P = 0.6;
   }
   else {
@@ -302,7 +304,8 @@ void lqr_controller::yaw_loop() {
     // 强制约束输出在0~60范围内（防止异常值）
     height = constrain(height, 30, 50);
     // 使用低波过滤器，平滑数据
-    wrobot.height = (int) lpf_height((float) height);
+
+    robot_set_height((uint8_t) lpf_height((float) height));
 
     // 增加rgb效果
     // startLEDBlink(CRGB::Red, 200, 1);

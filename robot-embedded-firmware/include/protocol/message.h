@@ -41,6 +41,7 @@ typedef enum : uint8_t {
   MESSAGE_CONTROL = 1,
   MESSAGE_CONTROL_LEG = 2,
   MESSAGE_CONTROL_HEIGHT = 3,
+  MESSAGE_CONTROL_JOY = 4,
 
   MESSAGE_CONFIG_SET = 20,    // 设置参数
   MESSAGE_CONFIG_GET = 21,    // 获取参数
@@ -80,6 +81,11 @@ typedef struct {
   uint16_t left_wheel_speed;
   uint16_t right_wheel_speed;
 } control_message_t;
+
+typedef struct {
+  uint8_t x;
+  uint8_t y;
+} control_joy_message_t;
 
 typedef struct {
   uint8_t left_percentage;
@@ -155,6 +161,8 @@ typedef struct {
   union {
     control_message_t control;
     control_leg_message_t control_leg;
+    control_joy_message_t control_joy;
+
     percentage_t height;
     config_message_t config;
     config_set_message_t set_config;

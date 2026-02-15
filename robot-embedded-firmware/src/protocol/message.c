@@ -80,8 +80,13 @@ static bool deserialize_config_message(config_message_t* config, buffer_t* buf) 
          && deserialize_config_body(config, buf);
 }
 
-bool deserialize_control_height_message(percentage_t* height, buffer_t* buf) {
+static bool deserialize_control_height_message(percentage_t* height, buffer_t* buf) {
   return buffer_read_u8(buf, &height->percentage);
+}
+
+static bool deserialize_control_joy_message(control_joy_message_t* joy, buffer_t* buf) {
+  return buffer_read_u8(buf, &joy->x)
+         && buffer_read_u8(buf, &joy->y);
 }
 
 static bool deserialize_body(robot_message_t* msg, buffer_t* buf) {
@@ -89,6 +94,7 @@ static bool deserialize_body(robot_message_t* msg, buffer_t* buf) {
     case MESSAGE_CONTROL: return deserialize_control_message(&msg->control, buf);
     case MESSAGE_CONTROL_LEG: return deserialize_control_leg_message(&msg->control_leg, buf);
     case MESSAGE_CONTROL_HEIGHT: return deserialize_control_height_message(&msg->height, buf);
+    case MESSAGE_CONTROL_JOY: return deserialize_control_joy_message(&msg->control_joy, buf);
 
     case MESSAGE_CONFIG_GET: return deserialize_config_message(&msg->config, buf);
     case MESSAGE_CONFIG_SET: return deserialize_config_message(&msg->config, buf);
@@ -113,6 +119,7 @@ const char* message_type_to_string(const message_type_t type) {
     case MESSAGE_CONTROL: return "CONTROL";
     case MESSAGE_CONTROL_LEG: return "CONTROL_LEG";
     case MESSAGE_CONTROL_HEIGHT: return "CONTROL_HEIGHT";
+    case MESSAGE_CONTROL_JOY: return "CONTROL_JOY";
     case MESSAGE_EMERGENCY_STOP: return "EMERGENCY_STOP";
     case MESSAGE_EMERGENCY_RECOVER: return "EMERGENCY_RECOVER";
     case MESSAGE_CONFIG_SET: return "CONFIG_SET";
