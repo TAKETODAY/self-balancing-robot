@@ -329,7 +329,7 @@ void LQRController::stop() {
   }
 }
 
-void LQRController::recover() {
+void LQRController::start() {
   log_info("recover");
   if (const eTaskState state = eTaskGetState(task_handle); state == eSuspended) {
 

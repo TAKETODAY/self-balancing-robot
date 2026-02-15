@@ -147,7 +147,7 @@ static void conn_state_change(bool connected) {
   if (connected) {
     log_info("Controller Connected");
     digitalWrite(LED_PIN, HIGH);
-    lqr_controller.recover();
+    lqr_controller.start();
   }
   else {
     log_info("Controller Disconnected");
@@ -181,7 +181,7 @@ void robot_stop() {
 }
 
 void robot_recover() {
-  lqr_controller.recover();
+  lqr_controller.start();
 }
 
 bool robot_controller_is_connected() {

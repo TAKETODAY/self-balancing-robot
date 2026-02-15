@@ -32,7 +32,7 @@ public:
   void yaw_loop();
 
   void stop();
-  void recover();
+  void start();
 
 private:
   TaskHandle_t task_handle = nullptr;
