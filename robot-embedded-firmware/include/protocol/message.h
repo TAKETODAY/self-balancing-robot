@@ -83,8 +83,8 @@ typedef struct {
 } control_message_t;
 
 typedef struct {
-  uint8_t x;
-  uint8_t y;
+  int8_t x;
+  int8_t y;
 } control_joy_message_t;
 
 typedef struct {

@@ -85,8 +85,8 @@ static bool deserialize_control_height_message(percentage_t* height, buffer_t* b
 }
 
 static bool deserialize_control_joy_message(control_joy_message_t* joy, buffer_t* buf) {
-  return buffer_read_u8(buf, &joy->x)
-         && buffer_read_u8(buf, &joy->y);
+  return buffer_read_i8(buf, &joy->x)
+         && buffer_read_i8(buf, &joy->y);
 }
 
 static bool deserialize_body(robot_message_t* msg, buffer_t* buf) {

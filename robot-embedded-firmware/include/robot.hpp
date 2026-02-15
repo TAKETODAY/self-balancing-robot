@@ -50,10 +50,10 @@ typedef enum {
 } RobotState;
 
 typedef struct {
-  int joyy;
-  int joyy_last;
-  int joyx;
-  int joyx_last;
+  int8_t joyy;
+  int8_t joyy_last;
+  int8_t joyx;
+  int8_t joyx_last;
 } Wrobot;
 
 // typedef struct {

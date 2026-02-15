@@ -31,8 +31,8 @@ public class ControlJoy implements Message {
   public final byte y;
 
   public ControlJoy(int x, int y) {
-    this.x = PercentageValue.percentage(x);
-    this.y = PercentageValue.percentage(y);
+    this.x = (byte) x;
+    this.y = (byte) y;
   }
 
   @Override
