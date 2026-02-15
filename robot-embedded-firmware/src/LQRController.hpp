@@ -34,6 +34,8 @@ public:
   void stop();
   void start();
 
+  bool is_started();
+
 private:
   TaskHandle_t task_handle = nullptr;
 
@@ -71,7 +73,5 @@ public:
 
   // 跳跃相关参数
   int jump_flag = 0; // 跳跃过程计数
-
-  bool stoped = false;
 
 };

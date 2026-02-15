@@ -340,3 +340,7 @@ void LQRController::start() {
   }
 
 }
+
+bool LQRController::is_started() {
+  return eTaskGetState(task_handle) == eRunning;
+}
