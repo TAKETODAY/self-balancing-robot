@@ -511,6 +511,16 @@ public class JoystickView extends View implements Runnable {
     }
   }
 
+  public int getAxisXPercentage() {
+    int x = resolveX();
+    return x * 100 / mBorderRadius;
+  }
+
+  public int getAxisYPercentage() {
+    int y = resolveY();
+    return y * 100 / mBorderRadius;
+  }
+
   /**
    * Process the angle following the 360° counter-clock protractor rules.
    *

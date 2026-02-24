@@ -18,12 +18,17 @@
 package cn.taketoday.robot.fragment;
 
 import android.annotation.SuppressLint;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SeekBar;
 
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.navigation.fragment.NavHostFragment;
 
 import org.jspecify.annotations.Nullable;
@@ -59,6 +64,9 @@ public class ControlFragment extends ViewBindingFragment<FragmentControlBinding>
   public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
     RobotViewModel robotModel = RobotViewModel.getInstance(requireActivity());
 
+    int orientation = getResources().getConfiguration().orientation;
+    setFullScreen(orientation == Configuration.ORIENTATION_LANDSCAPE);
+
     setConnectionStatus(robotModel.isConnected());
     robotModel.connected.observe(getViewLifecycleOwner(), this::setConnectionStatus);
     robotModel.robotHeightPercentage.observe(getViewLifecycleOwner(), binding.robotHeight::setProgress);
@@ -70,11 +78,26 @@ public class ControlFragment extends ViewBindingFragment<FragmentControlBinding>
       navController.navigate(R.id.nav_device_connection);
     });
 
-    binding.joystick.setOnMoveListener((xPercentage, yPercentage, angle, strength) -> {
-      binding.angleX.setText(String.valueOf(xPercentage));
-      binding.angleY.setText(String.valueOf(yPercentage));
-      robotModel.joystickMove(xPercentage, yPercentage);
-    });
+    if (binding.joystick != null) {
+      binding.joystick.setOnMoveListener((xPercentage, yPercentage, angle, strength) -> {
+        binding.angleX.setText(String.valueOf(xPercentage));
+        binding.angleY.setText(String.valueOf(yPercentage));
+        robotModel.joystickMove(xPercentage, yPercentage);
+      });
+    }
+    else if (binding.joystickLeft != null && binding.joystickRight != null) {
+      binding.joystickLeft.setOnMoveListener((z, leftPercentage, angle, strength) -> {
+        binding.angleX.setText(String.valueOf(leftPercentage));
+        int rightPercentage = binding.joystickRight.getAxisYPercentage();
+        robotModel.control(leftPercentage, rightPercentage);
+      });
+
+      binding.joystickRight.setOnMoveListener((z, rightPercentage, angle, strength) -> {
+        binding.angleY.setText(String.valueOf(rightPercentage));
+        int leftPercentage = binding.joystickLeft.getAxisYPercentage();
+        robotModel.control(leftPercentage, rightPercentage);
+      });
+    }
 
     robotModel.batteryStatus.observe(getViewLifecycleOwner(), status -> {
       binding.battery.setText(String.format("%.2fV", status.getVoltage()));
@@ -120,6 +143,44 @@ public class ControlFragment extends ViewBindingFragment<FragmentControlBinding>
   private void setConnectionStatus(boolean connected) {
     binding.connectionStatus.setText(connected ? R.string.device_connected : R.string.device_not_connected);
     binding.connectionStatus.setTextColor(getResources().getColor(connected ? R.color.color_success : R.color.color_warning, requireActivity().getTheme()));
+  }
+
+  @Override
+  public void onConfigurationChanged(Configuration newConfig) {
+    super.onConfigurationChanged(newConfig);
+    setFullScreen(newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE);
+
+  }
+
+  /**
+   * 根据是否横屏设置全屏状态
+   *
+   * @param isLandscape true 表示横屏，进入全屏；false 表示竖屏，退出全屏
+   */
+  private void setFullScreen(boolean isLandscape) {
+    AppCompatActivity activity = (AppCompatActivity) getActivity();
+    if (activity == null) {
+      return;
+    }
+
+    var insetsController = WindowCompat.getInsetsController(
+            activity.getWindow(), activity.getWindow().getDecorView());
+
+    ActionBar supportActionBar = activity.getSupportActionBar();
+    if (isLandscape) {
+      insetsController.hide(WindowInsetsCompat.Type.statusBars());
+      insetsController.hide(WindowInsetsCompat.Type.systemBars());
+      insetsController.hide(WindowInsetsCompat.Type.navigationBars());
+      if (supportActionBar != null) {
+        supportActionBar.hide();
+      }
+    }
+    else {
+      insetsController.show(WindowInsetsCompat.Type.statusBars());
+      if (supportActionBar != null) {
+        supportActionBar.show();
+      }
+    }
   }
 
 }

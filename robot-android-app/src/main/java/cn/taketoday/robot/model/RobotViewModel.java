@@ -117,6 +117,16 @@ public class RobotViewModel extends ViewModel implements DataHandler, LoggingSup
     sendMessage(RobotMessage.forEmergencyRecover());
   }
 
+  public void control(int leftPercentage, int rightPercentage) {
+    RobotMessage robotMessage = RobotMessage.forControl(leftPercentage, rightPercentage);
+    sendMessage(robotMessage);
+  }
+
+  public void joystickMove(int x, int y) {
+    RobotMessage robotMessage = RobotMessage.forControlJoy(x, y);
+    sendMessage(robotMessage);
+  }
+
   private void handleStatusReport(StatusReport statusReport) {
     ReportType type = statusReport.getType();
     switch (type) {
@@ -132,11 +142,6 @@ public class RobotViewModel extends ViewModel implements DataHandler, LoggingSup
 
   public static RobotViewModel getInstance(ViewModelStoreOwner store) {
     return new ViewModelProvider(store).get(RobotViewModel.class);
-  }
-
-  public void joystickMove(int x, int y) {
-    RobotMessage robotMessage = RobotMessage.forControlJoy(x, y);
-    sendMessage(robotMessage);
   }
 
 }

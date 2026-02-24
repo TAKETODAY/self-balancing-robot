@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:id="@+id/main_container"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  tools:context=".activity.MainActivity">
+
+  <LinearLayout
+    android:id="@+id/top_status_bar"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent">
+
+    <TextView
+      android:id="@+id/connection_status"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginEnd="16dp"
+      android:text="状态：未连接"
+      android:textColor="@color/color_warning"
+      android:textSize="16sp"
+      android:textStyle="bold" />
+
+    <!-- 电量显示 -->
+    <LinearLayout
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:gravity="center_vertical"
+      android:orientation="horizontal">
+
+      <ImageView
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:src="@drawable/battery" />
+
+      <TextView
+        android:id="@+id/battery"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:text="@string/value_unknown"
+        android:textSize="16sp" />
+    </LinearLayout>
+
+    <View
+      android:layout_width="0dp"
+      android:layout_height="0dp"
+      android:layout_weight="1" />
+
+    <androidx.appcompat.widget.AppCompatToggleButton
+      android:id="@+id/emergency_stop"
+      android:layout_width="60dp"
+      android:layout_height="60dp"
+      android:background="@drawable/shape_emergency_button"
+      android:elevation="20sp"
+      android:fontFamily="@font/font"
+      android:textOff="OFF"
+      android:textOn="ON"
+      android:textSize="20sp"
+      android:textStyle="bold" />
+
+  </LinearLayout>
+
+  <LinearLayout
+    android:id="@+id/linearLayout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="48dp"
+    android:gravity="center_horizontal"
+    android:orientation="horizontal"
+    android:paddingTop="12dp"
+    app:layout_constraintTop_toTopOf="parent"
+    tools:layout_editor_absoluteX="16dp">
+
+    <!-- 倾角 X -->
+    <androidx.cardview.widget.CardView
+      android:layout_width="0dp"
+      android:layout_height="80dp"
+      android:layout_margin="6dp"
+      android:layout_weight="1"
+      app:cardBackgroundColor="@color/card_background"
+      app:cardCornerRadius="12dp"
+      app:cardElevation="4dp">
+
+      <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="Left"
+          android:textColor="@color/text_secondary"
+          android:textSize="12sp" />
+
+        <TextView
+          android:id="@+id/angle_x"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="4dp"
+          android:text="@string/value_unknown"
+          android:textColor="@color/text_primary"
+          android:textSize="16sp"
+          android:textStyle="bold" />
+
+
+      </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
+    <!-- 倾角 Y -->
+    <androidx.cardview.widget.CardView
+      android:layout_width="0dp"
+      android:layout_height="80dp"
+      android:layout_margin="6dp"
+      android:layout_weight="1"
+      app:cardBackgroundColor="@color/card_background"
+      app:cardCornerRadius="12dp"
+      app:cardElevation="4dp">
+
+      <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="Right"
+          android:textColor="@color/text_secondary"
+          android:textSize="12sp" />
+
+        <TextView
+          android:id="@+id/angle_y"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="4dp"
+          android:text="@string/value_unknown"
+          android:textColor="@color/text_primary"
+          android:textSize="16sp"
+          android:textStyle="bold" />
+
+      </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
+  </LinearLayout>
+
+  <cn.taketoday.robot.widget.JoystickView
+    android:id="@+id/joystick_left"
+    android:layout_width="200sp"
+    android:layout_height="200sp"
+    android:layout_marginBottom="16dp"
+    app:backgroundColor="@color/colorPrimaryDark"
+    app:borderColor="#00796B"
+    app:borderWidth="2dp"
+    app:buttonColor="@color/black"
+    app:buttonDirection="vertical"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintHorizontal_bias="0.0"
+    app:layout_constraintStart_toStartOf="parent" />
+
+  <cn.taketoday.robot.widget.JoystickView
+    android:id="@+id/joystick_right"
+    android:layout_width="200sp"
+    android:layout_height="200sp"
+    android:layout_marginBottom="16dp"
+    app:backgroundColor="@color/colorPrimaryDark"
+    app:borderColor="#00796B"
+    app:borderWidth="2dp"
+    app:buttonColor="@color/black"
+    app:buttonDirection="vertical"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintHorizontal_bias="1.0"
+    app:layout_constraintStart_toStartOf="parent" />
+
+  <LinearLayout
+    android:id="@+id/right_action_panel"
+    android:layout_width="wrap_content"
+    android:layout_height="0dp"
+    android:layout_marginTop="24dp"
+    android:layout_marginEnd="8dp"
+    android:layout_marginBottom="24dp"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    app:layout_constraintBottom_toBottomOf="@id/joystick"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintTop_toTopOf="@id/joystick"
+    app:layout_constraintVertical_bias="0.0">
+
+  </LinearLayout>
+
+
+  <SeekBar
+    android:id="@+id/robot_height"
+    android:layout_width="261dp"
+    android:layout_height="17dp"
+    android:max="100"
+    android:min="0"
+    android:rotation="-90"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent"
+    app:layout_constraintVertical_bias="0.649" />
+
+  <Button
+    android:id="@+id/add_height_btn"
+    style="@style/Widget.AppCompat.Button.Colored"
+    android:layout_width="100dp"
+    android:layout_height="60dp"
+    android:backgroundTint="@color/color_primary"
+    android:text="+"
+    android:textSize="18sp"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintHorizontal_bias="0.627"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent"
+    app:layout_constraintVertical_bias="0.555" />
+
+  <Button
+    android:id="@+id/minus_height_btn"
+    style="@style/Widget.AppCompat.Button.Colored"
+    android:layout_width="100dp"
+    android:layout_height="60dp"
+    android:backgroundTint="@color/color_accent"
+    android:text="-"
+    android:textSize="18sp"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintHorizontal_bias="0.627"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent"
+    app:layout_constraintVertical_bias="0.954" />
+
+  <Button
+    android:id="@+id/btn_jump"
+    style="@style/Widget.AppCompat.Button.Colored"
+    android:layout_width="100dp"
+    android:layout_height="60dp"
+    android:backgroundTint="@color/color_accent"
+    android:text="跳跃"
+    android:textSize="18sp"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintHorizontal_bias="0.372"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent"
+    app:layout_constraintVertical_bias="0.555" />
+
+  <Button
+    android:id="@+id/btn_stand"
+    style="@style/Widget.AppCompat.Button.Colored"
+    android:layout_width="100dp"
+    android:layout_height="60dp"
+    android:backgroundTint="@color/color_primary"
+    android:text="站立"
+    android:textSize="18sp"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintHorizontal_bias="0.372"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent"
+    app:layout_constraintVertical_bias="0.954" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

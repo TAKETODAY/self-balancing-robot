@@ -74,9 +74,28 @@ public:
   // 跳跃相关参数
   int jump_flag = 0; // 跳跃过程计数
 
-  int8_t joyx; // 前后移动（-100~100）
-  int8_t joyy; // 左右转向（-100~100），正面看，正数：向左转，负数，向右转
+  int8_t joyx = 0; // 前后移动（-100~100）
+  int8_t joyy = 0; // 左右转向（-100~100），正面看，正数：向左转，负数，向右转
 
-  int8_t joyx_last;
-  int8_t joyy_last;
+  int8_t joyx_last = 0;
+  int8_t joyy_last = 0;
+
+
+  // 新增目标值
+  float target_linear_speed; // 期望线速度（单位需与编码器一致）
+  float target_yaw_rate;     // 期望偏航角速度（单位需与陀螺仪一致）
+
+  // 新增接口：由外部设置左右轮指令
+  void set_wheel_commands(float left, float right) {
+    // 可在此处添加缩放、死区处理
+    float left_scaled = left * 0.01f; // 假设摇杆范围-100~100，映射到实际速度
+    float right_scaled = right * 0.01f;
+    target_linear_speed = (left_scaled + right_scaled) * 0.5f;
+    target_yaw_rate = (right_scaled - left_scaled) * TURN_GAIN; // TURN_GAIN 根据实测确定
+  }
+
+private:
+  static constexpr float TURN_GAIN = 2.0f;   // 示例值，需实际标定
+  static constexpr float SPEED_SCALE = 1.0f; // 速度缩放系数
+
 };
