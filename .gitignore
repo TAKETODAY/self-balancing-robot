@@ -3,10 +3,11 @@
 *.war
 *.ear
 /target
-/.settings
-/.classpath
-/.project
+.settings
+.classpath
+.project
 /.idea/
+bin/
 .DS_Store
 
 /.idea
