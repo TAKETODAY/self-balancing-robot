@@ -17,10 +17,8 @@
 
 package cn.taketoday.robot.fragment;
 
-import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,14 +29,11 @@ import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.google.android.material.snackbar.Snackbar;
 
 import org.jspecify.annotations.Nullable;
-
-import java.util.ArrayList;
 
 import cn.taketoday.robot.LoggingSupport;
 import cn.taketoday.robot.bluetooth.BluetoothViewModel;
@@ -73,8 +68,6 @@ public class DeviceConnectionFragment extends ViewBindingFragment<FragmentDevice
         implements LoggingSupport, ActivityResultCallback<ActivityResult> {
 
   private ActivityResultLauncher<Intent> enableBluetoothLauncher;
-
-  private ActivityResultLauncher<String[]> requestPermissionLauncher;
 
   public DeviceConnectionFragment() {
   }
@@ -169,32 +162,6 @@ public class DeviceConnectionFragment extends ViewBindingFragment<FragmentDevice
   public void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     enableBluetoothLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), this);
-    requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
-      boolean allGranted = result.values().stream().allMatch(isGranted -> isGranted);
-      if (allGranted) {
-        debug("All Bluetooth permissions granted.");
-      }
-      else {
-        debug("Some Bluetooth permissions were denied.");
-      }
-    });
-  }
-
-  private void checkAndRequestBluetoothPermissions() {
-    ArrayList<String> permissionsNeeded = new ArrayList<>();
-
-    if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-      permissionsNeeded.add(Manifest.permission.BLUETOOTH_CONNECT);
-    }
-
-    requestPermissionLauncher.launch(permissionsNeeded.toArray(new String[0]));
-  }
-
-  @Override
-  public void onResume() {
-    super.onResume();
-    // It's a good practice to check for permissions when the fragment becomes active.
-    checkAndRequestBluetoothPermissions();
   }
 
   @Override
