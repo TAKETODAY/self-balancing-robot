@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 - 2025 the original author or authors.
+ * Copyright 2025 - 2026 the original author or authors.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -110,13 +110,11 @@ public class BluetoothViewModel extends AndroidViewModel implements ScanningList
 
     boolean autoConnectBluetooth = preferences.getBoolean(AUTO_CONNECT_BLUETOOTH_KEY, false);
     if (autoConnectBluetooth) {
-
       String address = preferences.getString(LAST_DEVICE_ADDRESS_KEY, null);
       if (StringUtils.hasText(address)) {
         BluetoothDevice remoteDevice = bluetoothAdapter.getRemoteDevice(address);
         connect(remoteDevice);
       }
-
     }
   }
 
@@ -124,9 +122,7 @@ public class BluetoothViewModel extends AndroidViewModel implements ScanningList
     deviceMap.clear();
     collectDevices();
 
-    if (bluetoothAdapter.isDiscovering()) {
-      bluetoothAdapter.cancelDiscovery();
-    }
+    stopScan();
 
     bluetoothAdapter.startDiscovery();
     handler.postDelayed(stopScanTask, 2000);
@@ -136,7 +132,9 @@ public class BluetoothViewModel extends AndroidViewModel implements ScanningList
     if (bluetoothAdapter.isDiscovering()) {
       bluetoothAdapter.cancelDiscovery();
     }
-    handler.removeCallbacks(stopScanTask);
+    if (handler.hasCallbacks(stopScanTask)) {
+      handler.removeCallbacks(stopScanTask);
+    }
   }
 
   public void clearDevices() {

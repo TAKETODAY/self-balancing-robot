@@ -39,12 +39,12 @@ import infra.lang.Assert;
 
 public class BluetoothLeService extends BluetoothListeners implements LoggingSupport, WritableChannel {
 
-  // 服务UUID
+  // 服务 UUID
   public static final UUID UUID_PROTOCOL_SERVICE = UUID.fromString("0000ABF0-0000-1000-8000-00805f9b34fb");
 
   public static final UUID UUID_PROTOCOL_FRAME = UUID.fromString("0000ABF1-0000-1000-8000-00805f9b34fb");
 
-  // 客户端特征配置描述符UUID
+  // 客户端特征配置描述符 UUID
   public static final UUID UUID_CLIENT_CHARACTERISTIC_CONFIG = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
 
   // 连接状态常量

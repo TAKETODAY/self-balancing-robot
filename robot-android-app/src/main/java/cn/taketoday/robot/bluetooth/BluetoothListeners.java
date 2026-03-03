@@ -97,8 +97,9 @@ class BluetoothListeners implements StatusListener, BindingStatusListener, Scann
     }
   }
 
-  // BluetoothScanningListener
+  // ScanningListener
   // -------------------
+
   @Override
   public void onScanningStarted() {
     for (ScanningListener scanningListener : scanningListeners) {

@@ -110,6 +110,10 @@ public class ControlFragment extends ViewBindingFragment<FragmentControlBinding>
       robotModel.setRobotHeightPercentage(robotModel.getRobotHeightPercentage() - 10);
     });
 
+    robotModel.connected.observe(getViewLifecycleOwner(), connected -> {
+      binding.emergencyStop.setEnabled(connected);
+    });
+
     binding.emergencyStop.setOnCheckedChangeListener((buttonView, checked) -> {
       if (checked) {
         robotModel.emergencyStop();
@@ -128,12 +132,10 @@ public class ControlFragment extends ViewBindingFragment<FragmentControlBinding>
 
       @Override
       public void onStartTrackingTouch(SeekBar seekBar) {
-
       }
 
       @Override
       public void onStopTrackingTouch(SeekBar seekBar) {
-
       }
     });
 
