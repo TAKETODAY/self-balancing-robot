@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 - 2025 the original author or authors.
+ * Copyright 2025 - 2026 the original author or authors.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -59,13 +59,12 @@ public class ControlFragment extends ViewBindingFragment<FragmentControlBinding>
     return FragmentControlBinding.inflate(inflater, container, false);
   }
 
-  @SuppressLint({ "SetTextI18n", "DefaultLocale" })
   @Override
+  @SuppressLint({ "SetTextI18n", "DefaultLocale" })
   public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
     RobotViewModel robotModel = RobotViewModel.getInstance(requireActivity());
 
-    int orientation = getResources().getConfiguration().orientation;
-    setFullScreen(orientation == Configuration.ORIENTATION_LANDSCAPE);
+    setFullScreen(getResources().getConfiguration());
 
     setConnectionStatus(robotModel.isConnected());
     robotModel.connected.observe(getViewLifecycleOwner(), this::setConnectionStatus);
@@ -148,8 +147,11 @@ public class ControlFragment extends ViewBindingFragment<FragmentControlBinding>
   @Override
   public void onConfigurationChanged(Configuration newConfig) {
     super.onConfigurationChanged(newConfig);
-    setFullScreen(newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE);
+    setFullScreen(newConfig);
+  }
 
+  private void setFullScreen(Configuration configuration) {
+    setFullScreen(configuration.orientation == Configuration.ORIENTATION_LANDSCAPE);
   }
 
   /**

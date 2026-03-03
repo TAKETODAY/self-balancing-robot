@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 - 2025 the original author or authors.
+ * Copyright 2025 - 2026 the original author or authors.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -119,10 +119,10 @@ public class PermissionUtils {
   }
 
   /**
-   * @param isShouldRationale true: return no granted and shouldShowRequestPermissionRationale permissions, false:return no granted and !shouldShowRequestPermissionRationale
+   * @param isShouldRationale true: return no granted and shouldShowRequestPermissionRationale permissions,
+   * false:return no granted and !shouldShowRequestPermissionRationale
    */
   public static ArrayList<String> getNoGrantedPermission(Activity activity, boolean isShouldRationale) {
-
     ArrayList<String> permissions = new ArrayList<>();
 
     for (String requestPermission : requestPermissions) {
@@ -137,10 +137,7 @@ public class PermissionUtils {
       }
 
       if (checkSelfPermission != PackageManager.PERMISSION_GRANTED) {
-        Log.i(TAG, "getNoGrantedPermission ActivityCompat.checkSelfPermission != PackageManager.PERMISSION_GRANTED:" + requestPermission);
-
         if (ActivityCompat.shouldShowRequestPermissionRationale(activity, requestPermission)) {
-          Log.d(TAG, "shouldShowRequestPermissionRationale if");
           if (isShouldRationale) {
             permissions.add(requestPermission);
           }
@@ -149,9 +146,7 @@ public class PermissionUtils {
           if (!isShouldRationale) {
             permissions.add(requestPermission);
           }
-          Log.d(TAG, "shouldShowRequestPermissionRationale else");
         }
-
       }
     }
 
